@@ -1,0 +1,86 @@
+[
+    {
+        "id": 5,
+        "instansi": "Universitas Medan Area",
+        "organisasi": "Fakultas Teknik",
+        "pic": "Nabila Azari Lubis",
+        "email": "alleaazarilubis@gmail.com",
+        "telp": "082388550531",
+        "tujuan": "Untuk menambah wawasan dan memberikan pengalaman ke mahasiswa\/i",
+        "tujuan_mitra": "Untuk menambah wawasan dan memberikan pengalaman ke mahasiswa\/i",
+        "tujuan_pelatihan": "meningkatkan literasi digital dan mendapatkan sertifikat",
+        "metode_pelatihan": "offline",
+        "pembiayaan": "cost_sharing",
+        "bidang": [
+            "dts",
+            "pelatihan",
+            "literasi"
+        ],
+        "jenis_instansi": "perguruan_tinggi",
+        "kota": "Medan",
+        "provinsi": "Sumatera Utara",
+        "alamat": "JL.Purnawirawan 58a",
+        "status": "Ditolak",
+        "tanggal": "12 October 2026",
+        "feedback": "dikarenakan nya ketidaksuaian lokasi komdigi dengan kampus Universitas Medan Area"
+    },
+    {
+        "id": 4,
+        "instansi": "Universitas Brawijaya",
+        "organisasi": "Fakultas Ilmu Komputer",
+        "pic": "Prof. Dr. Ir. Budi Rahardjo, M.Kom.",
+        "email": "budi.rahardjo@ub.ac.id",
+        "telp": "081298765432",
+        "tujuan": "Meningkatkan kompetensi digital mahasiswa dan dosen dalam bidang Artificial Intelligence dan Cloud Computing.",
+        "tujuan_mitra": "Meningkatkan kompetensi digital mahasiswa dan dosen dalam bidang Artificial Intelligence dan Cloud Computing.",
+        "tujuan_pelatihan": "Mempersiapkan lulusan yang siap kerja dengan standar sertifikasi nasional dan global di bidang TIK.",
+        "metode_pelatihan": "hybrid",
+        "pembiayaan": "cost_sharing",
+        "bidang": [
+            "dts"
+        ],
+        "jenis_instansi": "perguruan_tinggi",
+        "kota": "Malang",
+        "provinsi": "Jawa Timur",
+        "alamat": "Jl. Veteran No. 8, Ketawanggede, Lowokwaru, Malang",
+        "status": "Ditolak",
+        "tanggal": "12 October 2026",
+        "feedback": "Kuota kemitraan untuk program Digital Talent Scholarship pada semester ini telah terpenuhi. Kami mengundang untuk mengajukan kembali pada periode berikutnya."
+    },
+    {
+        "id": 1,
+        "instansi": "Pemerintah Provinsi Jawa Barat",
+        "organisasi": "Dinas Komunikasi dan Informatika",
+        "pic": "Rina Wulandari, S.STP., M.Si.",
+        "email": "rina@jabarprov.go.id",
+        "telp": "0812-3456-7890",
+        "tujuan": "Pengembangan layanan publik digital terpadu & SPBE.",
+        "status": "Ditolak",
+        "tanggal": "12 Oktober 2026",
+        "feedback": "Kuota kemitraan untuk pilar program ini pada tahun anggaran berjalan telah terpenuhi."
+    },
+    {
+        "id": 2,
+        "instansi": "Universitas Indonesia",
+        "organisasi": "Direktorat Kerja Sama & Riset",
+        "pic": "Dr. Bagas Pratama",
+        "email": "bagas@ui.ac.id",
+        "telp": "0813-1111-2222",
+        "tujuan": "Program magang DTS dan riset literasi digital.",
+        "status": "Disetujui",
+        "tanggal": "05 Oktober 2026",
+        "feedback": ""
+    },
+    {
+        "id": 3,
+        "instansi": "PT Telekomunikasi Nusantara",
+        "organisasi": "Divisi Hubungan Pemerintah",
+        "pic": "Maya Sari",
+        "email": "maya@telenusa.co.id",
+        "telp": "0857-9999-0000",
+        "tujuan": "Kolaborasi perluasan infrastruktur jaringan sinyal.",
+        "status": "Ditolak",
+        "tanggal": "28 September 2026",
+        "feedback": "Kuota kemitraan untuk pilar infrastruktur telekomunikasi wilayah Jawa Barat telah terpenuhi pada periode anggaran tahun ini."
+    }
+]
