@@ -8,8 +8,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('assets/user/css/style.css') }}">
+    @if (request()->routeIs('landing'))
+    <link rel="stylesheet" href="{{ asset('assets/user/css/landing.css') }}">
+    @endif
 </head>
-<body>
+<body class="@yield('body_class')">
 @include('partials.header')
 <div class="wrap wrap-main{{ request()->routeIs('landing') ? '' : ' wrap-main-inner' }}">
     @yield('content')

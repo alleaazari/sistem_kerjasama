@@ -1,0 +1,825 @@
+/* ==========================================================================
+   Landing Page — Tenang, sederhana, glassmorphism
+   Dimuat hanya untuk halaman beranda (layouts/user-public.blade.php)
+   ========================================================================== */
+
+body.landing-page {
+  background-color: #eef4fb;
+  background-image:
+    radial-gradient(900px 560px at 6% 4%, rgba(59, 130, 246, 0.12), transparent 62%),
+    radial-gradient(760px 520px at 96% 16%, rgba(14, 165, 233, 0.10), transparent 66%),
+    radial-gradient(900px 620px at 50% 82%, rgba(99, 102, 241, 0.08), transparent 70%);
+  background-attachment: fixed;
+  overflow-x: clip;
+}
+
+.landing-page .wrap {
+  max-width: 1160px;
+}
+
+.landing-page #tentang,
+.landing-page #berita,
+.landing-page #galeri {
+  scroll-margin-top: 96px;
+}
+
+/* --------------------------------------------------------------------------
+   Glass surface — putih transparan + blur (bukan putih solid)
+   -------------------------------------------------------------------------- */
+.landing-page .glass {
+  background: rgba(255, 255, 255, 0.55);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow:
+    0 14px 34px -20px rgba(11, 58, 107, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* --------------------------------------------------------------------------
+   HERO
+   -------------------------------------------------------------------------- */
+.landing-page .hero-fullwidth-wrapper {
+  margin-bottom: 0;
+  padding: 148px 0 168px;
+  background: #08182c;
+}
+
+.landing-page .hero-bg-image-layer,
+.landing-page .hero-fullwidth-wrapper:hover .hero-bg-image-layer {
+  filter: blur(12px) brightness(0.46);
+  transform: scale(1.07);
+}
+
+.landing-page .hero-bg-overlay-dark,
+.landing-page .hero-fullwidth-wrapper:hover .hero-bg-overlay-dark {
+  background: linear-gradient(122deg, rgba(5, 18, 36, 0.94) 0%, rgba(8, 38, 74, 0.8) 52%, rgba(5, 18, 36, 0.96) 100%);
+  opacity: 1;
+}
+
+.landing-page .hero-fullwidth-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(620px 320px at 22% 30%, rgba(56, 132, 255, 0.18), transparent 70%);
+  pointer-events: none;
+}
+
+.landing-page .hero-ref-grid {
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 56px;
+}
+
+.landing-page .hero-ref-category {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: #9fc6f5;
+  margin-bottom: 20px;
+  padding: 7px 14px;
+  border: 1px solid rgba(159, 198, 245, 0.24);
+  background: rgba(159, 198, 245, 0.08);
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.landing-page .hero-ref-category::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.18);
+}
+
+.landing-page .hero-ref-title {
+  font-size: clamp(34px, 4.3vw, 52px);
+  line-height: 1.08;
+  letter-spacing: -1.4px;
+  margin-bottom: 16px;
+}
+
+.landing-page .hero-ref-desc {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #c3d3e6;
+  max-width: 470px;
+  margin-bottom: 28px;
+}
+
+.landing-page .hero-ref-btn-main {
+  padding: 13px 26px;
+  font-size: 13.5px;
+  box-shadow: 0 10px 26px -12px rgba(37, 99, 235, 0.9);
+}
+
+.landing-page .hero-ref-btn-main:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px -14px rgba(37, 99, 235, 1);
+}
+
+/* Kartu hero: kaca putih transparan */
+.landing-page .hero-ref-card {
+  padding: 24px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.11);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  backdrop-filter: blur(22px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    0 28px 60px -30px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.landing-page .hero-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.landing-page .hero-card-meta {
+  margin-bottom: 4px;
+}
+
+.landing-page .hero-card-date {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+}
+
+.landing-page .hero-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #86efac;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(134, 239, 172, 0.28);
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.landing-page .hero-live::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.16);
+}
+
+.landing-page .hero-card-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.14);
+  margin: 18px 0;
+}
+
+.landing-page .hero-card-user {
+  margin-bottom: 18px;
+}
+
+.landing-page .hero-card-cta {
+  font-size: 13px;
+  padding: 11px 18px;
+}
+
+/* Animasi masuk hero (halus, sekali jalan) */
+@keyframes lpHeroRise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.landing-page .hero-ref-category,
+.landing-page .hero-ref-title,
+.landing-page .hero-ref-desc,
+.landing-page .hero-ref-actions,
+.landing-page .hero-ref-card {
+  animation: lpHeroRise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.landing-page .hero-ref-category { animation-delay: 0.05s; }
+.landing-page .hero-ref-title { animation-delay: 0.12s; }
+.landing-page .hero-ref-desc { animation-delay: 0.19s; }
+.landing-page .hero-ref-actions { animation-delay: 0.26s; }
+.landing-page .hero-ref-card { animation-delay: 0.22s; }
+
+/* --------------------------------------------------------------------------
+   REVEAL SAAT SCROLL — hanya opacity & geser kecil (sedikit saja)
+   -------------------------------------------------------------------------- */
+.has-reveal [data-reveal] {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--delay, 0ms);
+  will-change: opacity, transform;
+}
+
+.has-reveal [data-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --------------------------------------------------------------------------
+   STATISTIK
+   -------------------------------------------------------------------------- */
+.landing-page .stats-grid {
+  position: relative;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin: -70px 0 68px;
+}
+
+.landing-page .stat-card {
+  padding: 20px 18px;
+  border-radius: 16px;
+  text-align: left;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.landing-page .stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 22px 40px -24px rgba(11, 58, 107, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.landing-page .stat-num {
+  font-size: 26px;
+  line-height: 1.15;
+  letter-spacing: -0.6px;
+  color: #0b2a4a;
+  font-variant-numeric: tabular-nums;
+}
+
+.landing-page .stat-label {
+  margin-top: 3px;
+  font-size: 11.5px;
+  color: #5b7189;
+}
+
+/* --------------------------------------------------------------------------
+   SECTION HEADER
+   -------------------------------------------------------------------------- */
+.landing-page .section {
+  margin-bottom: 76px;
+}
+
+.landing-page .section-head {
+  max-width: 620px;
+  margin-bottom: 26px;
+}
+
+.landing-page .section-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #2563eb;
+  margin-bottom: 9px;
+}
+
+.landing-page .section-kicker::before {
+  content: '';
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: #2563eb;
+}
+
+.landing-page .section-title {
+  font-size: clamp(22px, 2.4vw, 29px);
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  color: #0b2a4a;
+}
+
+.landing-page .section-desc {
+  margin-top: 8px;
+  font-size: 13.5px;
+  color: #5b7189;
+}
+
+/* --------------------------------------------------------------------------
+   PETINGGI
+   -------------------------------------------------------------------------- */
+.landing-page .leadership-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.landing-page .leader-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+}
+
+.landing-page .leader-card:hover,
+.landing-page .leader-card:focus-visible {
+  transform: translateY(-5px);
+  box-shadow:
+    0 26px 48px -26px rgba(11, 58, 107, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  outline: none;
+}
+
+.landing-page .leader-img-wrapper {
+  position: relative;
+  height: 238px;
+  background: rgba(203, 213, 225, 0.35);
+  overflow: hidden;
+}
+
+.landing-page .leader-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.landing-page .leader-card:hover .leader-img-wrapper img {
+  transform: scale(1.04);
+}
+
+.landing-page .leader-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(11, 42, 74, 0.5);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 5px 11px;
+}
+
+.landing-page .leader-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 18px 20px 20px;
+}
+
+.landing-page .leader-name {
+  font-size: 16px;
+  line-height: 1.35;
+  letter-spacing: -0.2px;
+  margin-bottom: 4px;
+}
+
+.landing-page .leader-role {
+  font-size: 12px;
+  margin-bottom: 14px;
+  color: #475569;
+}
+
+.landing-page .leader-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.landing-page .leader-more svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.25s ease;
+}
+
+.landing-page .leader-card:hover .leader-more svg {
+  transform: translateX(3px);
+}
+
+/* --------------------------------------------------------------------------
+   VISI MISI
+   -------------------------------------------------------------------------- */
+.landing-page .about-split {
+  display: grid;
+  grid-template-columns: 1fr 1.12fr;
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.landing-page .about-card {
+  padding: 26px;
+  border-radius: 18px;
+}
+
+.landing-page .card-eyebrow {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #2563eb;
+  margin-bottom: 13px;
+}
+
+.landing-page .visi-quote {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.7;
+  color: #1d3a5c;
+  letter-spacing: -0.2px;
+}
+
+.landing-page .misi-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.landing-page .misi-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #33475f;
+}
+
+.landing-page .misi-list .n {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.landing-page .values-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  margin-top: 18px;
+  padding: 20px 26px;
+  border-radius: 18px;
+}
+
+.landing-page .values-card .values-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.landing-page .values-card .card-eyebrow {
+  margin: 0;
+}
+
+.landing-page .values-note {
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+.landing-page .values-flex {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+}
+
+.landing-page .value-badge {
+  padding: 5px 13px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #3a5068;
+}
+
+.landing-page .wilayah-note {
+  width: 100%;
+  margin: 2px 0 0;
+  padding-top: 13px;
+  border-top: 1px solid rgba(11, 58, 107, 0.08);
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+.landing-page .wilayah-note b {
+  color: #3a5068;
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   BERITA
+   -------------------------------------------------------------------------- */
+.landing-page .grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.landing-page .news-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  overflow: hidden;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+}
+
+.landing-page .news-card:hover {
+  transform: translateY(-5px);
+  box-shadow:
+    0 26px 48px -26px rgba(11, 58, 107, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.landing-page .news-card .card-img-wrap {
+  height: 178px;
+  overflow: hidden;
+}
+
+.landing-page .news-card .card-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.landing-page .news-card:hover .card-img-wrap img {
+  transform: scale(1.04);
+}
+
+.landing-page .news-card .in {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 18px 20px 20px;
+}
+
+.landing-page .news-card .date {
+  margin-bottom: 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #71859c;
+}
+
+.landing-page .news-card h3 {
+  margin-bottom: 8px;
+  font-size: 15.5px;
+  line-height: 1.4;
+  letter-spacing: -0.2px;
+  color: #0b2a4a;
+}
+
+.landing-page .news-card .excerpt {
+  flex: 1;
+  margin: 0 0 16px;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: #64748b;
+}
+
+.landing-page .card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.landing-page .card-link svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.25s ease;
+}
+
+.landing-page .card-link:hover {
+  text-decoration: none;
+  color: #1d4ed8;
+}
+
+.landing-page .news-card:hover .card-link svg {
+  transform: translateX(3px);
+}
+
+/* --------------------------------------------------------------------------
+   GALERI
+   -------------------------------------------------------------------------- */
+.landing-page .grid4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.landing-page .gallery-item {
+  position: relative;
+  height: 168px;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.landing-page .gallery-item.glass {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 12px 28px -22px rgba(11, 58, 107, 0.4);
+}
+
+.landing-page .gallery-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 36px -24px rgba(11, 58, 107, 0.55);
+}
+
+.landing-page .gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.landing-page .gallery-item:hover img {
+  transform: scale(1.05);
+}
+
+.landing-page .gallery-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 14px;
+  text-align: left;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: #ffffff;
+  background: linear-gradient(180deg, rgba(7, 25, 48, 0) 32%, rgba(7, 25, 48, 0.85) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.landing-page .gallery-item:hover .gallery-overlay {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   RESPONSIVE
+   -------------------------------------------------------------------------- */
+@media (max-width: 992px) {
+  .landing-page .hero-ref-grid {
+    grid-template-columns: 1fr;
+    gap: 34px;
+  }
+
+  .landing-page .hero-fullwidth-wrapper {
+    padding: 132px 0 150px;
+  }
+
+  .landing-page .hero-ref-desc {
+    max-width: 560px;
+  }
+
+  .landing-page .about-split {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-page .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    margin-bottom: 56px;
+  }
+
+  .landing-page .section {
+    margin-bottom: 60px;
+  }
+
+  .landing-page .leadership-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .landing-page .grid3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .landing-page .grid4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .landing-page .hero-fullwidth-wrapper {
+    padding: 116px 0 138px;
+  }
+
+  .landing-page .hero-ref-title {
+    letter-spacing: -0.8px;
+  }
+
+  .landing-page .stats-grid {
+    margin-top: -58px;
+    gap: 10px;
+  }
+
+  .landing-page .stat-card {
+    padding: 16px 14px;
+  }
+
+  .landing-page .stat-num {
+    font-size: 22px;
+  }
+
+  .landing-page .leader-img-wrapper {
+    height: 260px;
+  }
+
+  .landing-page .about-card,
+  .landing-page .values-card {
+    padding: 20px;
+  }
+
+  .landing-page .values-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .landing-page .gallery-item {
+    height: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-page .hero-ref-card {
+    padding: 20px;
+  }
+
+  .landing-page .hero-card-date {
+    font-size: 14.5px;
+  }
+
+  .landing-page .stats-grid {
+    margin-top: -50px;
+  }
+
+  .landing-page .stat-label {
+    font-size: 10.5px;
+  }
+
+  .landing-page .section-title {
+    font-size: 21px;
+  }
+
+  .landing-page .leadership-grid,
+  .landing-page .grid3,
+  .landing-page .grid4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Aksesibilitas: hormati preferensi kurangi gerakan
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .landing-page *,
+  .landing-page *::before,
+  .landing-page *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .has-reveal [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+}

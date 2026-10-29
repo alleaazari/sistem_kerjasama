@@ -447,6 +447,37 @@ Route::middleware('admin.only')->group(function () use (
     Route::view('/tentang', 'admin.tentang')->name('admin.tentang');
 
     Route::post('/tentang', function (Request $request) {
+        $request->validate([
+            'p_nama.*'      => 'required|string|max:255',
+            'p_jabatan.*'   => 'required|string|max:255',
+            'p_badge.*'     => 'required|string|max:255',
+            'p_foto.*'      => 'nullable|image|max:2048',
+            'p_desc.*'      => 'required|string',
+            'visi'          => 'required|string',
+        ]);
+
+        $petinggi = [];
+        $count = count($request->input('p_nama', []));
+
+        for ($i = 0; $i < $count; $i++) {
+            $fotoBase64 = null;
+            if ($request->hasFile('p_foto') && isset($request->file('p_foto')[$i]) && $request->file('p_foto')[$i]->isValid()) {
+                $file = $request->file('p_foto')[$i];
+                $fotoBase64 = 'data:' . $file->getMimeType() . ';base64,' . base64_encode(file_get_contents($file->getRealPath()));
+            }
+
+            $petinggi[] = [
+                'nama'   => $request->input('p_nama')[$i],
+                'jabatan'=> $request->input('p_jabatan')[$i],
+                'badge'  => $request->input('p_badge')[$i],
+                'foto'   => $fotoBase64,
+                'desc'   => $request->input('p_desc')[$i],
+            ];
+        }
+
+        session(['admin_petinggi' => $petinggi]);
+        session(['admin_visi' => $request->input('visi')]);
+
         return back()->with('ok', 'Profil Petinggi & Visi Misi Komdigi berhasil diperbarui.');
     })->name('admin.tentang.update');
 
