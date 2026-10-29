@@ -1,0 +1,123 @@
+/* ==========================================================================
+   BASE - reset ringan, tipografi dasar, fokus keyboard, utilitas aksesibilitas
+   --------------------------------------------------------------------------
+   Dimuat SETELAH tokens.css dan SEBELUM style.css area.
+   Spesifisitas sengaja rendah (selector elemen/kelas tunggal) supaya aturan
+   lama di style.css area dan components.css tetap menang bila bertabrakan.
+   Tidak ada deklarasi !important, kecuali blok prefers-reduced-motion di
+   bagian akhir (wajib agar animasi benar-benar berhenti).
+   ========================================================================== */
+
+/* ---- Reset ringan ------------------------------------------------------ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text);
+  background-color: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---- Tipografi dasar --------------------------------------------------- */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  line-height: var(--leading-tight);
+}
+
+p {
+  margin: 0 0 var(--space-3);
+}
+
+/* Teks bantuan/keterangan kecil tidak boleh di bawah 12px. */
+small {
+  font-size: var(--text-xs);
+}
+
+/* ---- Tautan ------------------------------------------------------------ */
+a {
+  color: var(--brand-600);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ---- Fokus keyboard yang jelas ----------------------------------------- */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* ---- Utilitas aksesibilitas ------------------------------------------- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: -48px;
+  left: var(--space-4);
+  z-index: 10000;
+  display: inline-block;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  background-color: var(--brand-700);
+  color: var(--bg);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+  top: var(--space-4);
+  color: var(--bg);
+  text-decoration: none;
+}
+
+/* ---- Hormati preferensi gerak minimal ---------------------------------- */
+/* Satu-satunya blok !important di file ini: tanpa !important, transisi/
+   animasi dari style.css area akan tetap berjalan. Blok ini hanya aktif saat
+   pengguna memilih "kurangi gerakan" di sistem operasinya. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

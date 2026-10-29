@@ -4,12 +4,17 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title') - Portal Kerja Sama KEMKOMDIGI</title>
+    {{-- Font dimuat SEKALI di sini: Plus Jakarta Sans (heading) + Inter (body). --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('assets/user/css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    {{-- Urutan muat: tokens -> base -> style area -> components -> landing --}}
+    <x-asset path="assets/shared/css/tokens.css" />
+    <x-asset path="assets/shared/css/base.css" />
+    <x-asset path="assets/user/css/style.css" />
+    <x-asset path="assets/shared/css/components.css" />
     @if (request()->routeIs('landing'))
-    <link rel="stylesheet" href="{{ asset('assets/user/css/landing.css') }}">
+    <x-asset path="assets/user/css/landing.css" />
     @endif
 </head>
 <body class="@yield('body_class')">

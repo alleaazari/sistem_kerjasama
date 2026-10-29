@@ -1,0 +1,101 @@
+/* ==========================================================================
+   DESIGN TOKENS - Sistem Kerjasama BBLSDM Komdigi Medan
+   --------------------------------------------------------------------------
+   Satu-satunya sumber nilai warna, radius, bayangan, spasi, dan tipografi.
+   File ini dimuat PALING AWAL (sebelum base.css dan style.css area) sehingga
+   seluruh lapisan di bawahnya dapat merujuk token yang sama.
+
+   Aturan: jangan menulis warna hardcode baru di style.css area, components.css,
+   atau landing.css. Gunakan token di bawah ini.
+   ========================================================================== */
+
+:root {
+  /* ---- Brand: biru Komdigi ------------------------------------------- */
+  --brand-900: #0A2540;
+  --brand-700: #12418A;
+  --brand-600: #1B5BBF;
+  --brand-500: #2F7BE5;
+  --brand-100: #E6EFFB;
+  --brand-50:  #F3F7FD;
+
+  /* ---- Aksen (dipakai hemat) ----------------------------------------- */
+  --accent-500: #F2B705;
+
+  /* ---- Netral --------------------------------------------------------- */
+  --bg:         #FFFFFF;
+  --surface:    #F5F7FA;
+  --text:       #1B2430;
+  --text-muted: #5B6675;
+  --border:     #DDE3EC;
+
+  /* ---- Status --------------------------------------------------------- */
+  --success: #1E8E5A;
+  --warning: #C77700;
+  --danger:  #C62F3A;
+  --info:    #1B5BBF;
+
+  /* ---- Radius --------------------------------------------------------- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  /* ---- Bayangan ------------------------------------------------------- */
+  --shadow-sm: 0 1px 2px rgba(10, 37, 64, 0.06), 0 1px 3px rgba(10, 37, 64, 0.08);
+  --shadow-md: 0 4px 12px rgba(10, 37, 64, 0.10), 0 2px 4px rgba(10, 37, 64, 0.06);
+
+  /* ---- Skala spasi (basis 4px) --------------------------------------- */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ---- Tipografi ------------------------------------------------------ */
+  --font-heading: "Plus Jakarta Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-body:    "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  --text-xs:   12px;
+  --text-sm:   14px;
+  --text-base: 16px;
+  --text-lg:   18px;
+  --text-xl:   20px;
+  --text-2xl:  24px;
+  --text-3xl:  30px;
+  --text-4xl:  36px;
+
+  --leading-tight:  1.25;
+  --leading-normal: 1.6;
+
+  --weight-regular:   400;
+  --weight-medium:    500;
+  --weight-semibold:  600;
+  --weight-bold:      700;
+  --weight-extrabold: 800;
+
+  /* ---- Fokus keyboard ------------------------------------------------- */
+  --focus-ring-width:  3px;
+  --focus-ring-color:  var(--brand-500);
+  --focus-ring-offset: 2px;
+
+  /* ------------------------------------------------------------------
+     Alias kompatibilitas untuk CSS lama (admin/style.css, user/style.css,
+     components.css, landing.css). Nilainya SELALU merujuk token di atas,
+     jadi mengganti token otomatis mengubah seluruh area.
+     ------------------------------------------------------------------ */
+  --primary:       var(--brand-700);
+  --primary-hover: var(--brand-900);
+  --accent:        var(--brand-600);
+  --bg-main:       var(--surface);
+  --card-bg:       var(--bg);
+  --text-main:     var(--text);
+  --border-color:  var(--border);
+
+  /* Ukuran radius lama yang belum setara token (dipertahankan agar layout
+     tidak bergeser). */
+  --radius: 8px;
+}
