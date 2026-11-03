@@ -46,7 +46,7 @@ K1. Fitur yang tampak belum selesai (upload foto di admin/tentang, modal profil 
 K2. Elemen yang tidak punya backend (perpanjangan tanggal di mitra_draf, "Unduh Draf AI", "Perpanjang Masa Aktif", generator AI di user/draf): jangan tampilkan toast/alert sukses palsu. Jadikan nonaktif dengan label "Segera hadir", kecuali dikerjakan di Track B.
 K3. Target browser: versi stabil terbaru dan satu versi sebelumnya dari Chrome, Edge, Firefox, Safari iOS, Chrome Android. Perangkat terkecil: lebar 360px.
 K4. Starter kit React/Inertia: jangan disentuh pada tahap UI.
-K5. Angka statis (statistik landing 500+/1.2M+/99.8%, "365 Hari Tersisa", progress 85%, data pimpinan hardcoded): pindahkan ke satu file config (mis. config/tampilan_demo.php) dengan komentar jelas bahwa ini data contoh, supaya mudah diganti dengan data nyata. Jangan mengarang data baru.
+K5. Angka dan status masa kerjasama (sisa hari, persentase masa berjalan, status Aktif/Segera Berakhir/Berakhir, data pimpinan hardcoded) TIDAK boleh hardcode di view: hitung dari tanggal berakhir dan tanggal mulai. Ambang "segera berakhir" = 90 hari, disimpan di SATU tempat (konfigurasi) agar mudah diganti. Data contoh kerjasama dipusatkan di satu sumber (config atau satu kelas pembantu) dan dipakai bersama oleh sisi mitra dan admin; tanggal contoh dibuat relatif terhadap hari ini supaya kondisi aktif/kuning/merah selalu bisa didemonstrasikan. Jangan mengarang data nyata; beri komentar jelas "data contoh".
 K6. jabatan_pic, validasi bidang, min:30, dan route perpanjangan: BUKAN bagian tahap UI (lihat Track B).
 
 # Standar desain web pemerintah (jobdesk front-end)
