@@ -230,7 +230,8 @@ Route::post('/login', function (Request $request) {
         if ($idCocok && hash_equals($acc['password'], $pw)) {
             $request->session()->regenerate();
             session(['admin_auth' => ['name' => $acc['name'], 'role' => $acc['role']]]);
-            return redirect()->route('admin.inbox');
+            // Kembali ke halaman yang tadi diminta (mis. link lama), jatuh ke inbox bila tidak ada.
+            return redirect()->intended(route('admin.inbox'));
         }
     }
 

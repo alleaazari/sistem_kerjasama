@@ -150,6 +150,22 @@ input[type=text]:focus, input[type=email]:focus, input[type=password]:focus, sel
   cursor: pointer;
 }
 
+/* Pemberitahuan singkat di halaman login (mis. sesi berakhir). */
+.login-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--brand-50);
+  border: 1px solid var(--brand-100);
+  border-left: 3px solid var(--brand-600);
+  border-radius: var(--radius);
+  color: var(--text-main);
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 table.data { width: 100%; border-collapse: collapse; }
 table.data th {
   background: var(--surface);

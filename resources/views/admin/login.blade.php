@@ -43,6 +43,12 @@
             </div>
             @endif
 
+            @if (session('info'))
+                <div class="login-notice" role="status">
+                    <span>{{ session('info') }}</span>
+                </div>
+            @endif
+
             @if (session('login_error'))
                 <div style="background:#fee2e2;color:#b91c1c;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:14px;">
                     {{ session('login_error') }}
