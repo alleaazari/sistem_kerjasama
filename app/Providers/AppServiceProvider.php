@@ -3,9 +3,13 @@
 namespace App\Providers;
 
 use Carbon\CarbonImmutable;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
@@ -24,6 +28,18 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configureRateLimiters();
+    }
+
+    /**
+     * Limiter bernama untuk route publik yang rawan spam/DoS.
+     */
+    protected function configureRateLimiters(): void
+    {
+        RateLimiter::for('pengajuan', fn (Request $request) => Limit::perHour(5)->by($request->ip()));
+        RateLimiter::for('mitra-login', fn (Request $request) => Limit::perMinute(5)->by(Str::lower((string) $request->input('username')).'|'.$request->ip()));
+        RateLimiter::for('pddikti', fn (Request $request) => Limit::perMinute(30)->by($request->ip()));
+        RateLimiter::for('mitra-profile', fn (Request $request) => Limit::perMinute(10)->by($request->ip()));
     }
 
     /**

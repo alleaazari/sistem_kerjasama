@@ -6,22 +6,15 @@
     <div class="box">
         <h2>Masuk Portal Mitra Komdigi</h2>
         <div class="in">
-            <!-- DEMO LOGIN QUICK FILL -->
-            <div class="demo-box">
-                <h4>Akun Demo Mitra (Klik untuk Isi Otomatis)</h4>
-                <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Username: <b>user1</b> | Password: <b>123456</b></p>
-                <button type="button" class="demo-btn" onclick="fillDemo('user1', '123456')" style="width:100%;">Gunakan Akun Demo (user1 / 123456)</button>
-            </div>
-
             <form method="POST" action="{{ route('login.post') }}">
                 @csrf
                 <div class="row">
                     <label for="username">Username / Email Instansi</label>
-                    <input type="text" id="username" name="username" placeholder="Masukkan username" required value="user1">
+                    <input type="text" id="username" name="username" placeholder="Masukkan username" autocomplete="username" required>
                 </div>
                 <div class="row">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Masukkan password" required value="123456">
+                    <input type="password" id="password" name="password" placeholder="Masukkan password" autocomplete="current-password" required>
                 </div>
                 <div style="margin-top:16px;">
                     <button class="btn" style="width:100%;padding:10px;">Masuk ke Dashboard Mitra</button>
@@ -34,11 +27,4 @@
         </div>
     </div>
 </div>
-
-<script>
-function fillDemo(user, pass) {
-    document.getElementById('username').value = user;
-    document.getElementById('password').value = pass;
-}
-</script>
 @endsection

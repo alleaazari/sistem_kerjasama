@@ -30,16 +30,13 @@
         <h2>Masuk Panel Admin</h2>
         <div class="in">
 
-            {{-- AKUN DEMO: hanya tampil saat APP_DEBUG=true (lokal/presentasi). Otomatis hilang di produksi. --}}
+            {{-- PETUNJUK DEV: hanya tampil saat APP_DEBUG=true (lokal). Tidak memuat kredensial nyata. --}}
             @if(config('app.debug'))
             <div class="demo-box">
-                <h4>Akun Demo (Klik untuk Isi Otomatis)</h4>
+                <h4>Catatan Pengembangan</h4>
                 <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">
-                    Admin: <b>admin</b> / <b>Admin#2026</b><br>
-                    Developer: <b>developer</b> / <b>Dev#2026</b>
+                    Kredensial akun demo tidak ditampilkan di UI. Lihat berkas konfigurasi server saat pengembangan.
                 </p>
-                <button type="button" class="demo-btn" onclick="fillLogin('admin', 'Admin#2026')" style="width:100%;margin-bottom:6px;">Gunakan Akun Demo Admin</button>
-                <button type="button" class="demo-btn" onclick="fillLogin('developer', 'Dev#2026')" style="width:100%;">Gunakan Akun Demo Developer</button>
             </div>
             @endif
 
@@ -76,12 +73,5 @@
         </div>
     </div>
 </div>
-
-<script>
-function fillLogin(u, p) {
-    document.getElementById('u').value = u;
-    document.getElementById('p').value = p;
-}
-</script>
 </body>
 </html>

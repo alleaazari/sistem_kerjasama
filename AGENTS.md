@@ -1,71 +1,211 @@
-# Konteks proyek
-Aplikasi "Sistem Kerjasama" BBLSDM Komdigi Medan (web instansi pemerintah).
-Stack: Laravel + Blade. UI aktif memakai CSS statis di public/assets/{admin,user}/css/.
-TIDAK ada Tailwind di UI aktif. Starter kit React/Inertia/Vite di repo TIDAK dipakai: jangan disentuh, jangan dihapus.
-Tujuan pekerjaan sekarang: perbaikan UI agar responsive, profesional, rapi, user friendly. Bukan penambahan fitur.
+# AGENTS.md — Aturan & Batasan untuk OpenCode
 
-# Arah desain
-- Terinspirasi pola portal layanan pemerintah (layanan di depan, bagian berjudul + "Lihat Semua", kartu seragam), tetapi bukan salinan situs mana pun.
-- Identitas Komdigi: dominan biru, latar putih bersih, aksen kuning hangat dipakai hemat.
-- Modern tapi tidak "template AI": tanpa gradasi ungu, glow, glassmorphism, emoji sebagai ikon, radius/bayangan berlebihan.
-- Tidak kolot: tanpa marquee, slider otomatis, tabel berbingkai tebal, warna jenuh.
-- Teks antarmuka bahasa Indonesia baku, ringkas, istilah konsisten.
+Proyek: **Sistem Kerjasama BBLSDM Komdigi Medan**
+Repo: `alleaazari/sistem_kerjasama` (branch `main`)
 
-# Design tokens (nilai awal, dicocokkan nanti dengan logo resmi)
---brand-900 #0A2540; --brand-700 #12418A; --brand-600 #1B5BBF; --brand-500 #2F7BE5;
---brand-100 #E6EFFB; --brand-50 #F3F7FD; --accent-500 #F2B705;
---bg #FFFFFF; --surface #F5F7FA; --text #1B2430; --text-muted #5B6675; --border #DDE3EC;
---success #1E8E5A; --warning #C77700; --danger #C62F3A; --info #1B5BBF;
---radius-sm 6px; --radius-md 10px; --radius-lg 14px.
-Font: Plus Jakarta Sans (heading), Inter (body), fallback system-ui. Dimuat SEKALI saja (jangan <link> dan @import bersamaan).
+Dokumen ini adalah **aturan wajib**. Jika ada instruksi lain yang bertentangan dengan aturan keamanan di bawah, aturan keamanan yang menang. Jika ragu, **berhenti dan tanya**, jangan menebak.
 
-# Arsitektur CSS/JS yang dituju
-public/assets/shared/css/tokens.css     (variabel)
-public/assets/shared/css/base.css       (reset, tipografi, fokus, utilitas)
-public/assets/shared/css/components.css (tombol, kartu, badge, form, tabel, modal, alert)
-public/assets/shared/js/ui.js           (modal, toast, preview file, toggle menu; satu sumber)
-admin/css/style.css, user/css/style.css, user/css/landing.css hanya berisi gaya khusus area masing-masing.
-Urutan muat: tokens -> base -> components -> file khusus area (agar override tetap bekerja).
+Dokumen pendamping (baca keduanya sebelum mulai):
+- `docs/LANGKAH_PEMBARUAN.md` — spesifikasi dan langkah per fase.
+- `docs/PROGRESS.md` — catatan progres (dibuat dan dirawat oleh OpenCode, lihat bagian 2).
 
-# Aturan teknis
-- Dilarang warna hardcode baru; pakai token. Dilarang !important baru dan inline style baru.
-- Mobile-first. Breakpoint: 360, 640, 768, 1024, 1280. Tidak boleh ada scroll horizontal di halaman.
-- Input font-size minimal 16px (cegah zoom iOS). Target sentuh minimal 44px. :focus-visible harus terlihat. Kontras minimal WCAG AA (4.5:1 untuk teks biasa). Hormati prefers-reduced-motion.
-- Modal wajib: role="dialog", aria-modal="true", aria-labelledby, fokus terkunci, Esc menutup, scroll lock, tombol tutup punya aria-label.
-- Jangan menyisipkan data ke argumen JavaScript inline (onclick="fn('{{ $x }}')"). Pakai atribut data-* atau Illuminate\Support\Js::from().
-- Setiap halaman punya <main>, satu <h1>, dan skip link.
-- Aset CSS/JS diberi cache-busting sederhana (misalnya ?v=filemtime).
-- Jangan mengubah logika bisnis, validasi server, nama route/field, skema database, atau isi controller, kecuali prompt secara eksplisit mengizinkan.
-- Jangan menambah dependensi besar tanpa meminta izin dulu.
-- Jangan menyentuh file di luar cakupan prompt. Jangan mengubah composer.json, composer.lock, package.json, dan .env.
-- Verifikasi sebelum memperbaiki: nomor baris dan klaim dari audit harus dicek ulang di kode sebelum dipercaya.
-- Setelah tiap tugas, jelaskan: file apa yang diubah/dibuat, apa yang berubah dan mengapa, cara mengujinya, dan hal yang sengaja tidak disentuh.
+---
 
-# Keputusan proyek (EDIT sesuai kenyataan)
-K1. Fitur yang tampak belum selesai (upload foto di admin/tentang, modal profil di landing): anggap belum selesai. Perbaiki hanya bug yang jelas (error JS, teks "undefined"); jangan menambah fitur.
-K2. Elemen yang tidak punya backend (perpanjangan tanggal di mitra_draf, "Unduh Draf AI", "Perpanjang Masa Aktif", generator AI di user/draf): jangan tampilkan toast/alert sukses palsu. Jadikan nonaktif dengan label "Segera hadir", kecuali dikerjakan di Track B.
-K3. Target browser: versi stabil terbaru dan satu versi sebelumnya dari Chrome, Edge, Firefox, Safari iOS, Chrome Android. Perangkat terkecil: lebar 360px.
-K4. Starter kit React/Inertia: jangan disentuh pada tahap UI.
-K5. Angka dan status masa kerjasama (sisa hari, persentase masa berjalan, status Aktif/Segera Berakhir/Berakhir, data pimpinan hardcoded) TIDAK boleh hardcode di view: hitung dari tanggal berakhir dan tanggal mulai. Ambang "segera berakhir" = 90 hari, disimpan di SATU tempat (konfigurasi) agar mudah diganti. Data contoh kerjasama dipusatkan di satu sumber (config atau satu kelas pembantu) dan dipakai bersama oleh sisi mitra dan admin; tanggal contoh dibuat relatif terhadap hari ini supaya kondisi aktif/kuning/merah selalu bisa didemonstrasikan. Jangan mengarang data nyata; beri komentar jelas "data contoh".
-K6. jabatan_pic, validasi bidang, min:30, dan route perpanjangan: BUKAN bagian tahap UI (lihat Track B).
+## 1. Konteks Teknis
 
-# Standar desain web pemerintah (jobdesk front-end)
-Tujuan: tampilan menarik dan rapi, TIDAK ramai, dan TIDAK terlihat seperti "AI slop".
+Berdasarkan struktur repo (`artisan`, `composer.json`, `routes/`, `resources/`, `vite.config.ts`, `tsconfig.json`, `components.json`, `phpstan.neon`, `pint.json`, `phpunit.xml`), proyek ini **diduga** adalah:
 
-Hindari "ramai":
-- Maksimal satu tombol primer per layar/bagian. Maksimal 3 warna non-netral per halaman. Maksimal 6 ukuran dan 3 berat huruf per area.
-- Tanpa ornamen dekoratif (blob, pola latar, gelombang), tanpa banner bergerak/slider otomatis/pop-up saat muat.
-- Hindari kartu bertumpuk dan border + bayangan sekaligus. Paragraf landing maksimal 3-4 baris, satu ide per bagian.
-- Animasi hanya pada hero, judul bagian, kartu, dan angka statistik.
+- Backend: Laravel (PHP) + Eloquent
+- Front-end: Inertia.js + React + TypeScript + Vite
+- UI: Tailwind CSS + shadcn/ui (`components.json`)
+- Kualitas kode: Laravel Pint, PHPStan, PHPUnit/Pest
+- Package manager JS: npm (`package-lock.json`) — jangan mencampur dengan pnpm/yarn
 
-Hindari "AI slop":
-- Tanpa gradasi ungu/biru-pink, glow, glassmorphism, blur berlebihan.
-- Tanpa emoji sebagai ikon, tanpa ikon di lingkaran berwarna pada setiap baris, tanpa tiga kartu identik "ikon + judul + deskripsi" di setiap bagian.
-- Radius 6-14px, bayangan tipis. Teks bacaan rata kiri.
-- Tanpa tagline klise ("Solusi masa depan", "Inovasi tanpa batas"), tanpa klaim/statistik tak bersumber, tanpa teks pengisi.
+**Ini baru dugaan.** Langkah pertama WAJIB memverifikasinya dengan membaca `composer.json`, `package.json`, `routes/*.php`, `resources/js/**`, `app/**`, dan `database/migrations/**`. Jika ada yang berbeda, ikuti kenyataan di repo, bukan dugaan ini.
 
-Wajib ada: identitas instansi jelas (logo resmi tanpa diubah, nama lengkap, alamat dan kontak di footer), kontras AA, teks isi minimal 16px, bahasa Indonesia baku, tombol berlabel kata kerja jelas, fitur yang belum jadi tidak berpura-pura jadi.
+Peran sistem: `superadmin`, `admin_kerjasama`, `mitra`.
 
-Rubrik penilaian (0/1/2 per kriteria): 1 hierarki visual, 2 ketenangan, 3 konsistensi komponen, 4 tipografi, 5 warna, 6 tata letak dan spasi, 7 identitas dan kepercayaan, 8 alur dan microcopy, 9 aksesibilitas visual, 10 bebas AI slop. Target tiap halaman minimal 16 dari 20 tanpa kriteria bernilai 0.
+---
 
-Peran saya: front-end. Pekerjaan backend (otorisasi baru, penyimpanan data, migrasi, integrasi) tidak dibangun; catat sebagai "catatan untuk backend" di laporan.
+## 2. Aturan Kerja (Workflow)
+
+1. **Baca dulu, tulis kemudian.** Sebelum mengubah apa pun, audit struktur repo dan pola kode yang sudah ada (penamaan, layout, komponen, gaya route, gaya validasi). Ikuti pola yang ada.
+2. **Satu fase per giliran.** Kerjakan fase sesuai `docs/LANGKAH_PEMBARUAN.md` secara berurutan. Setelah satu fase selesai: jalankan pengecekan (bagian 7), laporkan, lalu **berhenti dan tunggu konfirmasi** sebelum fase berikutnya.
+3. **Tampilkan rencana sebelum eksekusi.** Di awal tiap fase, tulis daftar file yang akan dibuat/diubah dan alasannya. Tunggu persetujuan jika fase menyentuh database, autentikasi, atau upload file.
+4. **Laporkan hanya file yang berubah.** Di akhir tiap fase, tulis daftar: `DIBUAT`, `DIUBAH`, `DIHAPUS` (path lengkap) dan ringkasan satu baris per file. Jangan menulis ulang seluruh proyek dan jangan mengubah file yang tidak perlu.
+5. **Rawat `docs/PROGRESS.md`.** Isi: fase yang selesai, file yang berubah, keputusan yang diambil, hal yang masih menunggu konfirmasi, dan masalah yang belum beres. Perbarui di akhir setiap fase agar sesi berikutnya bisa melanjutkan tanpa konteks percakapan.
+6. **Perubahan minimal.** Jangan refactor, rename, atau memformat ulang kode di luar cakupan tugas.
+7. **Jangan menambah fitur di luar spesifikasi.** Jika menurut Anda ada fitur penting yang kurang, tulis sebagai saran di `docs/PROGRESS.md`, jangan langsung dibuat.
+
+---
+
+## 3. Batasan Keras (Dilarang Tanpa Persetujuan Eksplisit)
+
+- Menjalankan perintah destruktif: `php artisan migrate:fresh`, `migrate:refresh`, `db:wipe`, `rm -rf`, `git reset --hard`, `git push --force`, `git clean -fd`, drop tabel/kolom berisi data.
+- Mengubah, membaca isinya untuk ditampilkan, atau meng-commit file `.env`. Hanya `.env.example` yang boleh diubah (isi placeholder, tanpa nilai rahasia nyata).
+- Menulis API key, password, token, atau kredensial ke dalam kode, log, komentar, test, atau dokumentasi.
+- Menambah dependency baru (Composer atau npm) tanpa menyebut nama paket, alasan, dan menunggu persetujuan. Prioritaskan fitur bawaan Laravel dan komponen shadcn/ui yang sudah ada.
+- Meng-commit langsung ke `main`. Kerjakan di branch (lihat bagian 8).
+- Menonaktifkan proteksi bawaan: CSRF, `$fillable`/mass-assignment guard, middleware `auth`/`verified`, atau validasi.
+- Mengakses jaringan eksternal selain registry paket (Composer/npm) dan endpoint yang disetujui user.
+- Mengirim email, WhatsApp, atau panggilan API AI nyata saat pengembangan. Gunakan driver `log`/fake sampai user menyetujui konfigurasi produksi.
+
+---
+
+## 4. Hal yang HARUS Dikonfirmasi ke User (Jangan Menebak)
+
+Jika salah satu di bawah ini dibutuhkan fase yang sedang dikerjakan dan belum ada jawabannya di `docs/PROGRESS.md`, **tanyakan dulu**:
+
+1. Endpoint dan format API data perguruan tinggi (untuk pencarian otomatis).
+2. Penyedia pengiriman WhatsApp (jika tidak ada, buat antarmuka dengan driver `log`).
+3. Penyedia AI untuk generator MoU dan model yang dipakai.
+4. Pilihan "Bidang kerjasama", "Jenis instansi", dan daftar lain yang pilihannya belum ditentukan di spesifikasi.
+5. Durasi default masa aktif kerjasama dan aturan perpanjangan.
+6. Layanan CAPTCHA: Cloudflare Turnstile atau Google reCAPTCHA v3.
+7. Konfigurasi SMTP/email pengirim.
+8. Apakah akun mitra yang baru dibuat wajib mengganti password saat login pertama (sangat disarankan, lihat 5.8).
+
+---
+
+## 5. Aturan Keamanan (Wajib, Tidak Bisa Ditawar)
+
+Setiap fitur baru harus lolos checklist ini sebelum dianggap selesai. **Validasi di front-end hanya untuk kenyamanan pengguna; keamanan sebenarnya selalu di backend.**
+
+### 5.1 Celah Unggah Dokumen (File Upload)
+
+Backend (utama):
+- Validasi lewat Form Request: ekstensi dan MIME type dibatasi `pdf` dan `docx` (tambah `doc` hanya jika spesifikasi mengizinkan), ukuran maksimum eksplisit (mis. `max:5120` KB).
+- Jangan percaya ekstensi/MIME dari klien. Periksa juga MIME sebenarnya dari isi file (mis. `finfo` / aturan `mimetypes`).
+- **Ganti nama file**: simpan dengan nama acak (UUID/hash) + ekstensi yang sudah divalidasi. Nama asli file hanya boleh disimpan sebagai metadata (kolom database), tidak pernah dipakai sebagai path.
+- **Simpan di luar web root**: gunakan disk privat (`storage/app/private`), **bukan** `public/` dan **bukan** disk yang di-symlink lewat `storage:link`.
+- Unduhan melalui controller yang melakukan otorisasi (Policy), dengan header `Content-Disposition` dan `X-Content-Type-Options: nosniff`. Tidak ada URL langsung ke file.
+- Jangan pernah meng-include, meng-eksekusi, atau menampilkan isi file upload sebagai HTML.
+
+Front-end (hanya UX):
+- Pada `<input type="file">` gunakan `accept=".pdf,.docx"` dan tampilkan batas ukuran. Pesan error harus jelas dalam Bahasa Indonesia.
+
+### 5.2 SQL Injection
+
+- Gunakan Eloquent atau Query Builder (parameter binding). **Dilarang** menyambung string SQL dengan input pengguna.
+- `DB::raw`, `whereRaw`, `orderByRaw`, `selectRaw` hanya boleh dengan binding parameter. Kolom untuk `orderBy` dan filter harus dari whitelist.
+- Semua input divalidasi dan disanitasi di Form Request (tipe, panjang, format) sebelum dipakai.
+- Front-end: gunakan tipe input HTML5 yang sesuai (`type="email"`, `type="tel"`, `required`, `maxLength`) hanya sebagai filter dasar.
+
+### 5.3 Cross-Site Scripting (XSS)
+
+- Output di-escape. React sudah melakukannya secara bawaan; **dilarang** memakai `dangerouslySetInnerHTML` kecuali konten sudah disanitasi ketat (mis. DOMPurify, dependency harus disetujui dulu) dan alasannya dicatat di kode.
+- Konten dari pengguna (berita, MoU, deskripsi, alasan pengajuan) diperlakukan sebagai teks biasa. Jangan merender HTML mentah dari database.
+- Cookie sesi: `http_only = true`, `same_site = lax` (atau `strict`), dan `secure = true` di produksi (`config/session.php` / `.env.example`).
+- Tambahkan middleware security headers: `Content-Security-Policy` (disesuaikan dengan kebutuhan Vite dan CAPTCHA), `X-Content-Type-Options: nosniff`, `X-Frame-Options`/`frame-ancestors`, `Referrer-Policy`.
+
+### 5.4 Broken Object Level Authorization (BOLA / IDOR)
+
+- Semua model yang ID-nya muncul di URL/API publik (pengajuan, mitra, MoU, dokumen, berita, galeri, notifikasi) memakai **UUID** sebagai route key, bukan ID berurutan.
+- Setiap aksi controller wajib memanggil `authorize()` atau Policy. Tidak boleh ada aksi yang hanya mengandalkan "route-nya disembunyikan".
+- Kueri data milik mitra **selalu di-scope** ke mitra yang sedang login (mis. `where('mitra_id', $request->user()->mitra->id)`). Jangan pernah menerima `user_id`/`mitra_id` dari input klien.
+- Mitra tidak boleh membaca, mengubah, atau mengunduh data/dokumen mitra lain. Wajib ada test yang membuktikannya (akses lintas mitra harus 403/404).
+- Pemisahan peran ditegakkan di middleware dan Policy (`superadmin`, `admin_kerjasama`, `mitra`), bukan hanya dengan menyembunyikan menu di UI.
+
+### 5.5 Spam & Denial of Service via Form
+
+- Terapkan **rate limiting** (`RateLimiter::for` + middleware `throttle:nama`) pada: pengajuan kerjasama, login (semua peran), permintaan reset password, permintaan perpanjangan, generate MoU AI, dan endpoint pencarian perguruan tinggi.
+- Pasang CAPTCHA (Turnstile/reCAPTCHA v3) pada form pengajuan. **Token wajib diverifikasi di server** (secret key hanya di `.env`). Verifikasi hanya di front-end tidak dihitung.
+- Batasi ukuran request, panjang field teks, dan jumlah file.
+
+### 5.6 Autentikasi & Sesi
+
+- Password selalu di-hash (hasher bawaan Laravel). Jangan menyimpan atau mencatat password plaintext di database, log, atau test.
+- Login mitra memakai URL terpisah dari Homepage (mis. `/mitra/login`) sesuai spesifikasi.
+- Regenerasi session saat login, invalidasi saat logout.
+- Pesan error login dan lupa password tidak boleh membocorkan apakah email/username terdaftar.
+- "Lupa password" mitra **bukan reset mandiri**: hanya membuat permintaan ke notifikasi Admin Kerjasama (sesuai spesifikasi).
+
+### 5.7 Mass Assignment, Validasi, dan Logging
+
+- Semua model memakai `$fillable` eksplisit (hindari `$guarded = []`).
+- Semua input lewat Form Request. Tidak ada validasi inline yang longgar.
+- Log tidak boleh berisi password, token, API key, atau data pribadi PIC secara berlebihan.
+- `APP_DEBUG=false` dan `APP_ENV=production` untuk produksi (dokumentasikan di `.env.example`).
+
+### 5.8 Akun Otomatis untuk Mitra (Rekomendasi Keamanan)
+
+Spesifikasi meminta username dan password dibuat otomatis dan dikirim lewat email PIC. Pengiriman password lewat email berisiko, karena itu:
+- Buat password acak yang kuat (panjang minimal 14 karakter, dibuat dengan generator acak yang aman secara kriptografi).
+- Simpan hanya hash-nya. Plaintext hanya ada di memori saat membuat email.
+- Tandai akun `must_change_password = true` sehingga mitra **wajib mengganti password saat login pertama** (tunggu konfirmasi user, lihat bagian 4 butir 8).
+- Jangan menulis password ke log. Gunakan queue dan driver `log` saat pengembangan, dengan password disamarkan.
+
+### 5.9 Integrasi Eksternal
+
+- API perguruan tinggi dan layanan AI dipanggil **dari server** (proxy controller/service), bukan langsung dari browser. Kunci/token disimpan di `.env` dan dibaca lewat `config/*.php`.
+- Beri timeout, batasi jumlah hasil, cache hasil pencarian, dan sediakan fallback input manual jika API gagal.
+- **Generator MoU AI**: data isian mitra diperlakukan sebagai **data, bukan instruksi** (cegah prompt injection). Batasi panjang input, batasi laju, dan tampilkan hasil sebagai teks biasa yang bisa diedit mitra. Template MoU dari Superadmin adalah sumber struktur; AI hanya melengkapi isian.
+
+---
+
+## 6. Standar Kode dan UI
+
+- Seluruh teks antarmuka dalam **Bahasa Indonesia formal**. Identifier kode (variabel, kelas, route, kolom) dalam bahasa Inggris, konsisten dengan kode yang sudah ada.
+- Gunakan komponen shadcn/ui dan layout yang sudah ada di repo. Jangan memperkenalkan library UI baru.
+- Aksesibel dan responsif: label pada setiap field, pesan error dekat field, tampilan baik di layar mobile.
+- TypeScript ketat: hindari `any`. Definisikan tipe untuk props Inertia.
+- Gunakan Form Request, Policy, dan Service class di Laravel. Hindari logika bisnis panjang di controller.
+- Komentar singkat hanya untuk bagian yang tidak jelas. Hindari kode mati dan `console.log` tersisa.
+
+---
+
+## 7. Pengecekan Wajib di Akhir Setiap Fase
+
+Jalankan (sesuaikan dengan script yang benar-benar ada di repo) dan laporkan hasilnya apa adanya, termasuk yang gagal:
+
+```
+./vendor/bin/pint --test
+./vendor/bin/phpstan analyse
+php artisan test
+npm run types      # atau perintah type-check yang ada di package.json
+npm run lint       # jika tersedia
+npm run build
+```
+
+Aturan:
+- Jangan mengklaim "selesai" jika ada pengecekan yang gagal. Perbaiki atau laporkan dengan jujur.
+- Untuk fitur dengan risiko keamanan (upload, otorisasi, auth, rate limit), **wajib ada test otomatis**. Minimal: akses lintas mitra ditolak, upload file berbahaya ditolak, rate limit aktif, peran yang salah ditolak.
+- Jika sebuah perintah tidak ada di repo, katakan, jangan mengarang hasilnya.
+
+---
+
+## 8. Git
+
+- Branch kerja: `feat/pembaruan-sistem-kerjasama` (atau satu branch per fase: `feat/fase-1-fondasi`, dst).
+- Commit kecil dan bermakna, format `tipe: deskripsi singkat` (mis. `feat: form pengajuan kerjasama`, `fix: scope kueri mitra`).
+- Jangan commit: `.env`, `storage/` isi, `vendor/`, `node_modules/`, file upload, dump database.
+- Jangan push; biarkan user yang melakukan push dan membuat pull request. (Perhatikan: repo sudah memiliki 1 pull request terbuka; jangan mengubahnya.)
+
+---
+
+## 9. Format Laporan di Akhir Setiap Fase
+
+```
+## Fase N — <nama>
+Status: selesai / sebagian / terblokir
+
+### File
+DIBUAT:
+- path — ringkasan
+DIUBAH:
+- path — ringkasan
+DIHAPUS:
+- path — alasan
+
+### Keamanan
+- [x]/[ ] Item checklist bagian 5 yang relevan, dengan bukti (nama test / baris kode)
+
+### Pengecekan
+- pint / phpstan / test / build: hasil
+
+### Menunggu konfirmasi user
+- ...
+
+### Langkah berikutnya
+- Fase N+1 (menunggu perintah "Lanjut")
+```

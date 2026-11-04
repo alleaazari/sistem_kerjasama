@@ -576,12 +576,14 @@
 }
 
 
-/* ============ FOOTER RESMI KOMDIGI (biru donker, sesuai komdigi.go.id) ============ */
+/* ============ FOOTER RESMI KOMDIGI (warna navy identik dengan navbar solid) ============ */
 .komdigi-footer {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  background: linear-gradient(180deg, #0b3d84 0%, #072c60 100%);
+  /* Sama persis dengan .main-navbar.scrolled / .navbar-solid di assets/user/css/style.css:
+     gradient navy atas -> bawah. Footer mengikuti navbar, bukan biru terang. */
+  background: linear-gradient(180deg, rgba(8, 28, 62, 0.98) 0%, rgba(4, 16, 38, 1) 100%);
   color: #dbe6f5;
   margin-top: auto;
   font-size: 14px;

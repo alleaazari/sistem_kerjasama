@@ -111,7 +111,7 @@
             <!-- MENU SISTEM & PORTAL -->
             <div class="sidebar-nav-group">
                 <span class="sidebar-group-title">Sistem &amp; Tautan Luar</span>
-                <a href="http://127.0.0.1:8000" target="_blank" rel="noopener noreferrer" class="sidebar-link">
+                <a href="{{ route('landing') }}" target="_blank" rel="noopener noreferrer" class="sidebar-link">
                     <div class="link-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>

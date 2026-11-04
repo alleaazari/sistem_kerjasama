@@ -80,7 +80,7 @@
 
             <div style="margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
                 <button type="button" class="btn" id="btn-simpan">Simpan Draf Dokumen</button>
-                <button type="button" class="btn btn2" onclick="alert('Draf Proposal Kerjasama AI berhasil dikirim ke Admin Komdigi untuk ditinjau!')">Kirim Langsung ke Admin Komdigi</button>
+                <button type="button" class="btn btn2" disabled style="opacity:0.7;cursor:not-allowed;">Kirim Langsung ke Admin Komdigi <span style="opacity:1;">Segera hadir</span></button>
                 <span id="msg" style="color:#15803d;font-weight:600;"></span>
             </div>
         </div>

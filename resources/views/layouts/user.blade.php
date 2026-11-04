@@ -183,7 +183,7 @@
 
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--border-color);">
                     <span style="font-size:12px;color:var(--text-muted);">Kerja sama aktif dalam program Transformasi Digital &amp; SDM Komdigi</span>
-                    <button type="button" class="btn btn2 btn-s" onclick="alert('Pengajuan perpanjangan masa aktif kerjasama telah dikirimkan ke Admin Komdigi!')">Perpanjang Masa Aktif</button>
+                    <button type="button" class="btn btn2 btn-s" disabled style="opacity:0.7;cursor:not-allowed;">Perpanjang Masa Aktif <span style="opacity:1;">Segera hadir</span></button>
                 </div>
             </div>
 

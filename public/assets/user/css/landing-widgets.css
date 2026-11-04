@@ -1,0 +1,413 @@
+/* ==========================================================================
+   Landing Widgets — CSS untuk 3 widget vanilla (dipair dengan landing-widgets.js)
+   1. .tt-cursor        : kursor typewriter judul hero
+   2. .line-sidebar     : daftar Visi & Misi (hover proximity + klik)
+   3. .depth-carousel   : galeri Jejak Kegiatan (kartu 3D berlapis)
+   Warna mengikuti token navy/cream landing (--lp-*).
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. TEXT TYPE — judul hero
+   -------------------------------------------------------------------------- */
+.landing-page .hero-ref-title {
+  display: block;
+}
+
+.landing-page .hero-ref-title #heroTypeText {
+  display: inline;
+}
+
+.landing-page .tt-cursor {
+  display: inline-block;
+  width: max(3px, 0.06em);
+  height: 0.95em;
+  margin-left: 0.14em;
+  vertical-align: -0.12em;
+  background: var(--lp-cream);
+  border-radius: 2px;
+  animation: ttBlink 1.1s steps(1) infinite;
+}
+
+@keyframes ttBlink {
+  0%, 55% { opacity: 1; }
+  56%, 100% { opacity: 0; }
+}
+
+/* Simpan tinggi agar baris tidak melompat saat teks diketik ulang.
+   Ukuran mengikuti font-size h1 (clamp di landing.css). */
+@media (max-width: 768px) {
+  .landing-page .hero-ref-title {
+    min-height: 2.3em;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2. LINE SIDEBAR — Visi & Misi
+   -------------------------------------------------------------------------- */
+.landing-page .vm-widget {
+  border-top: 1px solid var(--lp-line);
+}
+
+.landing-page .line-sidebar {
+  --accent-color: #0B1D33;   /* navy landing */
+  --text-color: #5C6B7A;     /* lp-muted */
+  --marker-color: rgba(11, 29, 51, 0.35);
+  --marker-length: 52px;
+  --marker-gap: 0px;
+  --tick-scale: 0.5;
+  --max-shift: 26px;
+  --item-gap: 22px;
+  --font-size: 1.05rem;
+  --smoothing: 100ms;
+
+  position: relative;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.landing-page .line-sidebar__list {
+  list-style: none;
+  margin: 0;
+  padding: 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--item-gap);
+  padding-left: calc(var(--marker-length) + var(--marker-gap));
+}
+
+.landing-page .line-sidebar__item {
+  position: relative;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+/* Perlebar area tangkap pointer */
+.landing-page .line-sidebar__item::before {
+  content: '';
+  position: absolute;
+  inset: -6px -48px;
+}
+
+.landing-page .line-sidebar__item:focus-visible {
+  outline: 2px solid var(--lp-navy);
+  outline-offset: 4px;
+}
+
+.landing-page .line-sidebar__label {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  font-size: var(--font-size);
+  line-height: 1.25;
+  font-family: var(--font-heading, 'Plus Jakarta Sans', sans-serif);
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: color-mix(in srgb, var(--accent-color) calc(var(--effect, 0) * 100%), var(--text-color));
+  transform: translateX(calc(var(--effect, 0) * var(--max-shift)));
+}
+
+.landing-page .line-sidebar__index {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  margin-right: 0.65rem;
+  font-size: 0.8em;
+  font-weight: 600;
+  opacity: calc(0.5 + var(--effect, 0) * 0.5);
+}
+
+.landing-page .line-sidebar__item.is-active .line-sidebar__text {
+  color: var(--accent-color);
+}
+
+.landing-page .line-sidebar__marker {
+  position: absolute;
+  top: 50%;
+  left: calc(-1 * var(--marker-length) - var(--marker-gap));
+  height: 2px;
+  width: var(--marker-length);
+  background-color: color-mix(in srgb, var(--accent-color) calc(var(--effect, 0) * 100%), var(--marker-color));
+  transform-origin: left center;
+  transform: translateY(-50%) scaleX(calc(0.7 + var(--effect, 0) * 0.5));
+  transition: height 0.25s ease;
+}
+
+/* Item aktif: marker menebal */
+.landing-page .line-sidebar__item.is-active .line-sidebar__marker {
+  height: 3px;
+  background-color: var(--accent-color);
+}
+
+/* Tick pendek di antara dua item */
+.landing-page .line-sidebar__item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: calc(100% + var(--item-gap) / 2);
+  left: calc(-1 * var(--marker-length) - var(--marker-gap));
+  height: 1px;
+  width: calc(var(--marker-length) * var(--tick-scale));
+  background-color: var(--marker-color);
+  opacity: 0.5;
+  transform: translateY(-50%);
+  transform-origin: left center;
+  transform: translateY(-50%) scaleX(calc(0.7 + var(--effect, 0) * 0.6));
+}
+
+/* Panel detail (isi visi/misi yang dipilih) */
+.landing-page .vm-detail {
+  margin-top: 22px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: var(--lp-cream-2);
+  border: 1px solid var(--lp-line);
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: var(--lp-muted);
+  max-width: 46ch;
+}
+
+@keyframes vmDetailIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.landing-page .vm-detail-swap {
+  animation: vmDetailIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* --------------------------------------------------------------------------
+   3. DEPTH CAROUSEL — Jejak Kegiatan
+   -------------------------------------------------------------------------- */
+.landing-page .lp-depth-wrap {
+  position: relative;
+  height: 520px;
+  border-radius: 18px;
+  overflow: hidden;
+  /* Latar navy lembut supaya kartu 3D menonjol di atas cream */
+  background:
+    radial-gradient(620px 420px at 72% 30%, rgba(11, 29, 51, 0.07), transparent 70%),
+    var(--lp-cream-2);
+  border: 1px solid var(--lp-line);
+}
+
+.landing-page .depth-carousel {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1400px;
+  perspective-origin: 50% 50%;
+  touch-action: pan-y;
+  outline: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+.landing-page .depth-carousel:active {
+  cursor: grabbing;
+}
+
+.landing-page .depth-carousel:focus-visible {
+  outline: 2px solid var(--lp-navy);
+  outline-offset: 4px;
+  border-radius: 18px;
+}
+
+.landing-page .depth-carousel__stage {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+.landing-page .depth-carousel__card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center center;
+  overflow: hidden;
+  background: #0B1D33;
+  box-shadow:
+    0 30px 60px -20px rgba(11, 29, 51, 0.55),
+    0 8px 20px -10px rgba(11, 29, 51, 0.35);
+  will-change: transform, opacity, filter;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+}
+
+.landing-page .depth-carousel__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+.landing-page .depth-carousel__tint {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+.landing-page .depth-carousel__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3000;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--lp-line-strong);
+  border-radius: 999px;
+  background: rgba(255, 253, 248, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--lp-navy);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.landing-page .depth-carousel__arrow:hover {
+  background: #ffffff;
+  border-color: var(--lp-navy);
+}
+
+.landing-page .depth-carousel__arrow:active {
+  transform: translateY(-50%) scale(0.94);
+}
+
+.landing-page .depth-carousel__arrow--prev { left: 18px; }
+.landing-page .depth-carousel__arrow--next { right: 18px; }
+
+.landing-page .depth-carousel__dots {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3000;
+  display: flex;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: rgba(255, 253, 248, 0.8);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid var(--lp-line);
+}
+
+.landing-page .depth-carousel__dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(11, 29, 51, 0.25);
+  cursor: pointer;
+  transition: width 0.25s ease, background 0.25s ease;
+}
+
+.landing-page .depth-carousel__dot.is-active {
+  width: 22px;
+  background: var(--lp-navy);
+}
+
+/* Keterangan foto aktif di bawah carousel */
+.landing-page .lp-depth-caption {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  z-index: 2900;
+  max-width: 260px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(255, 253, 248, 0.9);
+  border: 1px solid var(--lp-line);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--lp-navy);
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+/* --------------------------------------------------------------------------
+   RESPONSIF
+   -------------------------------------------------------------------------- */
+@media (max-width: 992px) {
+  .landing-page .lp-depth-wrap {
+    height: 460px;
+  }
+}
+
+@media (max-width: 768px) {
+  .landing-page .lp-depth-wrap {
+    height: 400px;
+  }
+
+  .landing-page .depth-carousel__arrow {
+    width: 38px;
+    height: 38px;
+  }
+
+  .landing-page .depth-carousel__arrow--prev { left: 12px; }
+  .landing-page .depth-carousel__arrow--next { right: 12px; }
+
+  .landing-page .depth-carousel__dots {
+    bottom: 14px;
+    padding: 7px 11px;
+  }
+
+  .landing-page .lp-depth-caption {
+    display: none;
+  }
+
+  /* Marker sidebar jangan menabrak tepi layar kecil */
+  .landing-page .line-sidebar__list {
+    padding-left: calc(var(--marker-length) + var(--marker-gap) - 10px);
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-page .lp-depth-wrap {
+    height: 340px;
+  }
+
+  .landing-page .line-sidebar {
+    --marker-length: 34px;
+    --item-gap: 18px;
+    --max-shift: 16px;
+    --font-size: 1rem;
+  }
+
+  .landing-page .vm-detail {
+    font-size: 13px;
+    padding: 14px 16px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Kurangi gerakan: matikan animasi widget, tampilkan apa adanya
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .landing-page .tt-cursor {
+    animation: none;
+    opacity: 1;
+  }
+
+  .landing-page .vm-detail-swap {
+    animation: none;
+  }
+
+  .landing-page .depth-carousel__card {
+    will-change: auto;
+  }
+
+  .landing-page .depth-carousel__arrow,
+  .landing-page .depth-carousel__dot {
+    transition: none;
+  }
+}

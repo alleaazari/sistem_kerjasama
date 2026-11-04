@@ -15,6 +15,7 @@
     <x-asset path="assets/shared/css/components.css" />
     @if (request()->routeIs('landing'))
     <x-asset path="assets/user/css/landing.css" />
+    <x-asset path="assets/user/css/landing-widgets.css" />
     @endif
 </head>
 <body class="@yield('body_class')">
@@ -24,6 +25,10 @@
 </div>
 
 @include('partials.footer-komdigi')
+
+@if (request()->routeIs('landing'))
+<x-asset path="assets/user/js/landing-widgets.js" type="js" />
+@endif
 
 <!-- Lightbox Modal for Image Zooming -->
 <div id="lightbox" class="lightbox" onclick="closeLightbox()">

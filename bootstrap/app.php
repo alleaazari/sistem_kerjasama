@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Middleware\AdminOnly;
+use App\Http\Middleware\HideAdmin;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,14 +14,19 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
-    Route::middleware(['web', \App\Http\Middleware\HideAdmin::class])
-        ->prefix(config('admin_demo.path'))
-        ->group(base_path('routes/admin.php'));
-    },
+            Route::middleware(['web', HideAdmin::class])
+                ->prefix(config('admin_demo.path'))
+                ->group(base_path('routes/admin.php'));
+        },
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'admin.only' => AdminOnly::class,
+        ]);
+
+        // Header keamanan dasar untuk seluruh request web.
+        $middleware->web(append: [
+            SecurityHeaders::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

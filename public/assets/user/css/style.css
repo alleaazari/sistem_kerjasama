@@ -1124,6 +1124,30 @@ table.info td:first-child { width: 30%; color: var(--text-muted); font-weight: 6
     grid-template-columns: repeat(2, 1fr);
     gap: 28px;
   }
+  /* Menu desktop dirapatkan di tablet supaya tidak menabrak tombol aksi */
+  .nav-menu {
+    gap: 2px;
+  }
+  .nav-menu a {
+    padding: 10px 6px;
+    font-size: 12.5px;
+  }
+}
+
+@media (max-width: 860px) {
+  /* Tablet sempit & HP: menu desktop disembunyikan lebih awal (860px)
+     supaya brand + menu + tombol aksi tidak menabrak satu sama lain.
+     Hamburger muncul menggantikan menu. */
+  .nav-menu {
+    display: none;
+  }
+  .nav-actions .nav-btn-outline,
+  .nav-actions .nav-btn-cyan {
+    display: none;
+  }
+  .mobile-menu-btn {
+    display: flex;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1203,10 +1227,11 @@ table.info td:first-child { width: 30%; color: var(--text-muted); font-weight: 6
     padding: 8px 12px;
   }
   .nav-brand { gap: 8px; }
-  .nav-logo { width: 32px; height: 32px; }
-  .nav-brand-title { font-size: 12px; }
-  .nav-brand-subtitle { font-size: 9px; }
-  .wrap-main-inner { padding-top: 70px; }
+  .nav-logo { width: 30px; height: 30px; }
+  .nav-brand-title { font-size: 12px; letter-spacing: 0.04em; }
+  .nav-brand-subtitle { font-size: 8.5px; }
+  .mobile-menu-btn { width: 34px; height: 34px; }
+  .wrap-main-inner { padding-top: 68px; }
   .hero-fullwidth-wrapper { padding: 92px 0 40px; margin-bottom: 30px; }
   .hero-ref-title { font-size: 24px; }
   .hero-ref-desc { font-size: 13px; }
@@ -1215,6 +1240,19 @@ table.info td:first-child { width: 30%; color: var(--text-muted); font-weight: 6
   .stats-grid { gap: 8px; }
   .stat-num { font-size: 20px; }
   .stat-label { font-size: 11px; }
+  /* Dropdown menu mobile: penuh lebar, tombol jadi satu kolom */
+  .mobile-nav-dropdown {
+    padding: 12px;
+    gap: 6px;
+    max-width: 100%;
+  }
+  .mobile-nav-dropdown a {
+    font-size: 13px;
+    padding: 9px 12px;
+  }
+  /* Footer: kolom brand & kontak dirapatkan */
+  .kgf-socials { gap: 12px; }
+  .kgf-contact { font-size: 12.5px; }
   .box .in { padding: 14px; }
   .wilayah-modal { padding: 12px; }
   .wilayah-modal-box { padding: 18px 16px; }

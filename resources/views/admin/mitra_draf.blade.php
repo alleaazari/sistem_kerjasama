@@ -30,8 +30,8 @@
                         <td><code id="masa-aktif-{{ $r['id'] }}">{{ $r['masa_aktif'] }}</code></td>
                         <td><span class="status-badge-active" style="background:#dcfce7;color:#15803d;border:1px solid #86efac;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;">● {{ $r['status'] }}</span></td>
                         <td>
-                            <button type="button" class="btn btn2 btn-s" onclick="alert('Draf proposal AI mitra {{ $r['instansi'] }} siap diunduh!')">Unduh Draf AI</button>
-                            <button type="button" class="btn btn-s" onclick="openExtendModal({{ $r['id'] }}, '{{ $r['instansi'] }}', '{{ $r['masa_aktif'] }}')">Perpanjang Masa Aktif</button>
+                            <button type="button" class="btn btn2 btn-s" disabled style="opacity:0.7;cursor:not-allowed;">Unduh Draf AI <span style="opacity:1;">Segera hadir</span></button>
+                            <button type="button" class="btn btn-s" disabled style="opacity:0.7;cursor:not-allowed;">Perpanjang Masa Aktif <span style="opacity:1;">Segera hadir</span></button>
                         </td>
                     </tr>
                     @endforeach

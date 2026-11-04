@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -45,6 +45,7 @@ if (! function_exists('getSharedPengajuanList')) {
             }
         }
         file_put_contents($filePath, json_encode($defaultPengajuan, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
         return $defaultPengajuan;
     }
 }
@@ -62,7 +63,7 @@ if (! function_exists('saveSharedPengajuanList')) {
 if (! function_exists('buatTemplatePermintaanMaaf')) {
     function buatTemplatePermintaanMaaf(string $namaPIC, string $instansi, string $organisasi, string $alasan): array
     {
-        $nomorSurat = 'B-' . rand(100, 999) . '/KOMDIGI/BPSDM.03/' . date('m/Y');
+        $nomorSurat = 'B-'.rand(100, 999).'/KOMDIGI/BPSDM.03/'.date('m/Y');
         $tahun = date('Y');
 
         $emailSubject = "[KEMKOMDIGI] Pemberitahuan Hasil Evaluasi Pengajuan Kerja Sama - {$instansi}";
@@ -103,7 +104,7 @@ Demikian surat pemberitahuan dan permohonan maaf ini kami sampaikan. Atas penger
 Hormat kami,
 Sekretariat Kemitraan & Kerja Sama Digital
 Kementerian Komunikasi dan Digital Republik Indonesia (KEMKOMDIGI)
-Call Center : 159 | Email: kerjasama@komdigi.go.id | Portal: http://127.0.0.1:8000
+Call Center : 159 | Email: kerjasama@komdigi.go.id | Portal: {{ config('app.url') }}
 
 EOT;
 
@@ -134,8 +135,8 @@ EOT;
 
         return [
             'email_subject' => $emailSubject,
-            'email_body'    => $emailBody,
-            'wa_text'       => $waText,
+            'email_body' => $emailBody,
+            'wa_text' => $waText,
         ];
     }
 }
@@ -145,19 +146,19 @@ if (! function_exists('kirimNotifikasiWhatsApp')) {
     {
         $cleanPhone = preg_replace('/[^0-9]/', '', $nomorTelepon);
         if (str_starts_with($cleanPhone, '0')) {
-            $cleanPhone = '62' . substr($cleanPhone, 1);
+            $cleanPhone = '62'.substr($cleanPhone, 1);
         }
 
-        $waUrl = 'https://api.whatsapp.com/send?phone=' . $cleanPhone . '&text=' . urlencode($pesan);
+        $waUrl = 'https://api.whatsapp.com/send?phone='.$cleanPhone.'&text='.urlencode($pesan);
 
         $logDir = storage_path('logs');
         if (! file_exists($logDir)) {
             @mkdir($logDir, 0755, true);
         }
-        $logEntry  = '[' . date('Y-m-d H:i:s') . "] WHATSAPP TERKIRIM KE: {$cleanPhone} ({$nomorTelepon})\n";
+        $logEntry = '['.date('Y-m-d H:i:s')."] WHATSAPP TERKIRIM KE: {$cleanPhone} ({$nomorTelepon})\n";
         $logEntry .= "PESAN:\n{$pesan}\nLINK WA WEB:\n{$waUrl}\n";
         $logEntry .= "--------------------------------------------------------------------------------\n";
-        @file_put_contents($logDir . '/whatsapp_terkirim.log', $logEntry, FILE_APPEND);
+        @file_put_contents($logDir.'/whatsapp_terkirim.log', $logEntry, FILE_APPEND);
 
         $gatewayUrl = env('WA_GATEWAY_URL');
         $gatewayKey = env('WA_GATEWAY_KEY');
@@ -165,13 +166,13 @@ if (! function_exists('kirimNotifikasiWhatsApp')) {
             try {
                 @file_get_contents($gatewayUrl, false, stream_context_create([
                     'http' => [
-                        'method'  => 'POST',
-                        'header'  => "Content-type: application/x-www-form-urlencoded\r\nAuthorization: {$gatewayKey}\r\n",
+                        'method' => 'POST',
+                        'header' => "Content-type: application/x-www-form-urlencoded\r\nAuthorization: {$gatewayKey}\r\n",
                         'content' => http_build_query(['target' => $cleanPhone, 'message' => $pesan]),
                         'timeout' => 4,
                     ],
                 ]));
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
             }
         }
 
@@ -188,18 +189,18 @@ if (! function_exists('kirimEmailPenolakanResmi')) {
                     ->from(config('mail.from.address', 'kerjasama@komdigi.go.id'), 'KEMKOMDIGI - Portal Kerja Sama')
                     ->subject($subject);
             });
-        } catch (\Throwable $e) {
-            Log::error('Email penolakan gagal: ' . $e->getMessage());
+        } catch (Throwable $e) {
+            Log::error('Email penolakan gagal: '.$e->getMessage());
         }
 
         $logDir = storage_path('logs');
         if (! file_exists($logDir)) {
             @mkdir($logDir, 0755, true);
         }
-        $logEntry  = '[' . date('Y-m-d H:i:s') . "] EMAIL REJECT SENT TO: {$targetEmail} (PIC: {$targetPIC})\n";
+        $logEntry = '['.date('Y-m-d H:i:s')."] EMAIL REJECT SENT TO: {$targetEmail} (PIC: {$targetPIC})\n";
         $logEntry .= "SUBJECT: {$subject}\nBODY:\n{$body}\n";
         $logEntry .= "--------------------------------------------------------------------------------\n";
-        @file_put_contents($logDir . '/email_terkirim.log', $logEntry, FILE_APPEND);
+        @file_put_contents($logDir.'/email_terkirim.log', $logEntry, FILE_APPEND);
     }
 }
 
@@ -211,6 +212,7 @@ Route::get('/', function () {
     if (session()->has('admin_auth')) {
         return redirect()->route('admin.inbox');
     }
+
     return redirect()->route('admin.login');
 });
 
@@ -218,6 +220,7 @@ Route::get('/login', function () {
     if (session()->has('admin_auth')) {
         return redirect()->route('admin.inbox');
     }
+
     return view('admin.login');
 })->name('admin.login');
 
@@ -230,6 +233,7 @@ Route::post('/login', function (Request $request) {
         if ($idCocok && hash_equals($acc['password'], $pw)) {
             $request->session()->regenerate();
             session(['admin_auth' => ['name' => $acc['name'], 'role' => $acc['role']]]);
+
             // Kembali ke halaman yang tadi diminta (mis. link lama), jatuh ke inbox bila tidak ada.
             return redirect()->intended(route('admin.inbox'));
         }
@@ -243,6 +247,7 @@ Route::post('/login', function (Request $request) {
 Route::post('/logout', function (Request $request) {
     session()->forget(['admin_auth', 'admin_artikel', 'admin_galeri']);
     $request->session()->regenerateToken();
+
     return redirect()->route('admin.login');
 })->name('admin.logout');
 
@@ -253,20 +258,23 @@ Route::middleware('admin.only')->group(function () use (
     $defaultPengajuan, $defaultArtikel, $defaultGaleri, $defaultDrafMitra
 ) {
 
-    // TEST EMAIL: khusus role developer
+    // TEST EMAIL: hanya role developer, dan hanya tersedia di lingkungan lokal.
     Route::get('/test-email', function (Request $request) {
+        abort_unless(app()->isLocal(), 404);
+
         $targetEmail = $request->query('to', config('mail.from.address'));
         try {
             Mail::raw(
-                "Email uji coba KEMKOMDIGI Portal Kerja Sama.\nWaktu kirim: " . now()->format('d/m/Y H:i:s') . " WIB\nDikirim ke: {$targetEmail}",
+                "Email uji coba KEMKOMDIGI Portal Kerja Sama.\nWaktu kirim: ".now()->format('d/m/Y H:i:s')." WIB\nDikirim ke: {$targetEmail}",
                 function ($msg) use ($targetEmail) {
-                    $msg->to($targetEmail)->subject('[TEST] Email KEMKOMDIGI - ' . now()->format('H:i:s'));
+                    $msg->to($targetEmail)->subject('[TEST] Email KEMKOMDIGI - '.now()->format('H:i:s'));
                 }
             );
-            return response('Email berhasil diproses untuk: ' . e($targetEmail) . ' (driver: ' . config('mail.default') . ')', 200)
+
+            return response('Email berhasil diproses untuk: '.e($targetEmail).' (driver: '.config('mail.default').')', 200)
                 ->header('Content-Type', 'text/html');
-        } catch (\Throwable $e) {
-            return response('GAGAL mengirim email.<br>' . nl2br(e($e->getMessage())), 500)
+        } catch (Throwable $e) {
+            return response('GAGAL mengirim email.<br>'.nl2br(e($e->getMessage())), 500)
                 ->header('Content-Type', 'text/html');
         }
     })->middleware('admin.only:developer')->name('admin.test.email');
@@ -283,8 +291,8 @@ Route::middleware('admin.only')->group(function () use (
 
         foreach ($pengajuan as &$p) {
             if ((string) $p['id'] === (string) $id) {
-                $p['status']    = 'Disetujui';
-                $targetEmail    = $p['email'] ?? '';
+                $p['status'] = 'Disetujui';
+                $targetEmail = $p['email'] ?? '';
                 $targetInstansi = $p['instansi'] ?? '';
                 break;
             }
@@ -300,19 +308,19 @@ Route::middleware('admin.only')->group(function () use (
         $request->validate(['feedback' => 'required|string|min:5']);
 
         $pengajuan = getSharedPengajuanList($defaultPengajuan);
-        $feedback  = $request->input('feedback');
+        $feedback = $request->input('feedback');
 
         $targetPIC = $targetEmail = $targetInstansi = $targetOrganisasi = $targetTelp = '';
 
         foreach ($pengajuan as &$p) {
             if ((string) $p['id'] === (string) $id) {
-                $p['status']      = 'Ditolak';
-                $p['feedback']    = $feedback;
-                $targetPIC        = $p['pic'] ?? 'Bapak/Ibu PIC';
-                $targetEmail      = $p['email'] ?? '';
-                $targetInstansi   = $p['instansi'] ?? 'Instansi Mitra';
+                $p['status'] = 'Ditolak';
+                $p['feedback'] = $feedback;
+                $targetPIC = $p['pic'] ?? 'Bapak/Ibu PIC';
+                $targetEmail = $p['email'] ?? '';
+                $targetInstansi = $p['instansi'] ?? 'Instansi Mitra';
                 $targetOrganisasi = $p['organisasi'] ?? 'Unit Kerja';
-                $targetTelp       = $p['telp'] ?? '';
+                $targetTelp = $p['telp'] ?? '';
                 break;
             }
         }
@@ -332,15 +340,15 @@ Route::middleware('admin.only')->group(function () use (
         }
 
         return back()->with([
-            'ok'            => "Pengajuan dari {$targetInstansi} telah DITOLAK.",
-            'reject_done'   => true,
-            'instansi'      => $targetInstansi,
-            'pic'           => $targetPIC,
-            'email_sent'    => $targetEmail,
-            'wa_sent'       => $targetTelp,
-            'wa_url'        => $waRes['wa_url'],
-            'wa_phone'      => $waRes['phone'],
-            'alasan'        => $feedback,
+            'ok' => "Pengajuan dari {$targetInstansi} telah DITOLAK.",
+            'reject_done' => true,
+            'instansi' => $targetInstansi,
+            'pic' => $targetPIC,
+            'email_sent' => $targetEmail,
+            'wa_sent' => $targetTelp,
+            'wa_url' => $waRes['wa_url'],
+            'wa_phone' => $waRes['phone'],
+            'alasan' => $feedback,
             'surat_preview' => $template['email_body'],
         ]);
     })->name('admin.inbox.reject');
@@ -354,19 +362,21 @@ Route::middleware('admin.only')->group(function () use (
         $request->validate(['judul' => 'required|string|max:255']);
         $rows = session('admin_artikel', $defaultArtikel);
         $rows[] = [
-            'id'      => time() . rand(10, 99),
-            'judul'   => $request->input('judul'),
-            'konten'  => $request->input('konten', ''),
+            'id' => time().rand(10, 99),
+            'judul' => $request->input('judul'),
+            'konten' => $request->input('konten', ''),
             'tanggal' => now()->translatedFormat('d F Y'),
         ];
         session(['admin_artikel' => array_values($rows)]);
-        return back()->with('ok', 'Artikel "' . $request->judul . '" berhasil dipublikasikan.');
+
+        return back()->with('ok', 'Artikel "'.$request->judul.'" berhasil dipublikasikan.');
     })->name('admin.artikel.store');
 
     Route::post('/artikel/{id}/delete', function ($id) use ($defaultArtikel) {
         $rows = session('admin_artikel', $defaultArtikel);
         $rows = array_values(array_filter($rows, fn ($r) => (string) $r['id'] !== (string) $id));
         session(['admin_artikel' => $rows]);
+
         return back()->with('ok', 'Artikel berhasil dihapus.');
     })->name('admin.artikel.delete');
 
@@ -375,13 +385,14 @@ Route::middleware('admin.only')->group(function () use (
         $rows = session('admin_artikel', $defaultArtikel);
         foreach ($rows as &$r) {
             if ((string) $r['id'] === (string) $id) {
-                $r['judul']  = $request->input('judul');
+                $r['judul'] = $request->input('judul');
                 $r['konten'] = $request->input('konten', $r['konten'] ?? '');
                 break;
             }
         }
         unset($r);
         session(['admin_artikel' => $rows]);
+
         return back()->with('ok', 'Artikel berhasil diperbarui.');
     })->name('admin.artikel.edit');
 
@@ -392,7 +403,7 @@ Route::middleware('admin.only')->group(function () use (
 
     Route::post('/galeri', function (Request $request) use ($defaultGaleri) {
         $request->validate([
-            'judul'  => 'required|string|max:255',
+            'judul' => 'required|string|max:255',
             'gambar' => 'nullable|image|max:2048',
         ]);
         $rows = session('admin_galeri', $defaultGaleri);
@@ -400,47 +411,50 @@ Route::middleware('admin.only')->group(function () use (
         $gambarBase64 = null;
         if ($request->hasFile('gambar') && $request->file('gambar')->isValid()) {
             $file = $request->file('gambar');
-            $gambarBase64 = 'data:' . $file->getMimeType() . ';base64,' . base64_encode(file_get_contents($file->getRealPath()));
+            $gambarBase64 = 'data:'.$file->getMimeType().';base64,'.base64_encode(file_get_contents($file->getRealPath()));
         }
 
         $rows[] = [
-            'id'      => time() . rand(10, 99),
-            'judul'   => $request->input('judul'),
-            'konten'  => $request->input('konten', ''),
+            'id' => time().rand(10, 99),
+            'judul' => $request->input('judul'),
+            'konten' => $request->input('konten', ''),
             'tanggal' => now()->translatedFormat('d F Y'),
-            'gambar'  => $gambarBase64,
+            'gambar' => $gambarBase64,
         ];
 
         session(['admin_galeri' => array_values($rows)]);
-        return back()->with('ok', 'Foto "' . $request->judul . '" berhasil dipublikasikan.');
+
+        return back()->with('ok', 'Foto "'.$request->judul.'" berhasil dipublikasikan.');
     })->name('admin.galeri.store');
 
     Route::post('/galeri/{id}/delete', function ($id) use ($defaultGaleri) {
         $rows = session('admin_galeri', $defaultGaleri);
         $rows = array_values(array_filter($rows, fn ($r) => (string) $r['id'] !== (string) $id));
         session(['admin_galeri' => $rows]);
+
         return back()->with('ok', 'Foto galeri berhasil dihapus.');
     })->name('admin.galeri.delete');
 
     Route::post('/galeri/{id}/edit', function (Request $request, $id) use ($defaultGaleri) {
         $request->validate([
-            'judul'  => 'required|string|max:255',
+            'judul' => 'required|string|max:255',
             'gambar' => 'nullable|image|max:2048',
         ]);
         $rows = session('admin_galeri', $defaultGaleri);
         foreach ($rows as &$r) {
             if ((string) $r['id'] === (string) $id) {
-                $r['judul']  = $request->input('judul');
+                $r['judul'] = $request->input('judul');
                 $r['konten'] = $request->input('konten', $r['konten'] ?? '');
                 if ($request->hasFile('gambar') && $request->file('gambar')->isValid()) {
                     $file = $request->file('gambar');
-                    $r['gambar'] = 'data:' . $file->getMimeType() . ';base64,' . base64_encode(file_get_contents($file->getRealPath()));
+                    $r['gambar'] = 'data:'.$file->getMimeType().';base64,'.base64_encode(file_get_contents($file->getRealPath()));
                 }
                 break;
             }
         }
         unset($r);
         session(['admin_galeri' => $rows]);
+
         return back()->with('ok', 'Foto galeri berhasil diperbarui.');
     })->name('admin.galeri.edit');
 
@@ -449,12 +463,12 @@ Route::middleware('admin.only')->group(function () use (
 
     Route::post('/tentang', function (Request $request) {
         $request->validate([
-            'p_nama.*'      => 'required|string|max:255',
-            'p_jabatan.*'   => 'required|string|max:255',
-            'p_badge.*'     => 'required|string|max:255',
-            'p_foto.*'      => 'nullable|image|max:2048',
-            'p_desc.*'      => 'required|string',
-            'visi'          => 'required|string',
+            'p_nama.*' => 'required|string|max:255',
+            'p_jabatan.*' => 'required|string|max:255',
+            'p_badge.*' => 'required|string|max:255',
+            'p_foto.*' => 'nullable|image|max:2048',
+            'p_desc.*' => 'required|string',
+            'visi' => 'required|string',
         ]);
 
         $petinggi = [];
@@ -464,15 +478,15 @@ Route::middleware('admin.only')->group(function () use (
             $fotoBase64 = null;
             if ($request->hasFile('p_foto') && isset($request->file('p_foto')[$i]) && $request->file('p_foto')[$i]->isValid()) {
                 $file = $request->file('p_foto')[$i];
-                $fotoBase64 = 'data:' . $file->getMimeType() . ';base64,' . base64_encode(file_get_contents($file->getRealPath()));
+                $fotoBase64 = 'data:'.$file->getMimeType().';base64,'.base64_encode(file_get_contents($file->getRealPath()));
             }
 
             $petinggi[] = [
-                'nama'   => $request->input('p_nama')[$i],
-                'jabatan'=> $request->input('p_jabatan')[$i],
-                'badge'  => $request->input('p_badge')[$i],
-                'foto'   => $fotoBase64,
-                'desc'   => $request->input('p_desc')[$i],
+                'nama' => $request->input('p_nama')[$i],
+                'jabatan' => $request->input('p_jabatan')[$i],
+                'badge' => $request->input('p_badge')[$i],
+                'foto' => $fotoBase64,
+                'desc' => $request->input('p_desc')[$i],
             ];
         }
 
