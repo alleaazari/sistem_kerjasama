@@ -8,7 +8,7 @@ return [
             'name'     => 'Admin Kerja Sama',
             'username' => 'admin',
             'email'    => 'admin@komdigi.test',
-            'password' => 'Admin#2026',
+            'password' => 'admin#2026',
             'role'     => 'admin',
         ],
         [
