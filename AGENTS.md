@@ -209,3 +209,23 @@ DIHAPUS:
 ### Langkah berikutnya
 - Fase N+1 (menunggu perintah "Lanjut")
 ```
+# Standar desain web pemerintah (jobdesk front-end)
+Tujuan: tampilan menarik dan rapi, TIDAK ramai, dan TIDAK terlihat seperti "AI slop".
+
+Hindari "ramai":
+- Maksimal satu tombol primer per layar/bagian. Maksimal 3 warna non-netral per halaman. Maksimal 6 ukuran dan 3 berat huruf per area.
+- Tanpa ornamen dekoratif (blob, pola latar, gelombang), tanpa banner bergerak/slider otomatis/pop-up saat muat.
+- Hindari kartu bertumpuk dan border + bayangan sekaligus. Paragraf landing maksimal 3-4 baris, satu ide per bagian.
+- Animasi hanya pada elemen kunci.
+
+Hindari "AI slop":
+- Tanpa gradasi ungu/biru-pink, glow, glassmorphism, blur berlebihan.
+- Tanpa emoji sebagai ikon, tanpa ikon di lingkaran berwarna pada setiap baris, tanpa tiga kartu identik "ikon + judul + deskripsi" di setiap bagian.
+- Radius 6-14px, bayangan tipis. Teks bacaan rata kiri.
+- Tanpa tagline klise, tanpa klaim/statistik tak bersumber, tanpa teks pengisi.
+
+Wajib ada: identitas instansi jelas (logo resmi tanpa diubah, nama lengkap, alamat dan kontak di footer), kontras AA, teks isi minimal 16px, bahasa Indonesia baku, tombol berlabel kata kerja jelas, fitur yang belum jadi tidak berpura-pura jadi.
+
+Rubrik penilaian (0/1/2 per kriteria): 1 hierarki visual, 2 ketenangan, 3 konsistensi komponen, 4 tipografi, 5 warna, 6 tata letak dan spasi, 7 identitas dan kepercayaan, 8 alur dan microcopy, 9 aksesibilitas visual, 10 bebas AI slop. Target tiap halaman minimal 16 dari 20 tanpa kriteria bernilai 0.
+
+Peran saya: front-end. Pekerjaan backend (otorisasi baru, penyimpanan data, migrasi, integrasi) tidak dibangun; catat sebagai "catatan untuk backend" di laporan.
