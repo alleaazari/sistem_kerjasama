@@ -15,55 +15,130 @@
     /* Ekuivalen gsap "power3.out" = easeOutCubic */
     function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
 
-    /* ================= 1. TEXT TYPE (judul hero) ================= */
-    (function textType() {
+    /* ================= 1. TEXT REVEAL (judul hero) ================= */
+    /* Semua huruf sudah ada di DOM sejak awal; yang berubah hanya opacity.
+       Ukuran blok ditentukan lapisan bayangan (frasa terpanjang), jadi elemen
+       di bawahnya tidak bergeser sepanjang siklus. */
+    (function textReveal() {
         var box = document.getElementById('heroType');
-        var el = document.getElementById('heroTypeText');
-        if (!box || !el) return;
+        if (!box) return;
 
-        var phrases = (W.heroText && W.heroText.length) ? W.heroText : ['Sinergi Digital Nusantara'];
-        var cursor = box.querySelector('.tt-cursor');
+        var lapisan = box.querySelectorAll('.hero-type-live');
+        var kursor = box.querySelector('.hero-type-cursor');
+        if (!lapisan.length) return;
 
-        if (reduceMotion || phrases.length === 1) {
-            /* ponytail: 1 frase / reduced-motion -> teks statis tanpa mesin ketik */
-            el.textContent = phrases[0];
-            if (cursor) cursor.style.display = 'none';
+        function semuaHuruf(i) {
+            return lapisan[i] ? lapisan[i].querySelectorAll('.hero-type-huruf') : [];
+        }
+
+        function pasif() {
+            box.setAttribute('data-static', 'true');
+            for (var i = 1; i < lapisan.length; i++) {
+                if (lapisan[i]) lapisan[i].setAttribute('aria-hidden', 'true');
+            }
+            if (kursor) kursor.removeAttribute('data-aktif');
+        }
+
+        if (reduceMotion || lapisan.length === 1) {
+            for (var s = 0; s < lapisan.length; s++) {
+                var st = semuaHuruf(s);
+                for (var t = 0; t < st.length; t++) st[t].setAttribute('data-tampil', 'true');
+            }
+            pasif();
             return;
         }
 
-        var idx = 0, chars = 0, deleting = false, busy = false;
+        var idx = 0;
+        var tampil = 0;
+        var menghapus = false;
+        var timer = null;
 
-        function tick() {
-            if (busy) return;
-            var phrase = phrases[idx];
-            if (!deleting) {
-                chars++;
-                el.textContent = phrase.slice(0, chars);
-                if (chars >= phrase.length) {
-                    busy = true;
-                    window.setTimeout(function () {
-                        busy = false;
-                        deleting = true;
-                        tick();
-                    }, 2200);
-                } else {
-                    window.setTimeout(tick, 45 + Math.random() * 60);
-                }
-            } else {
-                chars--;
-                el.textContent = phrase.slice(0, chars);
-                if (chars <= 0) {
-                    deleting = false;
-                    idx = (idx + 1) % phrases.length;
-                    window.setTimeout(tick, 480);
-                } else {
-                    window.setTimeout(tick, 26);
+        // Sembunyikan semua lapisan selain yang aktif (opacity, bukan display).
+        function aktifkan(i) {
+            for (var j = 0; j < lapisan.length; j++) {
+                lapisan[j].setAttribute('data-aktif', j === i ? 'true' : 'false');
+                lapisan[j].setAttribute('aria-hidden', j === i ? 'false' : 'true');
+                var huruf = semuaHuruf(j);
+                for (var k = 0; k < huruf.length; k++) {
+                    haruf_set(huruf[k], j === i && k < tampil);
                 }
             }
         }
 
-        var started = false;
-        function start() { if (!started) { started = true; tick(); } }
+        function haruf_set(el, nyala) {
+            if (nyala) el.setAttribute('data-tampil', 'true');
+            else el.removeAttribute('data-tampil');
+        }
+
+        function tick() {
+            var huruf = semuaHuruf(idx);
+            if (!menghapus) {
+                tampil++;
+                if (huruf[tampil - 1]) huruf[tampil - 1].setAttribute('data-tampil', 'true');
+                if (tampil >= huruf.length) {
+                    timer = window.setTimeout(function () { menghapus = true; tick(); }, 2000);
+                } else {
+                    timer = window.setTimeout(tick, 55);
+                }
+            } else {
+                if (huruf[tampil - 1]) huruf[tampil - 1].removeAttribute('data-tampil');
+                tampil--;
+                if (tampil <= 0) {
+                    menghapus = false;
+                    lapisan[idx].setAttribute('aria-hidden', 'true');
+                    lapisan[idx].setAttribute('data-aktif', 'false');
+                    idx = (idx + 1) % lapisan.length;
+                    lapisan[idx].setAttribute('aria-hidden', 'false');
+                    lapisan[idx].setAttribute('data-aktif', 'true');
+                    timer = window.setTimeout(tick, 420);
+                } else {
+                    timer = window.setTimeout(tick, 28);
+                }
+            }
+        }
+
+        // Bayangan menentukan ukuran blok. Ukur ulang setelah font selesai
+        // dimuat dan saat layar berubah lebar; hanya menambah min-height
+        // (tidak pernah mengecil) agar tidak ada lompatan bentuk.
+        var stack = box.querySelector('.hero-type-stack');
+        function ukurBayangan() {
+            if (!stack) return;
+            var tertinggi = 0;
+            var bayangan = box.querySelectorAll('.hero-type-ghost');
+            for (var i = 0; i < bayangan.length; i++) {
+                tertinggi = Math.max(tertinggi, bayangan[i].getBoundingClientRect().height);
+            }
+            if (!tertinggi) return;
+            var sekarang = parseFloat(stack.style.minHeight) || 0;
+            if (tertinggi > sekarang) { stack.style.minHeight = tertinggi + 'px'; }
+        }
+
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(ukurBayangan);
+        }
+
+        var jedaUkur = null;
+        window.addEventListener('resize', function () {
+            if (jedaUkur) window.clearTimeout(jedaUkur);
+            jedaUkur = window.setTimeout(function () {
+                stack.style.minHeight = '';
+                ukurBayangan();
+            }, 150);
+        });
+
+        ukurBayangan();
+
+        // Kursor tidak menambah lebar (position:absolute).
+        if (kursor) kursor.setAttribute('data-aktif', 'true');
+
+        var mulai = false;
+        function start() {
+            if (mulai) return;
+            mulai = true;
+            tampil = 0;
+            aktifkan(idx);
+            tick();
+        }
 
         if ('IntersectionObserver' in window) {
             var io = new IntersectionObserver(function (entries) {
@@ -75,6 +150,10 @@
         } else {
             start();
         }
+
+        window.addEventListener('beforeunload', function () {
+            if (timer) window.clearTimeout(timer);
+        });
     })();
 
     /* ================= 2. LINE SIDEBAR (Visi & Misi) ================= */

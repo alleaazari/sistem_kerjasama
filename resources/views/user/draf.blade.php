@@ -49,7 +49,7 @@
         </div>
 
         <!-- PROGRESS STEPS INDICATOR -->
-        <div id="ai-loading" class="hide" style="text-align:center;padding:24px 16px;background:#ffffff;border:1px solid var(--border-color);border-radius:var(--radius);margin-bottom:20px;display:none;">
+        <div id="ai-loading" class="hide" style="text-align:center;padding:24px 16px;background: #FDFCF9;border:1px solid var(--border-color);border-radius:var(--radius);margin-bottom:20px;display:none;">
             <h3 style="color:var(--primary);margin-bottom:6px;" id="ai-step-title">Sedang Mengolah Data dengan AI...</h3>
             <p style="font-size:12px;color:var(--text-muted);" id="ai-step-desc">Menganalisis regulasi Komdigi dan menyusun pasal-pasal kemitraan...</p>
             <div class="progress-bar-bg" style="max-width:360px;margin:12px auto 0;">
@@ -76,7 +76,7 @@
             </div>
 
             <!-- EDITABLE PROPOSAL DOCUMENT -->
-            <div id="editor" class="editor" contenteditable="true" style="border:1px solid var(--border-color);padding:24px;min-height:380px;background:#ffffff;line-height:1.8;"></div>
+            <div id="editor" class="editor" contenteditable="true" style="border:1px solid var(--border-color);padding:24px;min-height:380px;background: #FDFCF9;line-height:1.8;"></div>
 
             <div style="margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
                 <button type="button" class="btn" id="btn-simpan">Simpan Draf Dokumen</button>

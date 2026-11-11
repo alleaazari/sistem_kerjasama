@@ -21,7 +21,6 @@
 
         <!-- Action Buttons & Mobile Hamburger Toggle -->
         <div class="nav-actions">
-            <a href="{{ route('login') }}" class="nav-btn-outline">Masuk Mitra</a>
             <a href="{{ route('pengajuan.create') }}" class="nav-btn-cyan">Pengajuan Baru</a>
             <button type="button" class="mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Buka Menu Navigasi HP">
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
@@ -35,7 +34,6 @@
         <a href="{{ route('landing') }}#tentang">Tentang Komdigi</a>
         <a href="{{ route('landing') }}#berita">Berita &amp; Artikel</a>
         <a href="{{ route('landing') }}#galeri">Galeri Kegiatan</a>
-        <a href="{{ route('login') }}" class="mobile-nav-btn-outline">Masuk Portal Mitra</a>
         <a href="{{ route('pengajuan.create') }}" class="mobile-nav-btn-pill">Pengajuan Baru &rarr;</a>
     </div>
 </header>

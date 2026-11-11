@@ -122,7 +122,7 @@ body.landing-page {
 }
 
 .landing-page .hero-ref-btn-main:hover {
-  background: #ffffff;
+  background: #FDFCF9;
   transform: translateY(-2px);
   box-shadow: 0 14px 30px -18px rgba(0, 0, 0, 0.9);
 }

@@ -1,77 +1,59 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex, nofollow">
-    <title>Masuk Admin - KEMKOMDIGI</title>
-    {{-- Font dimuat SEKALI di sini: Plus Jakarta Sans (heading) + Inter (body). --}}
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    {{-- Halaman mandiri: tokens -> base -> style admin (tanpa components.css). --}}
-    <x-asset path="assets/shared/css/tokens.css" />
-    <x-asset path="assets/shared/css/base.css" />
-    <x-asset path="assets/admin/css/style.css" />
-</head>
-<body>
-<div class="head">
-    <div class="wrap">
-        <img src="{{ asset('assets/admin/images/logo-komdigi.jpg') }}" alt="Logo Komdigi">
-        <div>
-            <h1>KEMKOMDIGI ADMIN</h1>
-            <div class="sub">Panel Administrator Portal Kerja Sama</div>
+@extends('layouts.auth-public')
+@section('title', 'Masuk Admin')
+
+@section('content')
+<div class="auth-card">
+    <h1>Masuk Admin</h1>
+    <p class="auth-lead">Panel administrator Portal Kerja Sama Komdigi. Halaman ini tidak ditautkan dari portal publik.</p>
+
+    @if (session('info'))
+        <div class="auth-notice" role="status">{{ session('info') }}</div>
+    @endif
+
+    @if (session('login_error'))
+        <div class="auth-alert" role="alert" id="galat-admin">{{ session('login_error') }}</div>
+    @endif
+
+    @if ($errors->any())
+        <div class="auth-alert" role="alert" id="galat-admin-validasi">{{ $errors->first() }}</div>
+    @endif
+
+    @if (config('app.debug'))
+        <div class="auth-debug-hint">
+            <strong>Catatan pengembangan.</strong> Kredensial akun demo tidak ditampilkan di antarmuka. Lihat berkas konfigurasi server saat pengembangan.
         </div>
-    </div>
-</div>
+    @endif
 
-<div class="wrap" style="max-width:420px;margin:30px auto;">
-    <div class="box">
-        <h2>Masuk Panel Admin</h2>
-        <div class="in">
+    <form method="POST" action="{{ route('admin.login.post') }}" data-form-login>
+        @csrf
 
-            {{-- PETUNJUK DEV: hanya tampil saat APP_DEBUG=true (lokal). Tidak memuat kredensial nyata. --}}
-            @if(config('app.debug'))
-            <div class="demo-box">
-                <h4>Catatan Pengembangan</h4>
-                <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">
-                    Kredensial akun demo tidak ditampilkan di UI. Lihat berkas konfigurasi server saat pengembangan.
-                </p>
+        <div class="auth-field">
+            <label for="u">Nama pengguna admin</label>
+            <div class="auth-input-wrap">
+                <input type="text" id="u" name="username" value="{{ old('username') }}"
+                       autocomplete="username" required autofocus>
             </div>
-            @endif
-
-            @if (session('info'))
-                <div class="login-notice" role="status">
-                    <span>{{ session('info') }}</span>
-                </div>
-            @endif
-
-            @if (session('login_error'))
-                <div style="background:#fee2e2;color:#b91c1c;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:14px;">
-                    {{ session('login_error') }}
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div style="background:#fee2e2;color:#b91c1c;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:14px;">
-                    {{ $errors->first() }}
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('admin.login.post') }}">
-                @csrf
-                <div class="row">
-                    <label for="u">Username Admin</label>
-                    <input type="text" id="u" name="username" value="{{ old('username') }}" placeholder="Username" autocomplete="username" required>
-                </div>
-                <div class="row">
-                    <label for="p">Password</label>
-                    <input type="password" id="p" name="password" placeholder="Password" autocomplete="current-password" required>
-                </div>
-                <button class="btn" style="width:100%;padding:10px;margin-top:8px;">Masuk ke Panel Admin</button>
-            </form>
         </div>
+
+        <div class="auth-field">
+            <label for="p">Kata sandi</label>
+            <div class="auth-input-wrap">
+                <input type="password" id="p" name="password" class="auth-input-password"
+                       autocomplete="current-password" required>
+                <button type="button" class="auth-password-toggle auth-hide-nojs"
+                        data-toggle-password="p" aria-pressed="false" aria-controls="p">
+                    Tampilkan
+                </button>
+            </div>
+        </div>
+
+        <button type="submit" class="app-btn app-btn-primary app-btn-block auth-submit" data-submit>
+            Masuk ke Panel Admin
+        </button>
+    </form>
+
+    <div class="auth-foot">
+        <a href="{{ route('landing') }}">Lihat Portal Utama</a>
     </div>
 </div>
-</body>
-</html>
+@endsection

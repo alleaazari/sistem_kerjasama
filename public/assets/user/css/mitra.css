@@ -1,0 +1,1395 @@
+/* ==========================================================================
+   AREA MITRA — tata letak sidebar + kolom konten
+   --------------------------------------------------------------------------
+   Markup acuan: resources/views/layouts/user.blade.php
+   (mitra-shell > mitra-sidebar + mitra-column > mitra-topbar + mitra-main).
+
+   Prinsip yang dipakai (selaras standar desain pemerintah):
+   - Navy pekat untuk sidebar, permukaan terang untuk konten. Tanpa gradasi.
+   - Satu aksen (garis emas tipis) untuk keadaan aktif. Tanpa glow.
+   - Radius 6-14px, bayangan tipis, teks isi minimal 16px.
+   - Semua warna/radius/spasi dari tokens.css.
+
+   Breakpoint:
+   <= 1023px : sidebar menjadi laci (off-canvas) yang dikendalikan mitra-ui.js
+   >= 1024px : sidebar tetap di kiri, sticky setinggi viewport
+   ========================================================================== */
+
+/* ---- Kerangka ----------------------------------------------------------- */
+.mitra-page {
+  background-color: var(--surface);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.mitra-shell {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  flex: 1 0 auto;
+  min-height: 0;
+}
+
+.mitra-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ==========================================================================
+   SIDEBAR
+   ========================================================================== */
+.mitra-sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 264px;
+  flex-shrink: 0;
+  align-self: stretch;
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow-y: auto;
+  background-color: var(--brand-900);
+  color: var(--bg);
+}
+
+.mitra-sidebar-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mitra-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg);
+}
+
+.mitra-logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.mitra-brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.mitra-brand-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.06em;
+  color: var(--bg);
+}
+
+.mitra-brand-sub {
+  font-size: var(--text-xs);
+  color: var(--brand-100);
+}
+
+/* ---- Menu navigasi ------------------------------------------------------ */
+.mitra-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-3);
+  flex: 1 1 auto;
+}
+
+.mitra-nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border-bottom: 2px solid transparent;
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.82);
+  text-decoration: none;
+  transition: color 200ms ease, border-color 200ms ease, background-color 150ms ease;
+}
+
+/* Hover/fokus: garis di bawah tulisan, bentuk & transisi sama dengan navbar
+   homepage (2px, warna aksen, 200ms), bukan blok latar penuh. */
+.mitra-nav-item:hover,
+.mitra-nav-item:focus-visible {
+  background-color: transparent;
+  color: var(--bg);
+  border-bottom-color: var(--brand-500);
+  text-decoration: none;
+}
+
+.mitra-nav-item[aria-current="page"] {
+  background-color: transparent;
+  color: var(--bg);
+  font-weight: var(--weight-semibold);
+  border-bottom-color: var(--brand-500);
+}
+
+/* Satu-satunya aksen: batang emas pada item aktif. */
+.mitra-nav-item[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background-color: var(--accent-500);
+}
+
+/* ---- Kaki sidebar ------------------------------------------------------- */
+.mitra-sidebar-foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mitra-side-link {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background-color: transparent;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: rgba(255, 255, 255, 0.72);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.mitra-side-link:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--bg);
+  text-decoration: none;
+}
+
+.mitra-logout {
+  margin: 0;
+}
+
+.mitra-logout .mitra-side-link {
+  width: 100%;
+}
+
+/* ==========================================================================
+   TOPBAR
+   ========================================================================== */
+.mitra-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 60px;
+  padding: var(--space-2) clamp(12px, 3vw, 24px);
+  background-color: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.mitra-topbar-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(16px, 2.4vw, 20px);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Tombol laci: hanya tampil di layar kecil. */
+.mitra-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg);
+  color: var(--brand-700);
+  cursor: pointer;
+}
+
+.mitra-menu-btn:hover {
+  background-color: var(--brand-50);
+}
+
+/* ---- Identitas pengguna di topbar --------------------------------------- */
+.mitra-user {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  min-width: 0;
+}
+
+.mitra-user:hover {
+  background-color: var(--surface);
+  text-decoration: none;
+}
+
+.mitra-user-avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+
+.mitra-user-inisial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--brand-700);
+  border-color: var(--brand-700);
+  color: var(--bg);
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+}
+
+.mitra-user-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.mitra-user-name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mitra-user-pj {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   KONTEN
+   ========================================================================== */
+.mitra-main {
+  flex: 1 0 auto;
+  padding: clamp(16px, 3vw, 32px) clamp(12px, 3vw, 28px) clamp(32px, 5vw, 48px);
+}
+
+.mitra-container {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* Paragraf pengantar halaman (dari @section('lead')). */
+.mitra-lead {
+  margin: 0;
+  max-width: 68ch;
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-muted);
+}
+
+/* ---- Kartu -------------------------------------------------------------- */
+.mitra-card {
+  min-width: 0;
+  padding: clamp(16px, 3vw, 28px);
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.mitra-card-title {
+  margin: 0 0 var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--text);
+}
+
+/* ---- Pesan -------------------------------------------------------------- */
+.mitra-alert {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+}
+
+.mitra-alert + .mitra-alert {
+  margin-top: var(--space-2);
+}
+
+.mitra-alert-success {
+  background-color: var(--success-50);
+  border-color: var(--success-700);
+  color: var(--success-700);
+}
+
+.mitra-alert-warning {
+  background-color: var(--warning-50);
+  border-color: var(--warning-500);
+  border-left-width: 3px;
+  color: var(--warning-700);
+}
+
+.mitra-alert-danger {
+  background-color: var(--danger-50);
+  border-color: var(--danger-500);
+  border-left-width: 3px;
+  color: var(--danger-700);
+}
+
+.mitra-alert a {
+  color: inherit;
+  font-weight: var(--weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ==========================================================================
+   TOMBOL (mitra-btn)
+   ========================================================================== */
+.mitra-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-5);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.mitra-btn:disabled,
+.mitra-btn[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.mitra-btn-primary {
+  background-color: var(--brand-700);
+  color: var(--bg);
+}
+
+.mitra-btn-primary:hover:not(:disabled) {
+  background-color: var(--brand-900);
+  color: var(--bg);
+  text-decoration: none;
+}
+
+.mitra-btn-secondary {
+  background-color: var(--bg);
+  border-color: var(--border);
+  color: var(--brand-700);
+}
+
+.mitra-btn-secondary:hover:not(:disabled) {
+  background-color: var(--brand-50);
+  color: var(--brand-900);
+  text-decoration: none;
+}
+
+/* ==========================================================================
+   PANEL STATUS
+   ========================================================================== */
+.status-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.status-panel-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.status-eyebrow {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.status-instansi {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(18px, 2.4vw, 22px);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  color: var(--text);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+.status-panel[data-kondisi="aktif"] .status-badge {
+  background-color: var(--success-50);
+  border-color: var(--success-700);
+  color: var(--success-700);
+}
+
+.status-panel[data-kondisi="segera"] {
+  border-color: var(--warning-500);
+}
+
+.status-panel[data-kondisi="segera"] .status-badge {
+  background-color: var(--warning-50);
+  border-color: var(--warning-500);
+  color: var(--warning-700);
+}
+
+.status-panel[data-kondisi="berakhir"] {
+  border-color: var(--danger-500);
+}
+
+.status-panel[data-kondisi="berakhir"] .status-badge {
+  background-color: var(--danger-50);
+  border-color: var(--danger-500);
+  color: var(--danger-700);
+}
+
+.status-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.status-meta b {
+  color: var(--text);
+  font-weight: var(--weight-semibold);
+}
+
+.status-remain {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--text);
+}
+
+.status-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.status-foot-note {
+  margin: 0;
+  max-width: 52ch;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   RINGKASAN DATA
+   ========================================================================== */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4) var(--space-6);
+  margin: 0;
+}
+
+.summary-item dt {
+  margin-bottom: 2px;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.summary-item dd {
+  margin: 0;
+  font-size: var(--text-base);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================================================
+   FORMULIR
+   ========================================================================== */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.field {
+  margin: 0;
+  min-width: 0;
+}
+
+.field-full {
+  grid-column: 1 / -1;
+}
+
+.field label,
+.row label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text);
+}
+
+.field input,
+.field textarea,
+.field select,
+.row input,
+.row textarea,
+.row select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px var(--space-3);
+  font-family: var(--font-body);
+  /* Minimal 16px agar iOS tidak melakukan zoom saat fokus. */
+  font-size: var(--text-base);
+  color: var(--text);
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: border-color 150ms ease;
+}
+
+.field textarea,
+.row textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.field input:focus-visible,
+.field textarea:focus-visible,
+.field select:focus-visible,
+.row input:focus-visible,
+.row textarea:focus-visible,
+.row select:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+  border-color: var(--brand-600);
+}
+
+.field input[aria-invalid="true"],
+.field textarea[aria-invalid="true"] {
+  border-color: var(--danger-500);
+}
+
+.field-help {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.field-error {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--danger-700);
+}
+
+.field-static {
+  display: block;
+  min-height: 44px;
+  padding: 10px var(--space-3);
+  font-size: var(--text-base);
+  color: var(--text-muted);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow-wrap: anywhere;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.row {
+  margin-bottom: var(--space-4);
+}
+
+/* ---- Pilihan radio ------------------------------------------------------ */
+.radiogroup {
+  border: 0;
+  margin: 0 0 var(--space-4);
+  padding: 0;
+}
+
+.radiogroup legend {
+  padding: 0;
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text);
+}
+
+.radio-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+  cursor: pointer;
+}
+
+.radio-row:hover {
+  background-color: var(--surface);
+}
+
+.radio-row input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--brand-700);
+}
+
+/* ==========================================================================
+   TABEL MoU
+   ========================================================================== */
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table.mitra-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+table.mitra-table th {
+  padding: var(--space-3);
+  text-align: left;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+table.mitra-table td {
+  padding: var(--space-3);
+  vertical-align: top;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+
+table.mitra-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.mou-judul {
+  display: block;
+  font-weight: var(--weight-semibold);
+}
+
+.mou-nomor {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.mou-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Kartu MoU di layar kecil (menggantikan tabel). */
+.mou-cards {
+  display: none;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: var(--space-3);
+}
+
+.mou-card {
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.mou-card dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-1) var(--space-3);
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.mou-card dt {
+  color: var(--text-muted);
+}
+
+.mou-card dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================================================
+   KEADAAN KOSONG
+   ========================================================================== */
+.empty-state {
+  padding: var(--space-8) var(--space-4);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: var(--text-base);
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   PROFIL INSTANSI
+   ========================================================================== */
+.profil-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--space-5);
+}
+
+.profil-identitas {
+  min-width: 0;
+  flex: 1 1 240px;
+}
+
+.profil-identitas h2 {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.profil-username {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.profil-foto {
+  position: relative;
+  flex-shrink: 0;
+  width: 120px;
+  height: 120px;
+}
+
+.profil-foto img,
+.profil-foto-inisial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: var(--brand-700);
+  color: var(--bg);
+  font-family: var(--font-heading);
+  font-size: 40px;
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+}
+
+.profil-foto-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Pratinjau foto sebelum diunggah (diatur mitra-ui.js). */
+.foto-pratinjau[data-tampil="false"],
+.foto-pratinjau:not([src]) {
+  display: none;
+}
+
+.foto-pratinjau[data-tampil="true"] {
+  display: block;
+  max-width: 160px;
+  height: auto;
+  margin-top: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+/* ==========================================================================
+   PEMBACA DOKUMEN MoU (mou-detail)
+   ========================================================================== */
+.reader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.reader-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.reader-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.reader-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-5);
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.reader-meta b {
+  color: var(--text);
+  font-weight: var(--weight-semibold);
+}
+
+.reader-keterangan {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text);
+}
+
+.reader-catatan {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.pdf-frame {
+  width: 100%;
+  min-height: 620px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--surface);
+}
+
+.reader-back {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+/* ==========================================================================
+   MODAL
+   ========================================================================== */
+.mitra-modal[hidden] {
+  display: none;
+}
+
+.mitra-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background-color: rgba(10, 37, 64, 0.55);
+}
+
+.mitra-modal-box {
+  width: 100%;
+  max-width: 520px;
+  max-height: 90dvh;
+  overflow-y: auto;
+  padding: clamp(16px, 4vw, 28px);
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.mitra-modal-box-lebar {
+  max-width: 680px;
+}
+
+.mitra-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.mitra-modal-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--text);
+}
+
+.mitra-modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background-color: transparent;
+  color: var(--text-muted);
+  font-size: var(--text-lg);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.mitra-modal-close:hover {
+  background-color: var(--surface);
+  color: var(--text);
+}
+
+/* ---- Biodata di dalam modal -------------------------------------------- */
+.biodata-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.biodata-grid dt {
+  margin-bottom: 2px;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.biodata-grid dd {
+  margin: 0;
+  font-size: var(--text-base);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.biodata-foto {
+  display: flex;
+  justify-content: center;
+  grid-column: 1 / -1;
+}
+
+.biodata-foto img,
+.biodata-foto .profil-foto-inisial {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* ==========================================================================
+   LACI (layar <= 1023px)
+   ========================================================================== */
+.mitra-scrim {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background-color: rgba(3, 12, 28, 0.6);
+}
+
+.mitra-scrim[hidden] {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .mitra-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 100;
+    width: min(280px, 84vw);
+    max-height: none;
+    transform: translateX(-100%);
+    transition: transform 260ms var(--ease-standard);
+  }
+
+  .mitra-sidebar[data-terbuka="true"] {
+    transform: translateX(0);
+  }
+
+  .mitra-scrim[hidden] {
+    display: none;
+  }
+
+  .mitra-scrim:not([hidden]) {
+    display: block;
+  }
+
+  .mitra-menu-btn {
+    display: inline-flex;
+  }
+
+  /* Cegah halaman ikut menggulir saat laci terbuka. */
+  body[data-laci-terbuka="true"] {
+    overflow: hidden;
+  }
+
+  /* Topbar tidak perlu sticky saat laci aktif. */
+  body[data-laci-terbuka="true"] .mitra-topbar {
+    position: static;
+  }
+}
+
+/* ==========================================================================
+   RESPONSIF
+   ========================================================================== */
+@media (max-width: 860px) {
+  .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .table-wrap {
+    display: none;
+  }
+
+  .mou-cards {
+    display: flex;
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .biodata-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .mitra-topbar {
+    min-height: 56px;
+  }
+
+  /* Nama pengguna disembunyikan; avatar tetap jadi tombol profil. */
+  .mitra-user-text {
+    display: none;
+  }
+
+  .mitra-user {
+    padding: 0;
+  }
+
+  .mitra-page-head,
+  .mitra-lead {
+    font-size: var(--text-sm);
+  }
+
+  .status-panel-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .status-meta {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .status-foot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .status-foot .mitra-btn {
+    width: 100%;
+  }
+
+  .summary-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-actions .mitra-btn {
+    width: 100%;
+  }
+
+  .mou-actions {
+    width: 100%;
+  }
+
+  .mou-actions .mitra-btn {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .profil-foto,
+  .profil-foto img,
+  .profil-foto-inisial {
+    width: 72px;
+    height: 72px;
+  }
+
+  .pdf-frame {
+    min-height: 420px;
+  }
+}
+
+@media (max-width: 420px) {
+  .mitra-main {
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+  }
+
+  .mitra-card {
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+  }
+
+  .mitra-user-avatar {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* Hormati preferensi gerak minimal. */
+@media (prefers-reduced-motion: reduce) {
+  .mitra-sidebar {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   TAMBAHAN: badge status MoU, pembaca isi MoU, gerak, cetak
+   ========================================================================== */
+
+/* Badge status MoU di daftar & detail (warna dari tokens.css). */
+.status-badge-ok {
+  background-color: var(--success-50);
+  border-color: var(--success-700);
+  color: var(--success-700);
+}
+
+.status-badge-warn {
+  background-color: var(--warning-50);
+  border-color: var(--warning-500);
+  color: var(--warning-700);
+}
+
+.status-badge-danger {
+  background-color: var(--danger-50);
+  border-color: var(--danger-500);
+  color: var(--danger-700);
+}
+
+/* Lebar baca isi MoU: <=780px, 16-17px, line-height 1.7. */
+.reader-isi {
+  max-width: 68ch;
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.reader-isi h3 {
+  margin: var(--space-6) 0 var(--space-2);
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--text);
+  text-align: left;
+}
+
+.reader-isi h3:first-child {
+  margin-top: 0;
+}
+
+.reader-isi p {
+  margin: 0 0 var(--space-3);
+  text-align: left;
+}
+
+@media (max-width: 640px) {
+  .reader-isi {
+    font-size: 16px;
+  }
+}
+
+/* Lebar baca dokumen: maksimum 780px. */
+.reader {
+  max-width: 780px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Kartu pembaca: latar --bg, radius 14px, tanpa bayangan. */
+.reader {
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: clamp(20px, 4vw, 44px);
+}
+
+/* ---- Gerak masuk (mitra-motion.js) --------------------------------------
+   Hanya aktif bila html.mitra-gerak ada (JS hidup + bukan reduced-motion).
+   Satu gerak: fade + geser vertikal; hanya transform & opacity. */
+html.mitra-gerak [data-anim="naik"] {
+  opacity: 0;
+  transform: translateY(var(--geser, 18px));
+  transition:
+    opacity 480ms var(--ease-standard) calc(var(--urut, 0) * 70ms),
+    transform 480ms var(--ease-standard) calc(var(--urut, 0) * 70ms);
+  will-change: opacity, transform;
+}
+
+html.mitra-gerak [data-anim="naik"][data-masuk="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---- Cetak: sembunyikan sidebar, bilah atas, tombol aksi --------------- */
+@media print {
+  .mitra-sidebar,
+  .mitra-topbar,
+  .mitra-scrim,
+  .mitra-menu-btn,
+  .reader-back,
+  .form-actions,
+  footer {
+    display: none !important;
+  }
+
+  .mitra-page {
+    background-color: var(--bg);
+  }
+
+  .mitra-main {
+    padding: 0;
+  }
+
+  .mitra-card,
+  .reader {
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    max-width: none;
+  }
+
+  .reader-isi {
+    max-width: none;
+  }
+}

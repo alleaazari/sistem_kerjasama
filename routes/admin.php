@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\LandingCms;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -354,35 +355,41 @@ Route::middleware('admin.only')->group(function () use (
     })->name('admin.inbox.reject');
 
     // ---------------- ARTIKEL ----------------
-    Route::get('/artikel', function () use ($defaultArtikel) {
-        return view('admin.artikel', ['rows' => session('admin_artikel', $defaultArtikel)]);
+    Route::get('/artikel', function () {
+        $rows = app(LandingCms::class)->all()['artikel'];
+
+        return view('admin.artikel', ['rows' => $rows]);
     })->name('admin.artikel');
 
-    Route::post('/artikel', function (Request $request) use ($defaultArtikel) {
+    Route::post('/artikel', function (Request $request) {
         $request->validate(['judul' => 'required|string|max:255']);
-        $rows = session('admin_artikel', $defaultArtikel);
+        $cms = app(LandingCms::class);
+        $rows = $cms->all()['artikel'];
         $rows[] = [
             'id' => time().rand(10, 99),
             'judul' => $request->input('judul'),
             'konten' => $request->input('konten', ''),
             'tanggal' => now()->translatedFormat('d F Y'),
+            'gambar' => $request->input('gambar', ''),
         ];
-        session(['admin_artikel' => array_values($rows)]);
+        $cms->save('artikel', array_values($rows));
 
         return back()->with('ok', 'Artikel "'.$request->judul.'" berhasil dipublikasikan.');
     })->name('admin.artikel.store');
 
-    Route::post('/artikel/{id}/delete', function ($id) use ($defaultArtikel) {
-        $rows = session('admin_artikel', $defaultArtikel);
+    Route::post('/artikel/{id}/delete', function ($id) {
+        $cms = app(LandingCms::class);
+        $rows = $cms->all()['artikel'];
         $rows = array_values(array_filter($rows, fn ($r) => (string) $r['id'] !== (string) $id));
-        session(['admin_artikel' => $rows]);
+        $cms->save('artikel', $rows);
 
         return back()->with('ok', 'Artikel berhasil dihapus.');
     })->name('admin.artikel.delete');
 
-    Route::post('/artikel/{id}/edit', function (Request $request, $id) use ($defaultArtikel) {
+    Route::post('/artikel/{id}/edit', function (Request $request, $id) {
         $request->validate(['judul' => 'required|string|max:255']);
-        $rows = session('admin_artikel', $defaultArtikel);
+        $cms = app(LandingCms::class);
+        $rows = $cms->all()['artikel'];
         foreach ($rows as &$r) {
             if ((string) $r['id'] === (string) $id) {
                 $r['judul'] = $request->input('judul');
@@ -391,27 +398,30 @@ Route::middleware('admin.only')->group(function () use (
             }
         }
         unset($r);
-        session(['admin_artikel' => $rows]);
+        $cms->save('artikel', $rows);
 
         return back()->with('ok', 'Artikel berhasil diperbarui.');
     })->name('admin.artikel.edit');
 
     // ---------------- GALERI ----------------
-    Route::get('/galeri', function () use ($defaultGaleri) {
-        return view('admin.galeri', ['rows' => session('admin_galeri', $defaultGaleri)]);
+    Route::get('/galeri', function () {
+        $rows = app(LandingCms::class)->all()['galeri'];
+
+        return view('admin.galeri', ['rows' => $rows]);
     })->name('admin.galeri');
 
-    Route::post('/galeri', function (Request $request) use ($defaultGaleri) {
+    Route::post('/galeri', function (Request $request) {
         $request->validate([
             'judul' => 'required|string|max:255',
             'gambar' => 'nullable|image|max:2048',
         ]);
-        $rows = session('admin_galeri', $defaultGaleri);
+        $cms = app(LandingCms::class);
+        $rows = $cms->all()['galeri'];
 
-        $gambarBase64 = null;
+        $gambar = $request->input('gambar_url');
         if ($request->hasFile('gambar') && $request->file('gambar')->isValid()) {
             $file = $request->file('gambar');
-            $gambarBase64 = 'data:'.$file->getMimeType().';base64,'.base64_encode(file_get_contents($file->getRealPath()));
+            $gambar = 'data:'.$file->getMimeType().';base64,'.base64_encode(file_get_contents($file->getRealPath()));
         }
 
         $rows[] = [
@@ -419,28 +429,30 @@ Route::middleware('admin.only')->group(function () use (
             'judul' => $request->input('judul'),
             'konten' => $request->input('konten', ''),
             'tanggal' => now()->translatedFormat('d F Y'),
-            'gambar' => $gambarBase64,
+            'gambar' => $gambar,
         ];
 
-        session(['admin_galeri' => array_values($rows)]);
+        $cms->save('galeri', array_values($rows));
 
         return back()->with('ok', 'Foto "'.$request->judul.'" berhasil dipublikasikan.');
     })->name('admin.galeri.store');
 
-    Route::post('/galeri/{id}/delete', function ($id) use ($defaultGaleri) {
-        $rows = session('admin_galeri', $defaultGaleri);
+    Route::post('/galeri/{id}/delete', function ($id) {
+        $cms = app(LandingCms::class);
+        $rows = $cms->all()['galeri'];
         $rows = array_values(array_filter($rows, fn ($r) => (string) $r['id'] !== (string) $id));
-        session(['admin_galeri' => $rows]);
+        $cms->save('galeri', $rows);
 
         return back()->with('ok', 'Foto galeri berhasil dihapus.');
     })->name('admin.galeri.delete');
 
-    Route::post('/galeri/{id}/edit', function (Request $request, $id) use ($defaultGaleri) {
+    Route::post('/galeri/{id}/edit', function (Request $request, $id) {
         $request->validate([
             'judul' => 'required|string|max:255',
             'gambar' => 'nullable|image|max:2048',
         ]);
-        $rows = session('admin_galeri', $defaultGaleri);
+        $cms = app(LandingCms::class);
+        $rows = $cms->all()['galeri'];
         foreach ($rows as &$r) {
             if ((string) $r['id'] === (string) $id) {
                 $r['judul'] = $request->input('judul');
@@ -453,13 +465,21 @@ Route::middleware('admin.only')->group(function () use (
             }
         }
         unset($r);
-        session(['admin_galeri' => $rows]);
+        $cms->save('galeri', $rows);
 
         return back()->with('ok', 'Foto galeri berhasil diperbarui.');
     })->name('admin.galeri.edit');
 
     // ---------------- TENTANG & MITRA DRAF ----------------
-    Route::view('/tentang', 'admin.tentang')->name('admin.tentang');
+    Route::get('/tentang', function () {
+        $cms = app(LandingCms::class);
+        $data = $cms->all();
+
+        return view('admin.tentang', [
+            'petinggi' => $data['petinggi'],
+            'visi' => $data['visi'],
+        ]);
+    })->name('admin.tentang');
 
     Route::post('/tentang', function (Request $request) {
         $request->validate([
@@ -467,31 +487,34 @@ Route::middleware('admin.only')->group(function () use (
             'p_jabatan.*' => 'required|string|max:255',
             'p_badge.*' => 'required|string|max:255',
             'p_foto.*' => 'nullable|image|max:2048',
+            'p_foto_url.*' => 'nullable|string|max:1000',
             'p_desc.*' => 'required|string',
             'visi' => 'required|string',
         ]);
 
+        $cms = app(LandingCms::class);
+        $current = $cms->all()['petinggi'];
         $petinggi = [];
         $count = count($request->input('p_nama', []));
 
         for ($i = 0; $i < $count; $i++) {
-            $fotoBase64 = null;
+            $foto = $request->input('p_foto_url')[$i] ?? ($current[$i]['foto'] ?? '');
             if ($request->hasFile('p_foto') && isset($request->file('p_foto')[$i]) && $request->file('p_foto')[$i]->isValid()) {
                 $file = $request->file('p_foto')[$i];
-                $fotoBase64 = 'data:'.$file->getMimeType().';base64,'.base64_encode(file_get_contents($file->getRealPath()));
+                $foto = 'data:'.$file->getMimeType().';base64,'.base64_encode(file_get_contents($file->getRealPath()));
             }
 
             $petinggi[] = [
                 'nama' => $request->input('p_nama')[$i],
                 'jabatan' => $request->input('p_jabatan')[$i],
                 'badge' => $request->input('p_badge')[$i],
-                'foto' => $fotoBase64,
+                'foto' => $foto,
                 'desc' => $request->input('p_desc')[$i],
             ];
         }
 
-        session(['admin_petinggi' => $petinggi]);
-        session(['admin_visi' => $request->input('visi')]);
+        $cms->save('petinggi', $petinggi);
+        $cms->save('visi', $request->input('visi'));
 
         return back()->with('ok', 'Profil Petinggi & Visi Misi Komdigi berhasil diperbarui.');
     })->name('admin.tentang.update');

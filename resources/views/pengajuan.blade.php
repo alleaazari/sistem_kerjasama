@@ -6,21 +6,21 @@
     <div class="pjn-hero-badge">Portal Resmi Komdigi</div>
     <h2 class="pjn-hero-title">Formulir Pengajuan Kerja Sama</h2>
     <p class="pjn-hero-sub">Isi data instansi Anda dengan lengkap. Jika disetujui, username dan password login akan dikirimkan ke email PIC yang terdaftar.</p>
-    <div class="pjn-steps">
-        <div class="pjn-step active" id="step-ind-1">
-            <div class="pjn-step-num">1</div>
-            <div class="pjn-step-label">Data Instansi</div>
-        </div>
-        <div class="pjn-step-line"></div>
-        <div class="pjn-step" id="step-ind-2">
-            <div class="pjn-step-num">2</div>
-            <div class="pjn-step-label">Kontak PIC</div>
-        </div>
-        <div class="pjn-step-line"></div>
-        <div class="pjn-step" id="step-ind-3">
-            <div class="pjn-step-num">3</div>
-            <div class="pjn-step-label">Tujuan & Dokumen</div>
-        </div>
+    <div class="pjn-steps" id="pjn-steps">
+        <button type="button" class="pjn-step active" id="step-ind-1" data-target="pjn-step-1" aria-label="Langkah 1: Data Instansi" aria-current="step">
+            <span class="pjn-step-num">1</span>
+            <span class="pjn-step-label">Data Instansi</span>
+        </button>
+        <div class="pjn-step-line" id="step-line-1"></div>
+        <button type="button" class="pjn-step" id="step-ind-2" data-target="pjn-step-2" aria-label="Langkah 2: Kontak PIC">
+            <span class="pjn-step-num">2</span>
+            <span class="pjn-step-label">Kontak PIC</span>
+        </button>
+        <div class="pjn-step-line" id="step-line-2"></div>
+        <button type="button" class="pjn-step" id="step-ind-3" data-target="pjn-step-3" aria-label="Langkah 3: Tujuan dan Pembiayaan">
+            <span class="pjn-step-num">3</span>
+            <span class="pjn-step-label">Tujuan &amp; Pembiayaan</span>
+        </button>
     </div>
 </div>
 
@@ -415,8 +415,50 @@
     gap: 8px;
     opacity: 0.55;
     transition: opacity 0.3s;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font-family: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
 }
+.pjn-step:hover { opacity: 0.85; }
 .pjn-step.active { opacity: 1; }
+.pjn-step:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 4px;
+    border-radius: 6px;
+}
+.pjn-step.done .pjn-step-num {
+    background: rgba(255,255,255,0.9);
+    color: transparent;
+    border-color: rgba(255,255,255,0.9);
+    font-size: 0;
+}
+.pjn-step.done .pjn-step-num::after {
+    content: '';
+    width: 9px; height: 5px;
+    border-left: 2px solid #15803d;
+    border-bottom: 2px solid #15803d;
+    transform: rotate(-45deg) translate(1px, -1px);
+    animation: pjnCheckIn 0.2s ease;
+}
+@keyframes pjnCheckIn {
+    from { opacity: 0; transform: rotate(-45deg) translate(1px, -1px) scale(0.6); }
+    to   { opacity: 1; transform: rotate(-45deg) translate(1px, -1px) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .pjn-step.done .pjn-step-num::after { animation: none; }
+}
+/* Langkah yang sedang dilihat tetap menonjol walau sudah lengkap */
+.pjn-step.active.done .pjn-step-num {
+    background: #FDFCF9;
+    border-color: #fff;
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.25);
+}
+.pjn-step-line.done { background: rgba(255,255,255,0.7); }
 .pjn-step-num {
     width: 28px; height: 28px;
     border-radius: 50%;
@@ -427,7 +469,7 @@
     transition: all 0.3s;
 }
 .pjn-step.active .pjn-step-num {
-    background: #fff;
+    background: #FDFCF9;
     color: #0b3a6b;
     border-color: #fff;
 }
@@ -528,13 +570,14 @@ textarea.pjn-input.is-invalid {
 
 /* CARDS */
 .pjn-card {
-    background: #ffffff;
+    background: #FDFCF9;
     border-radius: 14px;
     border: 1px solid #e2e8f0;
     margin-bottom: 18px;
     box-shadow: 0 2px 10px rgba(11,58,107,0.05);
     overflow: hidden;
     transition: box-shadow 0.3s ease;
+    scroll-margin-top: 110px;
 }
 .pjn-card:hover {
     box-shadow: 0 6px 24px rgba(11,58,107,0.09);
@@ -591,7 +634,7 @@ textarea.pjn-input.is-invalid {
     font-family: inherit;
     font-size: 13px;
     color: #1e293b;
-    background: #fff;
+    background: #FDFCF9;
     transition: border-color 0.2s, box-shadow 0.2s;
     outline: none;
 }
@@ -656,7 +699,7 @@ textarea.pjn-input { resize: vertical; min-height: 90px; }
     width: 100%;
     max-height: 280px;
     overflow-y: auto;
-    background: #fff;
+    background: #FDFCF9;
     border: 1.5px solid #bfdbfe;
     border-top: none;
     border-radius: 0 0 10px 10px;
@@ -717,17 +760,6 @@ textarea.pjn-input { resize: vertical; min-height: 90px; }
 }
 
 /* INPUT WITH ICON */
-.pjn-input-icon-wrap {
-    position: relative;
-}
-.pjn-input-icon-wrap svg {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none;
-}
-.pjn-input-has-icon { padding-left: 36px; }
 
 /* CHECKBOXES */
 .pjn-checkbox-group {
@@ -768,7 +800,7 @@ textarea.pjn-input { resize: vertical; min-height: 90px; }
     flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
     transition: all 0.2s;
-    background: #fff;
+    background: #FDFCF9;
 }
 .pjn-checkbox:checked ~ .pjn-checkbox-custom {
     background: #1d4ed8;
@@ -890,38 +922,9 @@ textarea.pjn-input { resize: vertical; min-height: 90px; }
     transform: translateY(0);
 }
 
-/* DROPZONE */
-.pjn-dropzone {
-    border: 2px dashed #cbd5e1;
-    border-radius: 12px;
-    padding: 32px 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: #f8fafc;
-}
-.pjn-dropzone:hover, .pjn-dropzone.drag-over {
-    border-color: #1d4ed8;
-    background: #eff6ff;
-}
-.pjn-dz-icon { margin-bottom: 10px; }
-.pjn-dz-text { font-size: 14px; font-weight: 600; color: #475569; }
-.pjn-dz-hint { font-size: 12px; color: #94a3b8; margin-top: 4px; }
-.pjn-dz-filename {
-    margin-top: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #1d4ed8;
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    border-radius: 6px;
-    padding: 6px 12px;
-    display: inline-block;
-}
-
 /* SUBMIT AREA */
 .pjn-submit-area {
-    background: #fff;
+    background: #FDFCF9;
     border: 1px solid #e2e8f0;
     border-radius: 14px;
     padding: 22px;
@@ -971,7 +974,7 @@ textarea.pjn-input { resize: vertical; min-height: 90px; }
 .pjn-btn-submit:active { transform: translateY(1px); box-shadow: 0 2px 6px rgba(22, 83, 206, 0.2); }
 
 .pjn-btn-back {
-    background: #ffffff;
+    background: #FDFCF9;
     color: #0c3575;
     border: 1.5px solid #cbd5e1;
     display: inline-flex;
@@ -1136,60 +1139,19 @@ function pddiktiSearch(val) {
 }
 
 function tryPddiktiApi(q, onSuccess, onFail) {
-    // 1. Try Laravel Server Backend API Proxy (No CORS issue)
+    // Panggilan API eksternal hanya lewat proxy server (/api/pddikti).
     fetch('/api/pddikti?q=' + encodeURIComponent(q), { signal: AbortSignal.timeout(4000) })
         .then(function(r) { return r.json(); })
         .then(function(res) {
             if (res && res.data && res.data.length > 0) {
                 onSuccess(res.data);
-                return;
+            } else {
+                onFail();
             }
-            // 2. Direct external API fallback
-            tryDirectEndpoints(q, onSuccess, onFail);
         })
         .catch(function() {
-            tryDirectEndpoints(q, onSuccess, onFail);
+            onFail();
         });
-}
-
-function tryDirectEndpoints(q, onSuccess, onFail) {
-    var endpoints = [
-        'https://api-frontend.kemdikbud.go.id/hit_mhs_token/univ?keyword=' + encodeURIComponent(q),
-        'https://pddikti.kemdikbud.go.id/api/pencarian/pt/' + encodeURIComponent(q),
-    ];
-    var tried = 0;
-    function tryNext() {
-        if (tried >= endpoints.length) { onFail(); return; }
-        var url = endpoints[tried++];
-        fetch(url, { signal: AbortSignal.timeout(3500) })
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                var mapped = [];
-                if (Array.isArray(data)) {
-                    mapped = data.slice(0,10).map(function(d) {
-                        return {
-                            id: d.id || d.kode_pt || '',
-                            nama: d.nama || d.nama_pt || d.text || '',
-                            kota: d.kota || d.kabkota || '',
-                            provinsi: d.provinsi || d.nm_prov || '',
-                            jenis: d.jenis || d.bentuk_pt || 'Perguruan Tinggi'
-                        };
-                    }).filter(function(d) { return d.nama; });
-                } else if (data && data.data && Array.isArray(data.data)) {
-                    mapped = data.data.slice(0,10).map(function(d) {
-                        return { id: d.id || '', nama: d.nama || '', kota: d.kota || '', provinsi: d.provinsi || '', jenis: d.jenis || '' };
-                    }).filter(function(d) { return d.nama; });
-                }
-
-                if (mapped.length > 0) {
-                    onSuccess(mapped);
-                } else {
-                    tryNext();
-                }
-            })
-            .catch(function() { tryNext(); });
-    }
-    tryNext();
 }
 
 function searchLocal(q) {
@@ -1200,27 +1162,43 @@ function searchLocal(q) {
     }).slice(0, 12);
 }
 
+// Hasil pencarian disimpan sebagai data, bukan disisipkan ke atribut onclick,
+// agar nama instansi dari API tidak bisa menjadi kode yang dieksekusi.
+var pddiktiCurrentResults = [];
+
 function renderDropdown(results, q, source) {
     var dropdown = document.getElementById('pddikti-dropdown');
     var html = '';
+    pddiktiCurrentResults = [];
 
     if (results.length === 0) {
         html = '<div class="pjn-dropdown-empty">Tidak ditemukan. Silakan ketik nama instansi secara manual.</div>';
     } else {
-        results.forEach(function(item, idx) {
+        results.forEach(function(item) {
             var nameHighlighted = highlightMatch(item.nama, q);
-            var meta = [item.jenis, item.kota, item.provinsi].filter(Boolean).join(' &bull; ');
-            html += '<div class="pjn-dropdown-item" tabindex="-1" onclick="selectPT(\'' +
-                escStr(item.id) + '\', \'' + escStr(item.nama) + '\', \'' + escStr(item.kota) + '\', \'' + escStr(item.provinsi) + '\', \'' + escStr(item.jenis) + '\')">' +
+            var meta = [item.jenis, item.kota, item.provinsi].filter(Boolean)
+                .map(escHtml).join(' &bull; ');
+            html += '<div class="pjn-dropdown-item" role="option" tabindex="-1" data-idx="' +
+                pddiktiCurrentResults.length + '">' +
                 '<div class="pjn-dropdown-item-name">' + nameHighlighted + '</div>' +
                 '<div class="pjn-dropdown-item-meta">' + meta + '</div>' +
                 '</div>';
+            pddiktiCurrentResults.push(item);
         });
-        html += '<div class="pjn-dropdown-source">' + source + '</div>';
+        html += '<div class="pjn-dropdown-source">' + escHtml(source) + '</div>';
     }
     dropdown.innerHTML = html;
     dropdown.style.display = 'block';
 }
+
+// Klik item dropdown: ambil data dari daftar hasil, bukan dari atribut onclick.
+document.addEventListener('click', function(e) {
+    var item = e.target.closest ? e.target.closest('.pjn-dropdown-item') : null;
+    if (!item) return;
+    var picked = pddiktiCurrentResults[parseInt(item.getAttribute('data-idx'), 10)];
+    if (!picked) return;
+    selectPT(picked.id || '', picked.nama || '', picked.kota || '', picked.provinsi || '', picked.jenis || '');
+});
 
 function highlightMatch(str, q) {
     var i = str.toLowerCase().indexOf(q.toLowerCase());
@@ -1253,9 +1231,6 @@ function selectPT(id, nama, kota, provinsi, jenis) {
     info.style.display = 'flex';
 }
 
-function escStr(s) {
-    return (s || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-}
 function escHtml(s) {
     var d = document.createElement('div');
     d.textContent = s || '';
@@ -1270,29 +1245,6 @@ document.addEventListener('click', function(e) {
         if (dd) dd.style.display = 'none';
     }
 });
-
-/* =================== DROPZONE =================== */
-function showFileName(input) {
-    var fn = document.getElementById('pjn-file-name');
-    if (input.files && input.files[0]) {
-        fn.textContent = input.files[0].name;
-        fn.style.display = 'inline-block';
-    }
-}
-var dz = document.getElementById('pjn-dropzone');
-if (dz) {
-    dz.addEventListener('dragover', function(e) { e.preventDefault(); dz.classList.add('drag-over'); });
-    dz.addEventListener('dragleave', function() { dz.classList.remove('drag-over'); });
-    dz.addEventListener('drop', function(e) {
-        e.preventDefault();
-        dz.classList.remove('drag-over');
-        var fi = document.getElementById('file-surat');
-        if (fi && e.dataTransfer.files.length) {
-            fi.files = e.dataTransfer.files;
-            showFileName(fi);
-        }
-    });
-}
 
 /* =================== FORM VALIDATION & AUTO-DRAFT =================== */
 var DRAFT_STORAGE_KEY = 'kerjasama_mitra_draft_v1';
@@ -1552,9 +1504,13 @@ function validatePengajuanForm() {
     if (errors.length > 0) {
         // Scroll smoothly to first error element
         if (firstErrorEl) {
+            var card = firstErrorEl.closest ? firstErrorEl.closest('.pjn-card') : null;
+            var stepIdx = ['pjn-step-1', 'pjn-step-2', 'pjn-step-3'].indexOf(card ? card.id : '');
+            if (stepIdx !== -1) pjnSetStep(stepIdx);
+
             firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
             if (typeof firstErrorEl.focus === 'function') {
-                setTimeout(function() { firstErrorEl.focus(); }, 400);
+                setTimeout(function() { firstErrorEl.focus({ preventScroll: true }); }, 400);
             }
         }
         showValidationToast('Mohon lengkapi ' + errors.length + ' data yang bertanda merah sebelum mengirim pengajuan.');
@@ -1564,9 +1520,96 @@ function validatePengajuanForm() {
     return true;
 }
 
+/* =================== STEP INDICATOR SYNC =================== */
+var pjnCurrentStep = 0;
+
+function pjnSetStep(idx) {
+    pjnCurrentStep = idx;
+    pjnUpdateSteps();
+}
+
+function pjnSetupSteps() {
+    var cards = ['pjn-step-1', 'pjn-step-2', 'pjn-step-3']
+        .map(function (id) { return document.getElementById(id); })
+        .filter(Boolean);
+    if (cards.length === 0) return;
+
+    // Klik penanda: gulir ke bagian terkait
+    document.querySelectorAll('.pjn-step[data-target]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var target = document.getElementById(btn.getAttribute('data-target'));
+            if (!target) return;
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            var firstField = target.querySelector('input, select, textarea');
+            if (firstField) setTimeout(function () { firstField.focus({ preventScroll: true }); }, 450);
+        });
+    });
+
+    // Sinkron saat menggulir: bagian teratas di viewport jadi penanda aktif
+    if (!('IntersectionObserver' in window)) return;
+    var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            var idx = cards.indexOf(entry.target);
+            if (idx !== -1) pjnSetStep(idx);
+        });
+    }, { rootMargin: '-110px 0px -55% 0px', threshold: 0 });
+    cards.forEach(function (c) { observer.observe(c); });
+}
+
+/* =================== STATUS LANGKAH DARI ISIAN =================== */
+// Satu langkah dianggap lengkap bila SEMUA field wajib di dalamnya terisi.
+var PJN_STEP_RULES = [
+    { card: 'pjn-step-1', fields: ['pddikti-input', 'jenis_instansi', 'organisasi', 'kota', 'provinsi', 'alamat'] },
+    { card: 'pjn-step-2', fields: ['pic', 'email', 'telp'] },
+    { card: 'pjn-step-3', fields: ['tujuan_mitra', 'metode_pelatihan', 'tujuan_pelatihan'], groups: ['.pjn-checkbox-group', '.pjn-pembiayaan-group'] }
+];
+
+function pjnStepFilled(idx) {
+    var rule = PJN_STEP_RULES[idx];
+    if (!rule) return false;
+
+    var filled = rule.fields.every(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return false;
+        var val = String(el.value || '').trim();
+        return el.type === 'email' ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) : val.length > 0;
+    });
+
+    (rule.groups || []).forEach(function (sel) {
+        var group = document.querySelector(sel);
+        if (!group) return;
+        var any = sel.indexOf('checkbox') !== -1
+            ? group.querySelectorAll('input[type="checkbox"]:checked').length > 0
+            : group.querySelectorAll('input[type="radio"]:checked').length > 0;
+        filled = filled && any;
+    });
+
+    return filled;
+}
+
+// Perbarui penanda: centang untuk langkah lengkap, nomor untuk yang belum/tergulir.
+function pjnUpdateSteps() {
+    var viewing = pjnCurrentStep;
+    PJN_STEP_RULES.forEach(function (rule, i) {
+        var el = document.getElementById(['step-ind-1', 'step-ind-2', 'step-ind-3'][i]);
+        if (!el) return;
+        var done = pjnStepFilled(i);
+        el.classList.toggle('done', done);
+        el.classList.toggle('active', i === viewing);
+        el.setAttribute('aria-label', 'Langkah ' + (i + 1) + ': ' + el.querySelector('.pjn-step-label').textContent + (done ? ' (lengkap)' : ' (belum lengkap)'));
+    });
+    for (var l = 1; l <= 2; l++) {
+        var line = document.getElementById('step-line-' + l);
+        if (line) line.classList.toggle('done', pjnStepFilled(l - 1));
+    }
+}
+
 // Real-time input error clearing & draft auto-save
 document.addEventListener('DOMContentLoaded', function() {
     restoreDraft();
+    pjnSetupSteps();
+    pjnUpdateSteps();
 
     var form = document.getElementById('pjn-form');
     if (!form) return;
@@ -1576,6 +1619,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (el && el.value && el.value.trim().length > 0) {
             clearFieldError(el, null);
         }
+        pjnUpdateSteps();
         saveDraft();
     });
 
@@ -1593,6 +1637,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 clearFieldError(el, null);
             }
         }
+        pjnUpdateSteps();
         saveDraft();
     });
 

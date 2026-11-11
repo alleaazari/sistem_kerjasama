@@ -1,4 +1,4 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    KOMPONEN BERSAMA ADMIN & PORTAL MITRA
    Berisi satu-satunya salinan blok layout aplikasi (sidebar, topbar, konten,
    footer) yang sebelumnya diduplikasi identik di admin/css/style.css dan
@@ -21,26 +21,34 @@
 
 .admin-app-layout {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
   width: 100%;
   position: relative;
   flex: 1 0 auto;
 }
 
+/* Pembungkus sidebar + kolom konten. Footer berada DI LUAR pembungkus ini
+   sehingga selebar halaman dan terpisah dari area gulir sidebar. */
+.admin-shell {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  flex: 0 0 auto;
+}
+
 /* ==========================================================================
-   SIDEBAR - BLUR BIRU GLASSMORPHISM (INSPIRASI MAC & MODERN AI INTERFACE)
+   SIDEBAR — navy pekat, datar (tanpa gradasi, tanpa blur)
    ========================================================================== */
 .admin-sidebar {
-  width: 275px;
+  width: 268px;
   flex-shrink: 0;
-  height: 100vh;
+  min-height: 100vh;
   position: sticky;
   top: 0;
-  background: linear-gradient(180deg, rgba(8, 28, 62, 0.88) 0%, rgba(4, 16, 38, 0.95) 100%);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  align-self: stretch;
+  background-color: var(--brand-900);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 4px 0 30px rgba(2, 10, 26, 0.35);
   display: flex;
   flex-direction: column;
   z-index: 100;
@@ -76,7 +84,7 @@
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background: #ffffff;
+  background: #FDFCF9;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -150,23 +158,67 @@
   padding: 0 8px 6px;
 }
 
-/* LINK MENU DENGAN GARIS BAWAH (TANPA KOTAK BIRU) */
+/* Keadaan dasar tautan menu: netral, tanpa kotak. */
 .sidebar-link {
   position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 11px 8px;
-  margin: 0 4px 3px;
+  padding: 10px 10px;
+  margin: 0 6px 2px;
   color: rgba(226, 232, 240, 0.78);
   font-size: 13.5px;
   font-weight: 500;
   text-decoration: none;
   background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  border-radius: 0;
-  transition: all 0.2s ease;
+  border: 0;
+  border-radius: var(--radius-sm);
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.sidebar-link:hover {
+  color: #FFFFFF;
+  background-color: rgba(255, 255, 255, 0.06);
+  text-decoration: none;
+}
+
+.sidebar-link:hover .link-icon {
+  color: #FFFFFF;
+  opacity: 1;
+}
+
+.sidebar-link:hover .link-arrow {
+  opacity: 0.8;
+  transform: translateX(0);
+}
+
+/* Menu aktif: latar tenang + batang aksen kiri. Tanpa glow. */
+.sidebar-link.on {
+  color: #FFFFFF;
+  font-weight: 600;
+  background-color: rgba(255, 255, 255, 0.09);
+}
+
+.sidebar-link.on::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background-color: var(--accent-500);
+}
+
+.sidebar-link.on .link-icon {
+  color: #FFFFFF;
+  opacity: 1;
+}
+
+.sidebar-link.on .link-arrow {
+  opacity: 0.8;
+  color: #FFFFFF;
+  transform: translateX(0);
 }
 .sidebar-link .link-icon {
   display: flex;
@@ -196,9 +248,9 @@
   line-height: 1.2;
 }
 .sidebar-link .link-badge.ai-badge {
-  background: linear-gradient(135deg, #0284c7, #2563eb);
-  border: 1px solid rgba(56, 189, 248, 0.4);
-  box-shadow: 0 0 8px rgba(56, 189, 248, 0.35);
+  background: rgba(47, 123, 229, 0.22);
+  border: 1px solid rgba(47, 123, 229, 0.55);
+  color: #BBD4F6;
 }
 .sidebar-link .link-arrow {
   color: rgba(148, 163, 184, 0.4);
@@ -209,57 +261,13 @@
   opacity: 0;
 }
 
-/* HOVER EFFECT: BERSIH & HANYA GARIS BAWAH */
-.sidebar-link:hover {
-  color: #ffffff;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid rgba(56, 189, 248, 0.45);
-  transform: none;
-  box-shadow: none;
-  text-decoration: none;
-}
-.sidebar-link:hover .link-icon {
-  color: #38bdf8;
-  opacity: 1;
-  transform: scale(1.05);
-  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.5));
-}
-.sidebar-link:hover .link-arrow {
-  opacity: 0.9;
-  transform: translateX(2px);
-  color: #38bdf8;
-}
-
-/* ACTIVE / TERPILIH: GARIS BAWAH TEGAS (TIDAK ADA KOTAK BIRU) */
-.sidebar-link.on {
-  color: #ffffff;
-  font-weight: 600;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid #38bdf8;
-  border-radius: 0;
-  box-shadow: 0 3px 8px -2px rgba(56, 189, 248, 0.35);
-  transform: none;
-}
-.sidebar-link.on .link-icon {
-  color: #38bdf8;
-  opacity: 1;
-  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.5));
-}
-.sidebar-link.on .link-arrow {
-  opacity: 0.85;
-  color: #38bdf8;
-  transform: translateX(0);
-}
-
-/* SIDEBAR FOOTER PROFILE CARD (SEPERTI NETFLIX SCREENSHOT) */
+/* SIDEBAR FOOTER PROFILE CARD */
 .sidebar-profile-card {
   padding: 12px 14px;
   margin: 10px 14px 16px;
-  background: rgba(15, 23, 42, 0.65);
+  background-color: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -270,16 +278,15 @@
   flex-shrink: 0;
 }
 .profile-avatar {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #1d4ed8, #0284c7);
+  background-color: rgba(255, 255, 255, 0.14);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  color: #FFFFFF;
+  flex-shrink: 0;
 }
 .avatar-status-dot {
   position: absolute;
@@ -342,13 +349,13 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  background-color: #f8fafc;
+  min-height: auto;
+  background-color: var(--surface);
 }
 
 /* TOPBAR */
 .admin-topbar {
-  background: #ffffff;
+  background: #FDFCF9;
   border-bottom: 1px solid var(--border-color);
   padding: 12px 28px;
   display: flex;
@@ -367,7 +374,7 @@
 }
 .sidebar-toggle-btn {
   display: none;
-  background: #ffffff;
+  background: #FDFCF9;
   border: 1px solid var(--border-color);
   color: var(--primary);
   border-radius: 6px;
@@ -408,27 +415,20 @@
 .status-live-indicator {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #166534;
+  gap: var(--space-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
   padding: 4px 10px;
   border-radius: 20px;
-  font-size: 11.5px;
-  font-weight: 600;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
 }
 .pulse-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background-color: #22c55e;
-  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
-  animation: pulseGreen 2s infinite;
-}
-@keyframes pulseGreen {
-  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
-  70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+  background-color: var(--success);
 }
 .who-logged {
   font-size: 13px;
@@ -436,6 +436,12 @@
 }
 .who-logged b {
   color: var(--primary);
+}
+
+/* Tombol keluar di bilah atas admin. */
+.topbar-logout {
+  margin: 0;
+  display: inline-flex;
 }
 
 /* MAIN BODY CONTENT AREA (FLEX: 1 TO GUARANTEE STICKY FOOTER) */
@@ -568,113 +574,42 @@
     gap: 6px;
   }
   .page-main-title {
-    font-size: 17px;
+    font-size: var(--text-xl);
   }
   .admin-page-content {
-    padding: 12px;
+    padding: var(--space-3);
   }
-}
 
-
-/* ============ FOOTER RESMI KOMDIGI (warna navy identik dengan navbar solid) ============ */
-.komdigi-footer {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-  /* Sama persis dengan .main-navbar.scrolled / .navbar-solid di assets/user/css/style.css:
-     gradient navy atas -> bawah. Footer mengikuti navbar, bukan biru terang. */
-  background: linear-gradient(180deg, rgba(8, 28, 62, 0.98) 0%, rgba(4, 16, 38, 1) 100%);
-  color: #dbe6f5;
-  margin-top: auto;
-  font-size: 14px;
-}
-/* Watermark logo KOMDIGI raksasa samar di kanan, seperti footer komdigi.go.id */
-.komdigi-footer::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  right: -130px;
-  transform: translateY(-50%);
-  width: 640px;
-  height: 640px;
-  background: url('../images/logo-komdigi.jpg') no-repeat center / contain;
-  opacity: 0.10;
-  -webkit-mask-image: radial-gradient(circle at center, #000 35%, transparent 72%);
-  mask-image: radial-gradient(circle at center, #000 35%, transparent 72%);
-  pointer-events: none;
-}
-.komdigi-footer-inner {
-  position: relative;
-  z-index: 1;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 46px 24px 22px;
-}
-.kgf-top {
-  display: grid;
-  grid-template-columns: 1.15fr 1fr 1fr 0.55fr;
-  gap: 36px;
-  align-items: start;
-}
-.kgf-logo-row { display: flex; align-items: center; gap: 12px; }
-.kgf-logo {
-  width: 52px; height: 52px; object-fit: contain;
-  background: #fff; border-radius: 8px; padding: 4px;
-}
-.kgf-brand-name {
-  color: #fff; font-weight: 800; font-size: 22px; letter-spacing: 3px;
-}
-.kgf-tagline { margin: 12px 0 0; font-size: 13px; line-height: 1.6; color: #b9cdf0; }
-.kgf-col ul { list-style: none; margin: 0; padding: 0; }
-.kgf-col li { margin-bottom: 12px; }
-.kgf-col a {
-  color: #e4edfb; text-decoration: none; font-size: 14px; line-height: 1.5;
-}
-.kgf-col a:hover { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
-.kgf-divider { border-top: 1px solid rgba(255,255,255,0.22); margin: 26px 0 20px; }
-.kgf-bottom {
-  display: flex; flex-wrap: wrap; align-items: center;
-  gap: 16px 34px;
-}
-.kgf-contact {
-  display: inline-flex; align-items: center; gap: 10px;
-  color: #e4edfb; text-decoration: none; font-size: 13.5px; line-height: 1.5;
-}
-.kgf-contact:hover { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
-.kgf-contact svg { width: 22px; height: 22px; flex-shrink: 0; color: #b9cdf0; }
-.kgf-socials { display: flex; align-items: center; gap: 16px; margin-left: auto; }
-.kgf-socials a {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 30px; height: 30px; color: #fff; text-decoration: none;
-  transition: transform .2s ease, opacity .2s ease;
-}
-.kgf-socials a:hover { transform: translateY(-3px); opacity: .85; }
-.kgf-socials svg { width: 20px; height: 20px; fill: currentColor; }
-.kgf-copy {
-  margin-top: 18px; padding-top: 14px;
-  border-top: 1px solid rgba(255,255,255,0.14);
-  font-size: 12px; color: #9db6dd; text-align: center;
-}
-.kgf-to-top {
-  position: fixed; right: 26px; bottom: 26px; z-index: 9000;
-  width: 46px; height: 46px; border-radius: 50%;
-  background: transparent; color: #fff;
-  border: 2px solid rgba(255,255,255,0.85);
-  display: inline-flex; align-items: center; justify-content: center;
-  cursor: pointer; opacity: 0; visibility: hidden;
-  transition: opacity .25s ease, visibility .25s ease, background .2s ease;
-}
-.kgf-to-top.show { opacity: 1; visibility: visible; }
-.kgf-to-top:hover { background: rgba(255,255,255,0.15); }
-.kgf-to-top svg { width: 20px; height: 20px; }
-@media (max-width: 960px) {
-  .kgf-top { grid-template-columns: 1fr 1fr; gap: 28px; }
-  .kgf-socials { margin-left: 0; }
-}
-@media (max-width: 620px) {
-  .kgf-top { grid-template-columns: 1fr; gap: 22px; }
-  .komdigi-footer-inner { padding: 36px 20px 18px; }
-  .kgf-bottom { gap: 14px 20px; }
-  .komdigi-footer::before { width: 420px; height: 420px; right: -170px; opacity: 0.08; }
+  /* Topbar: breadcrumb dipangkas agar tombol Keluar tidak terpotong. */
+  .admin-topbar {
+    padding: var(--space-2) var(--space-3);
+    gap: var(--space-2);
+  }
+  .topbar-left {
+    min-width: 0;
+    flex: 1 1 auto;
+    gap: var(--space-2);
+  }
+  .topbar-right {
+    flex-shrink: 0;
+    gap: var(--space-2);
+  }
+  .topbar-breadcrumb {
+    min-width: 0;
+    font-size: var(--text-sm);
+  }
+  /* Di ponsel, hanya judul halaman yang ditampilkan. */
+  .breadcrumb-root,
+  .breadcrumb-sep {
+    display: none;
+  }
+  .breadcrumb-current {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .sidebar-toggle-btn {
+    flex-shrink: 0;
+  }
 }
 

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="utf-8">
@@ -14,6 +14,8 @@
     <x-asset path="assets/shared/css/base.css" />
     <x-asset path="assets/admin/css/style.css" />
     <x-asset path="assets/shared/css/components.css" />
+    <x-asset path="assets/admin/css/panel.css" />
+    <x-asset path="assets/shared/css/footer.css" />
 </head>
 <body class="admin-app-body">
 
@@ -21,7 +23,8 @@
     <!-- Backdrop overlay untuk Mobile Drawer -->
     <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
 
-    <!-- SIDEBAR KIRI - BLUR BIRU GLASSMORPHISM -->
+    <div class="admin-shell">
+    <!-- SIDEBAR KIRI -->
     <aside class="admin-sidebar" id="adminSidebar">
         <!-- BRAND / LOGO HEADER -->
         <div class="sidebar-brand">
@@ -49,8 +52,6 @@
                         </svg>
                     </div>
                     <span class="link-label">Inbox Pengajuan</span>
-                    <span class="link-badge">Aktif</span>
-                    <span class="link-arrow">&rsaquo;</span>
                 </a>
 
                 <!-- 2. Profil & Visi Misi -->
@@ -64,7 +65,6 @@
                         </svg>
                     </div>
                     <span class="link-label">Profil &amp; Visi Misi</span>
-                    <span class="link-arrow">&rsaquo;</span>
                 </a>
 
                 <!-- 3. Kelola Artikel -->
@@ -79,7 +79,6 @@
                         </svg>
                     </div>
                     <span class="link-label">Kelola Artikel</span>
-                    <span class="link-arrow">&rsaquo;</span>
                 </a>
 
                 <!-- 4. Kelola Galeri -->
@@ -92,7 +91,6 @@
                         </svg>
                     </div>
                     <span class="link-label">Kelola Galeri</span>
-                    <span class="link-arrow">&rsaquo;</span>
                 </a>
 
                 <!-- 5. Draf Proposal AI & Masa Aktif -->
@@ -102,9 +100,8 @@
                             <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
                         </svg>
                     </div>
-                    <span class="link-label">Draf Proposal AI &amp; Masa Aktif</span>
+                    <span class="link-label">Draf &amp; Masa Aktif</span>
                     <span class="link-badge ai-badge">AI</span>
-                    <span class="link-arrow">&rsaquo;</span>
                 </a>
             </div>
 
@@ -119,8 +116,7 @@
                             <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                         </svg>
                     </div>
-                    <span class="link-label">Lihat Portal Publik</span>
-                    <span class="link-arrow">&rsaquo;</span>
+                    <span class="link-label">Lihat Portal Umum</span>
                 </a>
             </div>
         </div>
@@ -194,14 +190,11 @@
             </div>
 
             @if (session('ok'))
-                <div class="alert-success-box">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;"><circle cx="12" cy="12" r="12" fill="#16a34a"/><path d="M7 12.5l3.5 3.5 6-7" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <div>{{ session('ok') }}</div>
-                </div>
+                <div class="note-box note-box-success" role="status">{{ session('ok') }}</div>
             @endif
 
             @if ($errors->any())
-                <div class="alert-error-box">
+                <div class="note-box note-box-danger">
                     <ul>
                         @foreach ($errors->all() as $e) <li>{{ $e }}</li> @endforeach
                     </ul>
@@ -211,8 +204,9 @@
             @yield('content')
         </main>
 
-        <!-- FOOTER RESMI KOMDIGI -->
+        <!-- FOOTER RESMI KOMDIGI â€” mengikuti kolom konten, di bawah sidebar -->
         @include('partials.footer-komdigi')
+    </div>
     </div>
 </div>
 

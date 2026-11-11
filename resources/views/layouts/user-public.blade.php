@@ -13,6 +13,7 @@
     <x-asset path="assets/shared/css/base.css" />
     <x-asset path="assets/user/css/style.css" />
     <x-asset path="assets/shared/css/components.css" />
+    <x-asset path="assets/shared/css/footer.css" />
     @if (request()->routeIs('landing'))
     <x-asset path="assets/user/css/landing.css" />
     <x-asset path="assets/user/css/landing-widgets.css" />

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MitraController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -7,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
 // Default data mitra (dipakai jika belum ada session / belum ada database)
+// DATA DUMMY terpusat ada di App\Support\DataDemo (dipakai MitraController).
 $mitraDefault = [
     'username' => 'user1',
     'instansi' => 'Pemerintah Provinsi Jawa Barat',
@@ -102,69 +104,38 @@ Route::post('/pengajuan', function (Request $request) {
         ->with('ok', 'Pengajuan kerja sama dari '.$request->instansi.' berhasil dikirim! Tim KEMKOMDIGI akan memverifikasi berkas dan menghubungi PIC ('.$request->pic.') melalui Email ('.$request->email.') dan WhatsApp ('.$request->telp.').');
 })->middleware('throttle:pengajuan')->name('pengajuan.store');
 
-// Login (sementara belum memeriksa username/password)
+// Login mitra: tetap dapat diakses lewat URL langsung (/login). Tidak ada
+// tautan ke halaman ini dari homepage (lihat R1 pada laporan).
 Route::view('/login', 'login')->name('login');
 Route::post('/login', fn () => redirect()->route('mitra.status'))->middleware('throttle:mitra-login')->name('login.post');
 Route::post('/logout', function () {
-    session()->forget('mitra_data');
+    session()->forget(['mitra_data', 'mitra_mou', 'mitra_perpanjangan']);
 
     return redirect()->route('landing');
 })->name('logout');
 
-// Dashboard mitra — semua halaman memakai data dari session (atau default)
-Route::get('/mitra', function () use ($mitraDefault) {
-    $mitra = array_merge($mitraDefault, session('mitra_data', []));
+// Area mitra: tepat tiga fitur (Status, Profil, MoU).
+Route::get('/mitra', [MitraController::class, 'status'])->name('mitra.status');
+Route::post('/mitra/perpanjangan', [MitraController::class, 'ajukanPerpanjangan'])
+    ->middleware('throttle:mitra-profile')->name('mitra.status.perpanjang');
 
-    return view('user.status', ['mitra' => $mitra]);
-})->name('mitra.status');
+Route::get('/mitra/profile', [MitraController::class, 'profil'])->name('mitra.profile');
+Route::post('/mitra/profile', [MitraController::class, 'updateProfil'])
+    ->middleware('throttle:mitra-profile')->name('mitra.profile.update');
 
-Route::get('/mitra/profile', function () use ($mitraDefault) {
-    $mitra = array_merge($mitraDefault, session('mitra_data', []));
+Route::get('/mitra/mou', [MitraController::class, 'mou'])->name('mitra.mou');
+Route::post('/mitra/mou', [MitraController::class, 'kirimMou'])
+    ->middleware('throttle:mitra-profile')->name('mitra.mou.kirim');
+Route::get('/mitra/mou/{id}', [MitraController::class, 'detailMou'])->name('mitra.mou.detail');
+Route::get('/mitra/mou/{id}/berkas', [MitraController::class, 'pratinjauMou'])->name('mitra.mou.berkas');
+Route::get('/mitra/mou/{id}/unduh', [MitraController::class, 'unduhMou'])->name('mitra.mou.unduh');
+Route::post('/mitra/profile/foto', [MitraController::class, 'unggahFoto'])
+    ->middleware('throttle:mitra-profile')->name('mitra.profile.foto.unggah');
+Route::get('/mitra/profile/foto', [MitraController::class, 'foto'])->name('mitra.profile.foto');
 
-    return view('user.profile', ['mitra' => $mitra]);
-})->name('mitra.profile');
-
-Route::post('/mitra/profile', function (Request $request) use ($mitraDefault) {
-    $request->validate([
-        'instansi' => 'required|string|max:255',
-        'organisasi' => 'required|string|max:255',
-        'pic' => 'required|string|max:255',
-        'email' => 'required|email|max:255',
-        'telp' => 'required|string|max:30',
-        'alamat' => 'required|string',
-    ]);
-
-    // Ambil data lama dari session (atau default)
-    $existing = array_merge($mitraDefault, session('mitra_data', []));
-
-    // Update field yang dikirim form
-    $updated = array_merge($existing, [
-        'instansi' => $request->input('instansi'),
-        'organisasi' => $request->input('organisasi'),
-        'pic' => $request->input('pic'),
-        'email' => $request->input('email'),
-        'telp' => $request->input('telp'),
-        'alamat' => $request->input('alamat'),
-    ]);
-
-    // Simpan foto/logo jika ada file yang diupload (simpan sebagai base64)
-    if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
-        $file = $request->file('logo');
-        $updated['foto'] = 'data:'.$file->getMimeType().';base64,'.base64_encode(file_get_contents($file->getRealPath()));
-    }
-
-    // Simpan ke session
-    session(['mitra_data' => $updated]);
-
-    return redirect()->route('mitra.profile')
-        ->with('ok', 'Profil berhasil diperbarui! Foto, nama, email, dan semua data tersimpan di sesi browser ini.');
-})->middleware('throttle:mitra-profile')->name('mitra.profile.update');
-
-Route::get('/mitra/draf', function () use ($mitraDefault) {
-    $mitra = array_merge($mitraDefault, session('mitra_data', []));
-
-    return view('user.draf', ['mitra' => $mitra]);
-})->name('mitra.draf');
+// Fitur lama yang dikeluarkan dari menu & area mitra: dialihkan ke Status.
+// Berkas view (user/draf.blade.php) sengaja TIDAK dihapus.
+Route::redirect('/mitra/draf', '/mitra')->name('mitra.draf');
 
 // API Proxy PDDIKTI Real-Time
 Route::get('/api/pddikti', function (Request $request) {

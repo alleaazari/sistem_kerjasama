@@ -4,8 +4,8 @@
 
 @section('content')
 @php
-    // Ambil data petinggi dari session (jika admin sudah update) atau gunakan default
-    $petinggiSession = session('admin_petinggi', []);
+    // Ambil data petinggi dari CMS persisten (sinkron admin), atau default bawaan
+    $petinggiSession = app(\App\Support\LandingCms::class)->all()['petinggi'] ?? [];
     $petinggi = $petinggiSession ?: [
         [
             'nama' => 'Meutya Viada Hafid',
@@ -30,74 +30,85 @@
         ],
     ];
 
-    // Pegawai BBLSDM Komdigi Medan (contoh — ganti lewat data admin/session)
-    $pegawai = session('admin_pegawai', []) ?: [
-        [
-            'nama' => 'Rahmat Hidayat, S.Kom., M.T.',
-            'jabatan' => 'Koordinator Penyelenggaraan Pelatihan',
-            'badge' => 'BBLSDM Medan',
-            'foto' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1200&auto=format&fit=crop',
-            'desc' => 'Mengoordinasikan jadwal pelatihan, penugasan widyaiswara, serta evaluasi pasca pelatihan wilayah Sumatera Utara.',
-            'detail' => 'Unit: Bidang Penyelenggaraan Pelatihan. Fokus: perencanaan kelas, monitoring peserta, dan pelaporan hasil pelatihan.',
-        ],
-        [
-            'nama' => 'Siti Nurhaliza, S.E.',
-            'jabatan' => 'Analis Kerja Sama dan Kemitraan',
-            'badge' => 'BBLSDM Medan',
-            'foto' => 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=1200&auto=format&fit=crop',
-            'desc' => 'Menangani penjajakan kerja sama dengan pemerintah daerah, perguruan tinggi, dan industri di 8 provinsi wilayah kerja.',
-            'detail' => 'Unit: Subbagian Kerja Sama. Fokus: draf nota kesepahaman, verifikasi berkas mitra, dan pendampingan penandatanganan.',
-        ],
-        [
-            'nama' => 'Andi Prasetyo, S.Pd.',
-            'jabatan' => 'Widyaiswara Ahli Muda',
-            'badge' => 'BBLSDM Medan',
-            'foto' => 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=1200&auto=format&fit=crop',
-            'desc' => 'Mengampu materi literasi digital, keamanan siber, dan transformasi layanan publik berbasis SPBE.',
-            'detail' => 'Unit: Kelompok Widyaiswara. Fokus: penyusunan modul, pengajaran kelas tatap muka dan daring, serta uji kompetensi.',
-        ],
-        [
-            'nama' => 'Maria Simanjuntak, A.Md.',
-            'jabatan' => 'Pengelola Layanan Peserta',
-            'badge' => 'BBLSDM Medan',
-            'foto' => 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1200&auto=format&fit=crop',
-            'desc' => 'Menjadi titik kontak peserta pelatihan: pendaftaran, akomodasi, sertifikat, dan penanganan keluhan.',
-            'detail' => 'Unit: Layanan Peserta. Fokus: verifikasi data peserta, distribusi sertifikat, dan survei kepuasan layanan.',
-        ],
-        [
-            'nama' => 'Bayu Kurniawan, S.Kom.',
-            'jabatan' => 'Pranata Komputer',
-            'badge' => 'BBLSDM Medan',
-            'foto' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1200&auto=format&fit=crop',
-            'desc' => 'Mengelola portal kerja sama, basis data pelatihan, dan dukungan teknis kelas daring.',
-            'detail' => 'Unit: Subbagian Umum dan Teknologi Informasi. Fokus: pemeliharaan aplikasi, keamanan data, dan dukungan pengguna.',
-        ],
-        [
-            'nama' => 'Dewi Anggraini, S.H.',
-            'jabatan' => 'Analis Hukum dan Kepatuhan',
-            'badge' => 'BBLSDM Medan',
-            'foto' => 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1200&auto=format&fit=crop',
-            'desc' => 'Menelaah draf perjanjian kerja sama, kepatuhan dokumen, dan tata kelola arsip naskah dinas.',
-            'detail' => 'Unit: Subbagian Hukum dan Tata Laksana. Fokus: reviu klausul kerja sama, legal drafting, dan dokumentasi.',
-        ],
-    ];
+    // Pegawai BBLSDM Komdigi Medan (dari CMS persisten, atau default bawaan)
+    $pegawai = app(\App\Support\LandingCms::class)->all()['pegawai'] ?? [];
+    if (empty($pegawai)) {
+        $pegawai = [
+            [
+                'nama' => 'Rahmat Hidayat, S.Kom., M.T.',
+                'jabatan' => 'Koordinator Penyelenggaraan Pelatihan',
+                'badge' => 'BBLSDM Medan',
+                'foto' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1200&auto=format&fit=crop',
+                'desc' => 'Mengoordinasikan jadwal pelatihan, penugasan widyaiswara, serta evaluasi pasca pelatihan wilayah Sumatera Utara.',
+                'detail' => 'Unit: Bidang Penyelenggaraan Pelatihan. Fokus: perencanaan kelas, monitoring peserta, dan pelaporan hasil pelatihan.',
+            ],
+            [
+                'nama' => 'Siti Nurhaliza, S.E.',
+                'jabatan' => 'Analis Kerja Sama dan Kemitraan',
+                'badge' => 'BBLSDM Medan',
+                'foto' => 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=1200&auto=format&fit=crop',
+                'desc' => 'Menangani penjajakan kerja sama dengan pemerintah daerah, perguruan tinggi, dan industri di 8 provinsi wilayah kerja.',
+                'detail' => 'Unit: Subbagian Kerja Sama. Fokus: draf nota kesepahaman, verifikasi berkas mitra, dan pendampingan penandatanganan.',
+            ],
+            [
+                'nama' => 'Andi Prasetyo, S.Pd.',
+                'jabatan' => 'Widyaiswara Ahli Muda',
+                'badge' => 'BBLSDM Medan',
+                'foto' => 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=1200&auto=format&fit=crop',
+                'desc' => 'Mengampu materi literasi digital, keamanan siber, dan transformasi layanan publik berbasis SPBE.',
+                'detail' => 'Unit: Kelompok Widyaiswara. Fokus: penyusunan modul, pengajaran kelas tatap muka dan daring, serta uji kompetensi.',
+            ],
+            [
+                'nama' => 'Maria Simanjuntak, A.Md.',
+                'jabatan' => 'Pengelola Layanan Peserta',
+                'badge' => 'BBLSDM Medan',
+                'foto' => 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1200&auto=format&fit=crop',
+                'desc' => 'Menjadi titik kontak peserta pelatihan: pendaftaran, akomodasi, sertifikat, dan penanganan keluhan.',
+                'detail' => 'Unit: Layanan Peserta. Fokus: verifikasi data peserta, distribusi sertifikat, dan survei kepuasan layanan.',
+            ],
+            [
+                'nama' => 'Bayu Kurniawan, S.Kom.',
+                'jabatan' => 'Pranata Komputer',
+                'badge' => 'BBLSDM Medan',
+                'foto' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1200&auto=format&fit=crop',
+                'desc' => 'Mengelola portal kerja sama, basis data pelatihan, dan dukungan teknis kelas daring.',
+                'detail' => 'Unit: Subbagian Umum dan Teknologi Informasi. Fokus: pemeliharaan aplikasi, keamanan data, dan dukungan pengguna.',
+            ],
+            [
+                'nama' => 'Dewi Anggraini, S.H.',
+                'jabatan' => 'Analis Hukum dan Kepatuhan',
+                'badge' => 'BBLSDM Medan',
+                'foto' => 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1200&auto=format&fit=crop',
+                'desc' => 'Menelaah draf perjanjian kerja sama, kepatuhan dokumen, dan tata kelola arsip naskah dinas.',
+                'detail' => 'Unit: Subbagian Hukum dan Tata Laksana. Fokus: reviu klausul kerja sama, legal drafting, dan dokumentasi.',
+            ],
+        ];
+    }
 
     // Satu daftar untuk marquee: pimpinan dulu, lalu pegawai
     $tim = array_merge($petinggi, $pegawai);
 
-    // Visi Misi dari session atau default
-    $visi = session('admin_visi', 'Mewujudkan Indonesia Digital yang Inklusif, Berdaya Saing, Berkelanjutan, dan Mendukung Transformasi Digital Nasional Berbasis SDM Unggul.');
+    // Visi & misi dari CMS persisten, fallback bawaan
+    $cmsAll = app(\App\Support\LandingCms::class)->all();
+    $visi = $cmsAll['visi'] ?: 'Mewujudkan Indonesia Digital yang Inklusif, Berdaya Saing, Berkelanjutan, dan Mendukung Transformasi Digital Nasional Berbasis SDM Unggul.';
 
-    $misi = [
+    $misi = $cmsAll['misi'] ?: [
         'Memperluas infrastruktur dan literasi digital yang inklusif.',
         'Mengembangkan kompetensi serta sertifikasi SDM digital.',
         'Membangun kolaborasi lintas instansi, kampus, dan industri.',
         'Menghadirkan layanan publik berstandar BerAKHLAK.',
     ];
 
-    // Artikel dari session (admin artikel) atau default
-    $artikelSession = session('admin_artikel', []);
-    $artikel = $artikelSession ?: [
+    // Artikel dari CMS persisten, atau default (format: array asosiatif [id,judul,tanggal,konten,gambar])
+    $artikelCms = $cmsAll['artikel'];
+    $artikel = !empty($artikelCms) ? array_map(function ($a) {
+        return [
+            $a['judul'] ?? '',
+            $a['tanggal'] ?? '',
+            $a['gambar'] ?? 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1200&auto=format&fit=crop',
+            $a['konten'] ?? '',
+        ];
+    }, $artikelCms) : [
         [
             'Penandatanganan Nota Kesepahaman Transformasi Digital Daerah',
             '02 Oktober 2026',
@@ -118,9 +129,14 @@
         ],
     ];
 
-    // Galeri dari session (admin galeri) atau default
-    $galeriSession = session('admin_galeri', []);
-    $galeri = $galeriSession ?: [
+    // Galeri dari CMS persisten, atau default
+    $galeriCms = $cmsAll['galeri'];
+    $galeri = !empty($galeriCms) ? array_map(function ($g) {
+        return [
+            $g['judul'] ?? '',
+            $g['gambar'] ?? 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1200&auto=format&fit=crop',
+        ];
+    }, $galeriCms) : [
         ['Rapat Koordinasi Kerja Sama Daerah', 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1200&auto=format&fit=crop'],
         ['Kunjungan Kerja & Audiensi Mitra', 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1200&auto=format&fit=crop'],
         ['Pelatihan Digital Talent Scholarship', 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=1200&auto=format&fit=crop'],
@@ -148,7 +164,7 @@
     ];
 
     // Data untuk widget landing (vanilla JS): hero typewriter, visi-misi, galeri depth carousel
-    $widgetHeroText = [
+    $widgetHeroText = $cmsAll['hero_texts'] ?: [
         'Sinergi Digital Nusantara',
         'Kolaborasi Lintas Daerah',
         'Transformasi SDM Digital',
@@ -172,6 +188,7 @@
 
 <script>
 document.documentElement.classList.add('has-reveal');
+document.documentElement.classList.add('js-on');
 window.LP_WIDGETS = @json($widgetData);
 </script>
 
@@ -184,8 +201,12 @@ window.LP_WIDGETS = @json($widgetData);
         <div class="hero-ref-grid">
             <div class="hero-ref-left">
                 <span class="hero-ref-category">Portal Kerja Sama Komdigi</span>
-                <h1 class="hero-ref-title" id="heroType" aria-label="Sinergi Digital Nusantara — Portal Kerja Sama Komdigi">
-                    <span id="heroTypeText" aria-hidden="true">Sinergi Digital Nusantara</span><span class="tt-cursor" aria-hidden="true"></span>
+                {{-- Frasa bergerak: semua frasa dirender sejak awal dalam satu sel
+                     grid. Blok setinggi/lebar frasa terpanjang dan tidak berubah.
+                     Huruf diungkap lewat opacity, bukan menambah/menghapus node. --}}
+                <h1 class="hero-ref-title hero-type" id="heroType">
+                    <span class="sr-only">{{ implode(', ', $widgetHeroText) }}. Portal Kerja Sama Komdigi.</span>
+                    <span class="hero-type-stack" aria-hidden="true">@foreach ($widgetHeroText as $i => $frasa)@php $huruf = preg_split('//u', $frasa, -1, PREG_SPLIT_NO_EMPTY); @endphp<span class="hero-type-layer hero-type-ghost">{{ $frasa }}</span><span class="hero-type-layer hero-type-live" data-frasa="{{ $i }}" data-aktif="{{ $i === 0 ? 'true' : 'false' }}"@if ($i !== 0) aria-hidden="true"@endif>@foreach ($huruf as $c)<span class="hero-type-huruf">{{ $c }}</span>@endforeach</span>@endforeach<span class="hero-type-cursor"></span></span>
                 </h1>
                 <p class="hero-ref-desc">
                     Satu portal untuk pengajuan kemitraan, pelatihan digital, dan sertifikasi kompetensi SDM di wilayah kerja BBLSDM Komdigi Medan.

@@ -22,17 +22,28 @@
   --accent-500: #F2B705;
 
   /* ---- Netral --------------------------------------------------------- */
-  --bg:         #FFFFFF;
-  --surface:    #F5F7FA;
+  --bg:         #F7F5F0;
+  --surface:    #FBF9F4;
+  --surface-strong: #EFEAE1;
   --text:       #1B2430;
   --text-muted: #5B6675;
-  --border:     #DDE3EC;
+  --border:     #E5E0D5;
 
   /* ---- Status --------------------------------------------------------- */
   --success: #1E8E5A;
   --warning: #C77700;
   --danger:  #C62F3A;
   --info:    #1B5BBF;
+
+  /* ---- Status: latar & teks berkondisi (kontras AA dihitung di laporan) - */
+  --success-50:  #E8F6EE;
+  --success-700: #146C43;
+  --warning-50:  #FFF7E6;
+  --warning-500: #E0A100;
+  --warning-700: #8A5300;
+  --danger-50:   #FDECEE;
+  --danger-500:  #C62F3A;
+  --danger-700:  #9F1D28;
 
   /* ---- Radius --------------------------------------------------------- */
   --radius-sm: 6px;
@@ -42,6 +53,11 @@
   /* ---- Bayangan ------------------------------------------------------- */
   --shadow-sm: 0 1px 2px rgba(10, 37, 64, 0.06), 0 1px 3px rgba(10, 37, 64, 0.08);
   --shadow-md: 0 4px 12px rgba(10, 37, 64, 0.10), 0 2px 4px rgba(10, 37, 64, 0.06);
+
+  /* ---- Gerak (satu jenis: fade + geser 10px) -------------------------- */
+  --ease-standard: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --duration-enter: 320ms;
+  --duration-bar:   600ms;
 
   /* ---- Skala spasi (basis 4px) --------------------------------------- */
   --space-1:  4px;

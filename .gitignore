@@ -6,6 +6,7 @@
 /public/hot
 /public/storage
 /storage/*.key
+/storage/framework/testing-mou
 /storage/pail
 /resources/js/actions
 /resources/js/routes

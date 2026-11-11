@@ -1,0 +1,226 @@
+/* Dipakai halaman login mitra dan login admin. Nilai dari tokens.css. */
+
+.app-navbar {
+  background-color: var(--brand-900);
+  color: var(--bg);
+  padding: 0 var(--space-4);
+}
+
+.app-navbar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding: var(--space-2) 0;
+}
+
+.app-navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--bg);
+  text-decoration: none;
+  min-height: 44px;
+}
+
+.app-navbar-brand:hover {
+  color: var(--bg);
+  text-decoration: none;
+}
+
+.app-navbar-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg);
+  padding: 3px;
+  flex-shrink: 0;
+}
+
+.app-navbar-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.app-navbar-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.app-navbar-brand-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.06em;
+}
+
+.app-navbar-brand-subtitle {
+  font-size: var(--text-xs);
+  color: var(--brand-100);
+}
+
+.app-navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.app-navbar-portal {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  color: var(--bg);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+
+.app-navbar-portal:hover {
+  color: var(--bg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.app-navbar-user {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--brand-100);
+  border-left: 1px solid rgba(255, 255, 255, 0.24);
+  margin-left: var(--space-1);
+  max-width: 22ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-navbar-logout {
+  margin: 0;
+}
+
+/* ---- Tombol dasar aplikasi (netral, tanpa gradasi) ---------------------- */
+.app-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.app-btn:disabled,
+.app-btn[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.app-btn-primary {
+  background-color: var(--brand-700);
+  color: var(--bg);
+}
+
+.app-btn-primary:hover:not(:disabled) {
+  background-color: var(--brand-900);
+  color: var(--bg);
+  text-decoration: none;
+}
+
+.app-btn-secondary {
+  background-color: var(--bg);
+  color: var(--brand-700);
+  border-color: var(--border);
+}
+
+.app-btn-secondary:hover:not(:disabled) {
+  background-color: var(--brand-50);
+  color: var(--brand-900);
+  text-decoration: none;
+}
+
+.app-btn-ghost {
+  background-color: transparent;
+  color: var(--bg);
+  border-color: rgba(255, 255, 255, 0.4);
+  font-size: var(--text-sm);
+  min-height: 44px;
+  padding: 0 var(--space-4);
+}
+
+.app-btn-ghost:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: var(--bg);
+}
+
+.app-btn-block {
+  width: 100%;
+}
+
+@media (max-width: 560px) {
+  .app-navbar-inner {
+    padding: var(--space-2) 0;
+    gap: var(--space-2);
+  }
+
+  /* Mobile: brand satu baris, aksi di baris kedua yang rapi dan selebar penuh. */
+  .app-navbar-brand-text {
+    min-width: 0;
+  }
+
+  .app-navbar-actions {
+    width: 100%;
+    justify-content: space-between;
+    gap: var(--space-2);
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    padding-top: var(--space-2);
+  }
+
+  .app-navbar-portal {
+    min-height: 40px;
+    padding: 0;
+    font-size: var(--text-sm);
+  }
+
+  .app-navbar-user {
+    max-width: 100%;
+    min-height: 40px;
+    padding: 0 var(--space-2);
+    border-left: 0;
+    margin-left: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .app-navbar-logout {
+    margin-left: auto;
+  }
+
+  .app-navbar-logout .app-btn {
+    min-height: 40px;
+    padding: 0 var(--space-4);
+  }
+}
