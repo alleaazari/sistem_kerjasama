@@ -1,6 +1,10 @@
 <?php
 
+use App\Http\Controllers\AdminMitraController;
 use App\Support\LandingCms;
+use App\Support\PermohonanPerpanjangan;
+use App\Support\StatusKerjasama;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -280,6 +284,75 @@ Route::middleware('admin.only')->group(function () use (
         }
     })->middleware('admin.only:developer')->name('admin.test.email');
 
+    // ---------------- DASHBOARD ----------------
+    // Antrean permohonan perpanjangan dari mitra: admin menyetujui (langsung
+    // memperpanjang) atau menolak (mitra membaca alasannya di halaman Status).
+    Route::get('/dashboard', function () use ($defaultPengajuan) {
+        return view('admin.dashboard', [
+            'menunggu' => array_map(function (array $r) {
+                $akhir = StatusKerjasama::parseTanggal($r['selesai_lama'] ?? null);
+
+                return $r + [
+                    'selesai_lama_iso' => $akhir?->toDateString() ?? '',
+                    'selesai_lama_tampil' => $akhir?->translatedFormat('d F Y') ?? 'Belum tersedia',
+                ];
+            }, PermohonanPerpanjangan::menunggu()),
+            'riwayat' => array_slice(array_values(array_filter(
+                PermohonanPerpanjangan::all(),
+                fn (array $r) => ($r['status'] ?? null) !== PermohonanPerpanjangan::MENUNGGU
+            )), 0, 10),
+            'jumlahPengajuanBaru' => count(array_filter(
+                getSharedPengajuanList($defaultPengajuan),
+                fn (array $p) => ($p['status'] ?? null) === 'Menunggu'
+            )),
+        ]);
+    })->name('admin.dashboard');
+
+    Route::post('/dashboard/{id}/setujui', function (Request $request, string $id) {
+        $request->validate([
+            'durasi' => 'required|integer|in:1,2,3',
+        ], [
+            'durasi.required' => 'Pilih durasi perpanjangan sebelum menyetujui.',
+            'durasi.in' => 'Durasi perpanjangan harus 1, 2, atau 3 tahun.',
+        ]);
+
+        $permohonan = PermohonanPerpanjangan::cari($id);
+
+        if ($permohonan === null || ($permohonan['status'] ?? null) !== PermohonanPerpanjangan::MENUNGGU) {
+            return back()->with('error', 'Permohonan tidak ditemukan atau sudah diputuskan sebelumnya.');
+        }
+
+        // Tanggal berakhir diambil dari data tersimpan, bukan dari input klien.
+        $hasil = PermohonanPerpanjangan::setujui($id, (string) ($permohonan['selesai_lama'] ?? ''), (int) $request->input('durasi'));
+
+        if ($hasil === null) {
+            return back()->with('error', 'Permohonan tidak ditemukan atau sudah diputuskan sebelumnya.');
+        }
+
+        $format = fn (string $tgl) => CarbonImmutable::parse($tgl, config('app.timezone', 'UTC'))->translatedFormat('d F Y');
+
+        return back()->with('ok', "Perpanjangan untuk {$hasil['instansi']} disetujui. Masa aktif baru: "
+            .$format($hasil['mulai_baru']).' s/d '.$format($hasil['selesai_baru']).'.');
+    })->name('admin.dashboard.setujui');
+
+    Route::post('/dashboard/{id}/tolak', function (Request $request, string $id) {
+        $validated = $request->validate([
+            'alasan' => 'required|string|min:10|max:1000',
+        ], [
+            'alasan.required' => 'Alasan penolakan wajib diisi agar mitra memahami keputusan.',
+            'alasan.min' => 'Alasan penolakan minimal 10 karakter.',
+            'alasan.max' => 'Alasan penolakan maksimal 1000 karakter.',
+        ]);
+
+        $hasil = PermohonanPerpanjangan::tolak($id, (string) $validated['alasan']);
+
+        if ($hasil === null) {
+            return back()->with('error', 'Permohonan tidak ditemukan atau sudah diputuskan sebelumnya.');
+        }
+
+        return back()->with('ok', "Permohonan perpanjangan dari {$hasil['instansi']} ditolak. Alasan akan tampil di halaman Status mitra.");
+    })->name('admin.dashboard.tolak');
+
     // ---------------- INBOX PENGAJUAN ----------------
     Route::get('/inbox', function () use ($defaultPengajuan) {
         return view('admin.inbox', ['pengajuan' => getSharedPengajuanList($defaultPengajuan)]);
@@ -518,8 +591,28 @@ Route::middleware('admin.only')->group(function () use (
 
         return back()->with('ok', 'Profil Petinggi & Visi Misi Komdigi berhasil diperbarui.');
     })->name('admin.tentang.update');
+});
 
-    Route::get('/mitra-draf', function () use ($defaultDrafMitra) {
-        return view('admin.mitra_draf', ['rows' => session('admin_draf_mitra', $defaultDrafMitra)]);
-    })->name('admin.mitra_draf');
+// =====================================================================
+// DRAF PROPOSAL AI & MASA AKTIF MITRA (dua halaman terpisah)
+// =====================================================================
+// TODO-BACKEND: pemetaan peran superadmin/admin_kerjasama ke tabel users
+// dikerjakan teman backend. Sampai itu ada, akun "admin" di
+// config/admin_demo.php dianggap pengelola kerja sama.
+Route::middleware('admin.only:admin,admin_kerjasama,superadmin')->group(function () {
+    // Alamat lama dipertahankan sebagai pengalihan agar tautan/bookmark tetap jalan.
+    Route::redirect('/mitra-draf', '/draf-proposal')->name('admin.mitra_draf.lama');
+
+    Route::get('/draf-proposal', [AdminMitraController::class, 'draf'])
+        ->name('admin.draf_proposal');
+
+    Route::get('/draf-proposal/{uuid}/unduh', [AdminMitraController::class, 'unduhDraf'])
+        ->whereUuid('uuid')
+        ->name('admin.draf_proposal.unduh');
+
+    Route::get('/masa-aktif', [AdminMitraController::class, 'masaAktif'])
+        ->name('admin.masa_aktif');
+
+    Route::put('/masa-aktif', [AdminMitraController::class, 'aturMasaAktif'])
+        ->name('admin.masa_aktif.atur');
 });
