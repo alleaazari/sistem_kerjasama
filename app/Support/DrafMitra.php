@@ -23,6 +23,15 @@ final class DrafMitra
     /** Berkas draf belum tersedia: unduhan dimatikan. */
     public const BERKAS_SIAP = false;
 
+    /**
+     * Flag unduhan draf. Satu sumber kebenaran untuk controller dan view.
+     * Ubah nilai konstanta di atas menjadi true setelah backend menyimpan berkas.
+     */
+    public static function berkasSiap(): bool
+    {
+        return self::BERKAS_SIAP;
+    }
+
     public static function path(): string
     {
         return storage_path('app/draf_mitra.json');

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Support\DrafMitra;
 use App\Support\MasaAktifMitra;
-use App\Support\StatusKerjasama;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -48,7 +47,9 @@ class AdminMitraController extends Controller
      */
     public function unduhDraf(string $uuid): StreamedResponse
     {
-        abort_unless(DrafMitra::BERKAS_SIAP, 404);
+        if (! DrafMitra::berkasSiap()) {
+            abort(404);
+        }
 
         $row = DrafMitra::cari($uuid);
         abort_if($row === null, 404);

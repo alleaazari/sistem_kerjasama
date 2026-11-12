@@ -260,7 +260,7 @@ Route::post('/logout', function (Request $request) {
 // SEMUA HALAMAN DI BAWAH INI HANYA UNTUK ADMIN / DEVELOPER
 // =====================================================================
 Route::middleware('admin.only')->group(function () use (
-    $defaultPengajuan, $defaultArtikel, $defaultGaleri, $defaultDrafMitra
+    $defaultPengajuan, $defaultArtikel, $defaultGaleri
 ) {
 
     // TEST EMAIL: hanya role developer, dan hanya tersedia di lingkungan lokal.
