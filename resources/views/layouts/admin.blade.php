@@ -43,7 +43,24 @@
             <div class="sidebar-nav-group">
                 <span class="sidebar-group-title">Menu Administrator</span>
 
-                <!-- 1. Inbox Pengajuan -->
+                <!-- 1. Dashboard -->
+                <a href="{{ route('admin.dashboard') }}" class="sidebar-link {{ request()->routeIs('admin.dashboard') ? 'on' : '' }}">
+                    <div class="link-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="9" rx="1"></rect>
+                            <rect x="14" y="3" width="7" height="5" rx="1"></rect>
+                            <rect x="14" y="12" width="7" height="9" rx="1"></rect>
+                            <rect x="3" y="16" width="7" height="5" rx="1"></rect>
+                        </svg>
+                    </div>
+                    <span class="link-label">Dashboard</span>
+                    @php($jumlahMenungguPerpanjangan = \App\Support\PermohonanPerpanjangan::jumlahMenunggu())
+                    @if ($jumlahMenungguPerpanjangan > 0)
+                        <span class="link-badge" title="Permohonan perpanjangan menunggu">{{ $jumlahMenungguPerpanjangan }}</span>
+                    @endif
+                </a>
+
+                <!-- 2. Inbox Pengajuan -->
                 <a href="{{ route('admin.inbox') }}" class="sidebar-link {{ request()->routeIs('admin.inbox') ? 'on' : '' }}">
                     <div class="link-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -54,7 +71,7 @@
                     <span class="link-label">Inbox Pengajuan</span>
                 </a>
 
-                <!-- 2. Profil & Visi Misi -->
+                <!-- 3. Profil & Visi Misi -->
                 <a href="{{ route('admin.tentang') }}" class="sidebar-link {{ request()->routeIs('admin.tentang') ? 'on' : '' }}">
                     <div class="link-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -93,15 +110,28 @@
                     <span class="link-label">Kelola Galeri</span>
                 </a>
 
-                <!-- 5. Draf Proposal AI & Masa Aktif -->
-                <a href="{{ route('admin.mitra_draf') }}" class="sidebar-link {{ request()->routeIs('admin.mitra_draf') ? 'on' : '' }}">
+                <!-- 5. Draf Proposal AI -->
+                <a href="{{ route('admin.draf_proposal') }}" class="sidebar-link {{ request()->routeIs('admin.draf_proposal*') ? 'on' : '' }}">
                     <div class="link-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
                         </svg>
                     </div>
-                    <span class="link-label">Draf &amp; Masa Aktif</span>
+                    <span class="link-label">Draf Proposal AI</span>
                     <span class="link-badge ai-badge">AI</span>
+                </a>
+
+                <!-- 6. Masa Aktif Mitra -->
+                <a href="{{ route('admin.masa_aktif') }}" class="sidebar-link {{ request()->routeIs('admin.masa_aktif*') ? 'on' : '' }}">
+                    <div class="link-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                    </div>
+                    <span class="link-label">Masa Aktif Mitra</span>
                 </a>
             </div>
 
@@ -191,6 +221,10 @@
 
             @if (session('ok'))
                 <div class="note-box note-box-success" role="status">{{ session('ok') }}</div>
+            @endif
+
+            @if (session('error'))
+                <div class="note-box note-box-danger" role="alert">{{ session('error') }}</div>
             @endif
 
             @if ($errors->any())
