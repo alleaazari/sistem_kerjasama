@@ -377,4 +377,69 @@ Menunggu konfirmasi user:
 - Apakah akun `admin_kelola` wajib ganti password saat login pertama (AGENTS.md §5.8) —
   belum diterapkan.
 
+### 12.1 Verifikasi runtime (bukti)
+
+Dijalankan lewat test sementara (sudah dihapus). Semua kode status diambil dari
+respons nyata aplikasi.
+
+`admin_kelola` — GET (semua 404):
+
+```
+GET admin.dashboard               => 404
+GET admin.inbox                   => 404
+GET admin.draf_proposal           => 404
+GET admin.masa_aktif              => 404
+GET admin.mitra_draf.lama         => 404
+GET admin.draf_proposal.unduh     => 404
+```
+
+`admin_kelola` — mutasi (semua 404; DELETE 405 karena route-nya memang tidak ada):
+
+```
+POST   admin.dashboard.setujui => 404
+POST   admin.dashboard.tolak   => 404
+POST   admin.inbox.approve     => 404
+POST   admin.inbox.reject      => 404
+PUT    admin.masa_aktif.atur   => 404
+DELETE admin.masa_aktif.atur   => 405
+```
+
+`admin_kelola` — halaman miliknya (semua 200): `admin.dashboard.kelola`,
+`admin.tentang`, `admin.artikel`, `admin.galeri`.
+
+HTML `admin_kelola`: tidak memuat "Inbox Pengajuan", "Draf Proposal AI",
+"Masa Aktif Mitra", "Permohonan Perpanjangan", "Pengajuan Kerja Sama",
+"Super Administrator", `link-badge`, maupun `/inbox`. Tautan admin di HTML hanya:
+`/admin-kelola`, `/tentang`, `/artikel`, `/galeri`.
+
+Login nyata (hash bcrypt, akun uji di config):
+
+```
+superadmin      -> 302 /inbox, 7 halaman 200 (dashboard, inbox, draf, masa aktif,
+                   tentang, artikel, galeri, admin-kelola)
+admin_kerjasama -> 302 /inbox, semua menu tampil, semua 200
+admin_kelola    -> 302 /admin-kelola, 4 halaman 200, menu kerja sama tidak tampil
+developer       -> GET /test-email 200 (hanya di env local)
+superadmin/admin_kerjasama/admin_kelola -> GET /test-email 404
+```
+
+Tamu: semua route admin -> 302 ke `/admin-mitrakerjasama/login`;
+`GET` JSON -> 401 `{"message":"Sesi admin tidak ditemukan."}`.
+
+### 12.2 Temuan verifikasi
+
+| ID | Severity | Lokasi | Dampak | Status |
+|---|---|---|---|---|
+| V1 | Tinggi | `routes/admin.php` (grup `test-email`) | `/test-email` mustahil diakses developer karena middleware `admin.only:kerja_sama` dan `admin.only:developer` bertumpuk -> selalu 404 | **Diperbaiki**: grup `uji_email` dipisah, test-email 200 untuk developer |
+| V2 | Sedang | `config/admin_demo.php` | `admin_kerjasama` dan `superadmin` tidak punya akun, jadi tidak bisa login sungguhan; hanya bisa diuji lewat `withSession` | **Diperbaiki**: dua akun baru dari `.env` (`ADMIN_SUPERADMIN_*`, `ADMIN_KERJASAMA_*`), hash bcrypt, mati bila kosong |
+| V3 | Rendah | `config/admin_demo.php:11,18` | Password plaintext `admin#2026`, `Dev#2026` untuk akun demo lama | **Dibiarkan** sesuai instruksi "jangan sentuh akun lama"; catatan untuk backend |
+| V4 | Rendah | `config/mitra.php:24` | `demo_password => '123456'` plaintext di config (sudah ada sebelum pekerjaan ini, commit `b5a1529`) | Belum diperbaiki: milik alur mitra, di luar cakupan fase |
+| V5 | Rendah | `app/Http/Middleware/HideAdmin.php`, `tests/Feature/LandingCmsSyncTest.php` | `pint --test` gagal (line ending, spasi operator, blank line) | Sudah ada sebelum fase ini; file tidak disentuh |
+| V6 | Rendah | `public/assets/user/css/login.css:1` | `npm run check` gagal: file `.css` berisi komentar Blade `{{-- --}}` sehingga parser CSS error | Sudah ada sebelum fase ini |
+| V7 | Info | `resources/js/routes/**` | `npm run types:check` 18 error dari generator Wayfinder (`Type '"query"' ...`) | Sudah ada sebelum fase ini |
+
+Tidak ada password plaintext **baru**: hash `admin_kelola`/`superadmin`/
+`admin_kerjasama` hanya dibaca dari `.env`; `.env.example` hanya berisi placeholder
+kosong.
+
 
