@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Support\DrafMitra;
+use App\Support\LogAktivitas;
 use App\Support\MasaAktifMitra;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
@@ -58,6 +59,8 @@ class AdminMitraController extends Controller
         abort_unless(is_string($path) && $path !== '', 404);
         abort_unless(Storage::disk('local')->exists($path), 404);
 
+        LogAktivitas::catat('draf_proposal.unduh', $uuid);
+
         $nama = (string) ($row['berkas_nama_asli'] ?? 'draf-proposal.pdf');
 
         return Storage::disk('local')->download($path, $nama, [
@@ -112,6 +115,8 @@ class AdminMitraController extends Controller
         if ($hasil === null) {
             return back()->with('error', 'Data masa aktif tidak ditemukan. Mungkin sudah dihapus.');
         }
+
+        LogAktivitas::catat('masa_aktif.atur', (string) $hasil['uuid']);
 
         $format = fn (string $tgl) => CarbonImmutable::parse($tgl, config('app.timezone', 'UTC'))
             ->translatedFormat('d F Y');

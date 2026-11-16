@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use Illuminate\Support\Facades\Route;
+
 /**
  * Peta akses panel admin (pembacaan terketik).
  *
@@ -148,6 +150,21 @@ final class AdminAkses
         return $daftar;
     }
 
+    /** @return array<string, string> Label aksi tanpa menu (dari config). */
+    public static function semuaAksi(): array
+    {
+        /** @var array<string, string> $aksi */
+        $aksi = self::peta('aksi');
+
+        return $aksi;
+    }
+
+    /** Label sebuah aksi untuk log aktivitas; kunci tak dikenal dikembalikan apa adanya. */
+    public static function labelAksi(string $aksi): string
+    {
+        return self::semuaAksi()[$aksi] ?? $aksi;
+    }
+
     /**
      * Definisi menu/route sebuah kemampuan.
      *
@@ -160,26 +177,16 @@ final class AdminAkses
         return is_array($def) ? $def : [];
     }
 
-    /** Nama akhiran route utama sebuah kemampuan (mis. `draf_proposal`). */
+    /**
+     * Nama akhiran route sebuah kemampuan atau aksi.
+     * Halaman bermenu memakai `route` di config (mis. draf -> draf_proposal);
+     * aksi memakai kuncinya sendiri (mis. inbox.tolak -> inbox.tolak).
+     */
     public static function ruteKemampuan(string $kemampuan): string
     {
-        $def = self::halaman($kemampuan);
+        $route = self::halaman($kemampuan)['route'] ?? null;
 
-        return (string) ($def['route'] ?? $kemampuan);
-    }
-
-    /**
-     * Daftar akhiran nama route yang dilindungi sebuah kemampuan:
-     * halaman utamanya + aksi tulisnya.
-     *
-     * @return list<string>
-     */
-    public static function ruteKemampuanSemua(string $kemampuan): array
-    {
-        /** @var list<string> $aksi */
-        $aksi = (array) (self::peta('aksi')[$kemampuan] ?? []);
-
-        return array_merge([self::ruteKemampuan($kemampuan)], $aksi);
+        return is_string($route) && $route !== '' ? $route : $kemampuan;
     }
 
     /** @return list<string> Urutan kemampuan untuk menu, sesuai config. */
@@ -317,6 +324,9 @@ final class AdminAkses
     /**
      * Menu sidebar sebuah peran, dikelompokkan per section sesuai config.
      *
+     * Hanya kemampuan yang dimiliki peran yang muncul, sehingga tautan,
+     * badge, dan counter milik peran lain tidak pernah dirender.
+     *
      * @return array<string, array{judul: string, item: list<array<string, mixed>>}>
      */
     public static function menu(string $peran): array
@@ -340,6 +350,28 @@ final class AdminAkses
                     'badge' => (string) ($def['badge'] ?? ''),
                     'url' => route(self::nama($peran).'.'.self::ruteKemampuan($kemampuan)),
                     'aktif' => self::nama($peran).'.'.self::ruteKemampuan($kemampuan),
+                    'luar' => false,
+                ];
+            }
+
+            foreach (self::tautan() as $def) {
+                if ((string) ($def['section'] ?? '') !== $kunci) {
+                    continue;
+                }
+
+                $namaRute = (string) ($def['route'] ?? '');
+                if ($namaRute === '' || ! Route::has($namaRute)) {
+                    continue;
+                }
+
+                $item[] = [
+                    'kemampuan' => '',
+                    'label' => (string) ($def['label'] ?? $namaRute),
+                    'ikon' => (string) ($def['ikon'] ?? ''),
+                    'badge' => '',
+                    'url' => route($namaRute),
+                    'aktif' => '',
+                    'luar' => true,
                 ];
             }
 
@@ -349,6 +381,22 @@ final class AdminAkses
         }
 
         return $hasil;
+    }
+
+    /**
+     * Tautan luar untuk semua peran (mis. portal umum).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public static function tautan(): array
+    {
+        /** @var array<int, array<string, mixed>> $daftar */
+        $daftar = array_values(array_filter(
+            (array) config('admin_akses.tautan', []),
+            'is_array'
+        ));
+
+        return $daftar;
     }
 
     /** Label peran di sesi, untuk sidebar & topbar. */

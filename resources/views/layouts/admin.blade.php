@@ -46,22 +46,22 @@
             <button type="button" class="sidebar-close-btn" onclick="toggleSidebar(false)" aria-label="Tutup Menu">&times;</button>
         </div>
 
-        <!-- DAFTAR NAVIGASI MENU (KIRI), sesuai kemampuan peran -->
+        <!-- DAFTAR NAVIGASI MENU (KIRI), dirender dari kemampuan peran login -->
         <div class="sidebar-nav-container">
             @foreach ($menuPanel as $section => $grup)
-                @if ($section === 'sistem')
-                    @continue
-                @endif
                 <div class="sidebar-nav-group">
                     <span class="sidebar-group-title">{{ $grup['judul'] }}</span>
 
                     @foreach ($grup['item'] as $item)
-                        <a href="{{ $item['url'] }}" class="sidebar-link {{ request()->routeIs($item['aktif'].'*') ? 'on' : '' }}">
+                        <a href="{{ $item['url'] }}"
+                           class="sidebar-link {{ $item['aktif'] !== '' && request()->routeIs($item['aktif'].'*') ? 'on' : '' }}"
+                           @if ($item['luar']) target="_blank" rel="noopener noreferrer" @endif>
                             <div class="link-icon">
                                 @include('partials.ikon-admin', ['ikon' => $item['ikon']])
                             </div>
                             <span class="link-label">{{ $item['label'] }}</span>
                             @if ($item['kemampuan'] === 'dashboard')
+                                {{-- Counter hanya untuk peran yang punya dashboard. --}}
                                 @php($jumlahMenungguPerpanjangan = \App\Support\PermohonanPerpanjangan::jumlahMenunggu())
                                 @if ($jumlahMenungguPerpanjangan > 0)
                                     <span class="link-badge" title="Permohonan perpanjangan menunggu">{{ $jumlahMenungguPerpanjangan }}</span>
@@ -73,31 +73,6 @@
                     @endforeach
                 </div>
             @endforeach
-
-            <!-- MENU SISTEM & PORTAL -->
-            <div class="sidebar-nav-group">
-                <span class="sidebar-group-title">{{ $menuPanel['sistem']['judul'] ?? 'Sistem & Tautan Luar' }}</span>
-
-                @foreach ($menuPanel['sistem']['item'] ?? [] as $item)
-                    <a href="{{ $item['url'] }}" class="sidebar-link {{ request()->routeIs($item['aktif'].'*') ? 'on' : '' }}">
-                        <div class="link-icon">
-                            @include('partials.ikon-admin', ['ikon' => $item['ikon']])
-                        </div>
-                        <span class="link-label">{{ $item['label'] }}</span>
-                    </a>
-                @endforeach
-
-                <a href="{{ route('landing') }}" target="_blank" rel="noopener noreferrer" class="sidebar-link">
-                    <div class="link-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="2" y1="12" x2="22" y2="12"></line>
-                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                        </svg>
-                    </div>
-                    <span class="link-label">Lihat Portal Umum</span>
-                </a>
-            </div>
         </div>
 
         <!-- PROFILE CARD DI BAGIAN BAWAH SIDEBAR -->

@@ -6,18 +6,28 @@
 |--------------------------------------------------------------------------
 | Berkas ini dipakai oleh:
 |   - bootstrap/app.php        -> prefix URL per peran (dari .env)
-|   - routes/*.php             -> middleware & daftar route per kemampuan
+|   - routes/*.php             -> middleware per kemampuan/aksi
 |   - app/Support/AdminAkses   -> pembacaan terketik untuk route, menu, test
 |   - resources/views/layouts  -> menu & identitas peran yang login
 |   - tests/Feature            -> memastikan peran lain ditolak
 |
 | Struktur:
-|   peran.<nama>.kemampuan[]      : kemampuan yang dimiliki peran
-|   halaman.<kemampuan>.route     : {nama_route_suffix, parameter route, middleware argumen}
-|   halaman.<kemampuan>.section   : grup menu sidebar
-|   halaman.<kemampuan>.label     : label menu (Bahasa Indonesia)
-|   menu[]                        : urutan & pengelompokan menu sidebar
+|   peran.<nama>.kemampuan[]      : kemampuan + aksi yang dimiliki peran
+|   halaman.<kemampuan>           : halaman BERMENU (label, section, ikon, route)
+|   aksi.<kemampuan>              : aksi tanpa menu (label untuk log aktivitas)
+|   section.<kunci>               : judul grup menu sidebar
 |   alias.<path_lama>.<suffix>    : pengalihan URL lama -> halaman Superadmin
+|
+| Kemampuan dan aksi memakai kunci yang sama; sebuah route dilindungi dengan
+| `admin.only:<peran yang punya kunci itu>`. Aksi yang tidak dimiliki sebuah
+| peran otomatis 404, bukan hanya disembunyikan dari menu.
+|
+| Matriks yang berlaku (lihat dokumentasi fase):
+|   Superadmin      : dashboard, inbox + setuju/tolak, draf + unduh,
+|                     masa aktif + atur, profil/visi misi, artikel, galeri,
+|                     aktivitas, pengguna
+|   Admin Kerja Sama: inbox (hanya lihat), draf + unduh, masa aktif + atur
+|                     (setelah login langsung ke inbox, tanpa dashboard)
 |
 | Peran operasional punya prefix URL dan halaman login sendiri; kredensial
 | dibaca dari .env sebagai hash bcrypt (tidak pernah plaintext di repo).
@@ -41,8 +51,8 @@ return [
     'allowed_ips' => env('ADMIN_ALLOWED_IPS', ''),
 
     /*
-    | Kemampuan yang bisa dimiliki sebuah peran. Kunci ini dipakai sebagai
-    | akhiran nama route (mis. `superadmin.inbox`) dan sebagai penanda menu.
+    | Halaman bermenu. Kunci ini dipakai sebagai akhiran nama route
+    | (mis. `superadmin.inbox`) dan sebagai penanda menu sidebar.
     */
     'halaman' => [
 
@@ -75,6 +85,13 @@ return [
             'ikon' => 'kalender',
         ],
 
+        'aktivitas' => [
+            'route' => 'aktivitas',
+            'label' => 'Aktivitas Admin Kerjasama',
+            'section' => 'kerja',
+            'ikon' => 'aktivitas',
+        ],
+
         'tentang' => [
             'route' => 'tentang',
             'label' => 'Profil & Visi Misi',
@@ -96,6 +113,13 @@ return [
             'ikon' => 'galeri',
         ],
 
+        'pengguna' => [
+            'route' => 'pengguna',
+            'label' => 'Kelola Pengguna',
+            'section' => 'sistem',
+            'ikon' => 'pengguna',
+        ],
+
         'uji_email' => [
             'route' => 'test_email',
             'label' => 'Uji Email (Lokal)',
@@ -105,29 +129,44 @@ return [
     ],
 
     /*
-    | Akhiran nama route tambahan sebuah kemampuan (aksi tulis). Dipakai
-    | middleware aksi yang tidak punya menu sendiri.
-    |
-    | contoh: 'inbox' => ['inbox.approve', 'inbox.reject']
+    | Aksi tanpa menu sendiri. Nilainya label untuk log aktivitas dan pesan
+    | konfirmasi; route-nya memakai akhiran yang sama dengan kuncinya
+    | (mis. `inbox.approve` -> superadmin.inbox.approve).
     */
     'aksi' => [
-        'dashboard' => ['dashboard.setujui', 'dashboard.tolak'],
+        'inbox.approve' => 'Menyetujui pengajuan',
+        'inbox.reject' => 'Menolak pengajuan',
+        'draf_proposal.unduh' => 'Mengunduh draf proposal',
+        'masa_aktif.atur' => 'Mengubah masa aktif',
     ],
 
-    /*
-    | Grup menu sidebar (urutan tampil).
-    */
+    /* Grup menu sidebar (urutan tampil). */
     'section' => [
         'kerja' => 'Menu Administrator',
         'konten' => 'Konten Portal',
-        'sistem' => 'Sistem & Tautan Luar',
+        'sistem' => 'Sistem',
+        'luar' => 'Tautan Luar',
+    ],
+
+    /*
+    | Tautan untuk SEMUA peran (tanpa hak khusus). Rutenya diperiksa dengan
+    | Route::has(), jadi tautan yang belum ada tidak dirender.
+    */
+    'tautan' => [
+        [
+            'route' => 'landing',
+            'label' => 'Lihat Portal Umum',
+            'section' => 'luar',
+            'ikon' => 'portal',
+            'target' => '_blank',
+        ],
     ],
 
     /*
     | Peran operasional: punya prefix + halaman login sendiri.
     |
     | `nama`    : awalan nama route (superadmin.inbox, kerjasama.inbox)
-    | `beranda` : kemampuan yang jadi halaman pertama setelah login
+    | `beranda` : halaman pertama setelah login
     | `akun`    : kredensial dari .env; akun mati bila ada kolom yang kosong
     */
     'peran' => [
@@ -137,7 +176,15 @@ return [
             'path' => env('SUPERADMIN_PATH', 'superadmin'),
             'nama' => 'superadmin',
             'beranda' => 'dashboard',
-            'kemampuan' => ['dashboard', 'inbox', 'draf', 'masa_aktif', 'tentang', 'artikel', 'galeri'],
+            'kemampuan' => [
+                'dashboard',
+                'inbox', 'inbox.approve', 'inbox.reject',
+                'draf', 'draf_proposal.unduh',
+                'masa_aktif', 'masa_aktif.atur',
+                'aktivitas',
+                'tentang', 'artikel', 'galeri',
+                'pengguna',
+            ],
             'akun' => [
                 'name' => (string) env('SUPERADMIN_NAME', 'Super Administrator'),
                 'username' => (string) env('SUPERADMIN_USERNAME', ''),
@@ -152,7 +199,12 @@ return [
             'nama' => 'kerjasama',
             'beranda' => 'inbox',
             // Tiga halaman kerja sama. Dashboard & konten bukan miliknya.
-            'kemampuan' => ['inbox', 'draf', 'masa_aktif'],
+            // Inbox hanya untuk dilihat: setujui/tolak milik Superadmin.
+            'kemampuan' => [
+                'inbox',
+                'draf', 'draf_proposal.unduh',
+                'masa_aktif', 'masa_aktif.atur',
+            ],
             'akun' => [
                 'name' => (string) env('ADMIN_KERJASAMA_NAME', 'Admin Kerja Sama'),
                 'username' => (string) env('ADMIN_KERJASAMA_USERNAME', ''),

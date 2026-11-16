@@ -3,6 +3,14 @@
 
 @section('content')
 
+@php
+    // Server yang memutuskan (route dijaga middleware); ini hanya menyesuaikan
+    // tampilan agar peran tanpa hak tidak melihat tombol yang pasti ditolak.
+    $peranAktif = \App\Support\AdminAkses::peranSesi();
+    $bolehSetujui = \App\Support\AdminAkses::boleh((string) $peranAktif, 'inbox.approve');
+    $bolehTolak = \App\Support\AdminAkses::boleh((string) $peranAktif, 'inbox.reject');
+@endphp
+
 {{-- Notifikasi hasil tindakan --}}
 @if(session('reject_done'))
 <div class="alert-box alert-box-danger">
@@ -99,20 +107,42 @@
 
         {{-- Pilih Aksi --}}
         <div id="m-pilih">
+            @if ($bolehSetujui || $bolehTolak)
             <div class="note-box">
                 <p><b>Alur tindakan:</b></p>
                 <ul>
+                    @if ($bolehTolak)
                     <li><b>Tolak:</b> sistem menyiapkan surat pemberitahuan resmi ke email PIC dan pesan ke WhatsApp PIC.</li>
+                    @endif
+                    @if ($bolehSetujui)
                     <li><b>Setujui:</b> status berubah menjadi Disetujui. Kredensial akun mitra dikirim terpisah oleh Admin.</li>
+                    @endif
                 </ul>
             </div>
             <div class="modal-actions">
-                <button type="button" class="btn btn2" onclick="modalShow('reject')">Tolak Pengajuan</button>
-                <button type="button" class="btn" onclick="modalShow('approve')">Setujui Pengajuan</button>
+                @if ($bolehTolak)
+                    <button type="button" class="btn btn2" onclick="modalShow('reject')">Tolak Pengajuan</button>
+                @endif
+                @if ($bolehSetujui)
+                    <button type="button" class="btn" onclick="modalShow('approve')">Setujui Pengajuan</button>
+                @endif
+            </div>
+            @else
+            <div class="note-box">
+                <p>
+                    Keputusan atas pengajuan (setujui/tolak) hanya dapat dilakukan oleh
+                    <b>Super Administrator</b>. Anda dapat memeriksa kelengkapan data di sini.
+                </p>
+            </div>
+            @endif
+
+            <div class="modal-actions">
+                <button type="button" class="btn btn2" onclick="modalClose()">Tutup</button>
             </div>
         </div>
 
         {{-- Form REJECT --}}
+        @if ($bolehTolak)
         <div id="m-reject" hidden>
             <form id="f-reject" method="POST" action="">
                 @csrf
@@ -141,8 +171,10 @@
                 </div>
             </form>
         </div>
+        @endif
 
         {{-- Form APPROVE --}}
+        @if ($bolehSetujui)
         <div id="m-approve" hidden>
             <form id="f-approve" method="POST" action="">
                 @csrf
@@ -159,6 +191,7 @@
                 </div>
             </form>
         </div>
+        @endif
     </div>
 
 </div>
@@ -202,28 +235,45 @@ function bukaModal(item) {
         if (el) el.textContent = item[k] || '-';
     });
 
-    document.getElementById('confirm-instansi').textContent = item.instansi || '-';
-    document.getElementById('confirm-email').textContent = item.email || '-';
-    document.getElementById('r-email').textContent = item.email || '-';
-    document.getElementById('r-telp').textContent = item.telp || '-';
+    // Elemen di bawah hanya ada bila peran berhak; guard agar peran lain aman.
+    var isi = function (id, teks) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = teks;
+    };
+    isi('confirm-instansi', item.instansi || '-');
+    isi('confirm-email', item.email || '-');
+    isi('r-email', item.email || '-');
+    isi('r-telp', item.telp || '-');
 
-    var approveTpl = "{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.inbox.approve', ['id' => '__ID__']) }}";
-    var rejectTpl = "{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.inbox.reject', ['id' => '__ID__']) }}";
-    document.getElementById('f-approve').action = approveTpl.replace('__ID__', item.id);
-    document.getElementById('f-reject').action  = rejectTpl.replace('__ID__', item.id);
+    var approveForm = document.getElementById('f-approve');
+    var rejectForm = document.getElementById('f-reject');
+
+    @if ($bolehSetujui)
+    if (approveForm) {
+        approveForm.action = "{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.inbox.approve', ['id' => '__ID__']) }}".replace('__ID__', item.id);
+    }
+    @endif
+
+    @if ($bolehTolak)
+    if (rejectForm) {
+        rejectForm.action = "{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.inbox.reject', ['id' => '__ID__']) }}".replace('__ID__', item.id);
+    }
+    @endif
 
     modalShow('pilih');
     document.getElementById('ov').classList.add('active');
 }
 
 function isiAlasan(teks) {
-    document.getElementById('reject-feedback').value = teks;
+    var el = document.getElementById('reject-feedback');
+    if (el) el.value = teks;
 }
 
 function modalShow(m) {
-    document.getElementById('m-pilih').hidden   = (m !== 'pilih');
-    document.getElementById('m-reject').hidden  = (m !== 'reject');
-    document.getElementById('m-approve').hidden = (m !== 'approve');
+    ['pilih', 'reject', 'approve'].forEach(function (kunci) {
+        var el = document.getElementById('m-' + kunci);
+        if (el) el.hidden = (m !== kunci);
+    });
 }
 
 function modalClose() {
