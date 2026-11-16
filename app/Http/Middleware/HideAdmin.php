@@ -10,7 +10,7 @@ class HideAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $allowed = array_filter(array_map('trim', explode(',', (string) config('admin_demo.allowed_ips'))));
+        $allowed = array_filter(array_map('trim', explode(',', (string) config('admin_akses.allowed_ips'))));
 
         // Jika daftar IP diisi, IP lain dianggap halaman tidak ada
         if ($allowed && ! in_array($request->ip(), $allowed, true)) {

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
-    <title>@yield('title') - Panel Admin KEMKOMDIGI</title>
+    <title>@yield('title') - Panel {{ \App\Support\AdminAkses::labelSesi() }} KEMKOMDIGI</title>
     {{-- Font dimuat SEKALI di sini: Plus Jakarta Sans (heading) + Inter (body). --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,6 +18,14 @@
     <x-asset path="assets/shared/css/footer.css" />
 </head>
 <body class="admin-app-body">
+
+@php
+    // Menu & identitas dirender dari peran yang login, bukan hardcode.
+    $peranSesi = \App\Support\AdminAkses::peranSesi();
+    $labelPeran = \App\Support\AdminAkses::labelSesi();
+    $namaPengguna = \App\Support\AdminAkses::namaSesi();
+    $menuPanel = \App\Support\AdminAkses::menuSesi();
+@endphp
 
 <div class="admin-app-layout">
     <!-- Backdrop overlay untuk Mobile Drawer -->
@@ -38,87 +46,33 @@
             <button type="button" class="sidebar-close-btn" onclick="toggleSidebar(false)" aria-label="Tutup Menu">&times;</button>
         </div>
 
-        <!-- DAFTAR NAVIGASI MENU (KIRI) -->
+        <!-- DAFTAR NAVIGASI MENU (KIRI), dirender dari kemampuan peran login -->
         <div class="sidebar-nav-container">
-            <div class="sidebar-nav-group">
-                <span class="sidebar-group-title">Menu Administrator</span>
+            @foreach ($menuPanel as $section => $grup)
+                <div class="sidebar-nav-group">
+                    <span class="sidebar-group-title">{{ $grup['judul'] }}</span>
 
-                <!-- 1. Inbox Pengajuan -->
-                <a href="{{ route('admin.inbox') }}" class="sidebar-link {{ request()->routeIs('admin.inbox') ? 'on' : '' }}">
-                    <div class="link-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
-                            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
-                        </svg>
-                    </div>
-                    <span class="link-label">Inbox Pengajuan</span>
-                </a>
-
-                <!-- 2. Profil & Visi Misi -->
-                <a href="{{ route('admin.tentang') }}" class="sidebar-link {{ request()->routeIs('admin.tentang') ? 'on' : '' }}">
-                    <div class="link-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="9" cy="7" r="4"></circle>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                        </svg>
-                    </div>
-                    <span class="link-label">Profil &amp; Visi Misi</span>
-                </a>
-
-                <!-- 3. Kelola Artikel -->
-                <a href="{{ route('admin.artikel') }}" class="sidebar-link {{ request()->routeIs('admin.artikel') ? 'on' : '' }}">
-                    <div class="link-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                            <line x1="16" y1="17" x2="8" y2="17"></line>
-                            <polyline points="10 9 9 9 8 9"></polyline>
-                        </svg>
-                    </div>
-                    <span class="link-label">Kelola Artikel</span>
-                </a>
-
-                <!-- 4. Kelola Galeri -->
-                <a href="{{ route('admin.galeri') }}" class="sidebar-link {{ request()->routeIs('admin.galeri') ? 'on' : '' }}">
-                    <div class="link-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                            <polyline points="21 15 16 10 5 21"></polyline>
-                        </svg>
-                    </div>
-                    <span class="link-label">Kelola Galeri</span>
-                </a>
-
-                <!-- 5. Draf Proposal AI & Masa Aktif -->
-                <a href="{{ route('admin.mitra_draf') }}" class="sidebar-link {{ request()->routeIs('admin.mitra_draf') ? 'on' : '' }}">
-                    <div class="link-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
-                        </svg>
-                    </div>
-                    <span class="link-label">Draf &amp; Masa Aktif</span>
-                    <span class="link-badge ai-badge">AI</span>
-                </a>
-            </div>
-
-            <!-- MENU SISTEM & PORTAL -->
-            <div class="sidebar-nav-group">
-                <span class="sidebar-group-title">Sistem &amp; Tautan Luar</span>
-                <a href="{{ route('landing') }}" target="_blank" rel="noopener noreferrer" class="sidebar-link">
-                    <div class="link-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="2" y1="12" x2="22" y2="12"></line>
-                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                        </svg>
-                    </div>
-                    <span class="link-label">Lihat Portal Umum</span>
-                </a>
-            </div>
+                    @foreach ($grup['item'] as $item)
+                        <a href="{{ $item['url'] }}"
+                           class="sidebar-link {{ $item['aktif'] !== '' && request()->routeIs($item['aktif'].'*') ? 'on' : '' }}"
+                           @if ($item['luar']) target="_blank" rel="noopener noreferrer" @endif>
+                            <div class="link-icon">
+                                @include('partials.ikon-admin', ['ikon' => $item['ikon']])
+                            </div>
+                            <span class="link-label">{{ $item['label'] }}</span>
+                            @if ($item['kemampuan'] === 'dashboard')
+                                {{-- Counter hanya untuk peran yang punya dashboard. --}}
+                                @php($jumlahMenungguPerpanjangan = \App\Support\PermohonanPerpanjangan::jumlahMenunggu())
+                                @if ($jumlahMenungguPerpanjangan > 0)
+                                    <span class="link-badge" title="Permohonan perpanjangan menunggu">{{ $jumlahMenungguPerpanjangan }}</span>
+                                @endif
+                            @elseif ($item['badge'] !== '')
+                                <span class="link-badge ai-badge">{{ $item['badge'] }}</span>
+                            @endif
+                        </a>
+                    @endforeach
+                </div>
+            @endforeach
         </div>
 
         <!-- PROFILE CARD DI BAGIAN BAWAH SIDEBAR -->
@@ -130,15 +84,15 @@
                         <circle cx="12" cy="7" r="4"></circle>
                     </svg>
                 </div>
-                <span class="avatar-status-dot" title="Admin Aktif"></span>
+                <span class="avatar-status-dot" title="{{ $labelPeran }} Aktif"></span>
             </div>
             <div class="profile-info">
-                <span class="profile-name">Admin Utama</span>
-                <span class="profile-role">Super Administrator</span>
+                <span class="profile-name">{{ $namaPengguna }}</span>
+                <span class="profile-role">{{ $labelPeran }}</span>
             </div>
-            <form method="POST" action="{{ route('admin.logout') }}" style="margin:0;display:inline;">
+            <form method="POST" action="{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.logout') }}" style="margin:0;display:inline;">
                 @csrf
-                <button type="submit" class="profile-logout-btn" title="Keluar dari Panel Admin">
+                <button type="submit" class="profile-logout-btn" title="Keluar dari Panel {{ $labelPeran }}">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                         <polyline points="16 17 21 12 16 7"></polyline>
@@ -164,7 +118,7 @@
                 </button>
 
                 <div class="topbar-breadcrumb">
-                    <span class="breadcrumb-root">Admin Panel</span>
+                    <span class="breadcrumb-root">Panel {{ $labelPeran }}</span>
                     <span class="breadcrumb-sep">/</span>
                     <span class="breadcrumb-current">@yield('title')</span>
                 </div>
@@ -175,8 +129,8 @@
                     <span class="pulse-dot"></span>
                     <span>Sistem Aktif &bull; Komdigi RI</span>
                 </div>
-                <span class="who-logged">Logged in as: <b>Admin Utama Kerja Sama</b></span>
-                <form method="POST" action="{{ route('admin.logout') }}" style="margin:0;display:inline;">
+                <span class="who-logged">Masuk sebagai: <b>{{ $namaPengguna }} ({{ $labelPeran }})</b></span>
+                <form method="POST" action="{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.logout') }}" style="margin:0;display:inline;">
                     @csrf
                     <button class="btn btn2 btn-s" style="padding:5px 12px;font-size:12px;">Keluar</button>
                 </form>
@@ -189,8 +143,16 @@
                 <h1 class="page-main-title">@yield('title')</h1>
             </div>
 
+            @if (session('info'))
+                <div class="note-box" role="status">{{ session('info') }}</div>
+            @endif
+
             @if (session('ok'))
                 <div class="note-box note-box-success" role="status">{{ session('ok') }}</div>
+            @endif
+
+            @if (session('error'))
+                <div class="note-box note-box-danger" role="alert">{{ session('error') }}</div>
             @endif
 
             @if ($errors->any())
@@ -204,7 +166,7 @@
             @yield('content')
         </main>
 
-        <!-- FOOTER RESMI KOMDIGI â€” mengikuti kolom konten, di bawah sidebar -->
+        <!-- FOOTER RESMI KOMDIGI — mengikuti kolom konten, di bawah sidebar -->
         @include('partials.footer-komdigi')
     </div>
     </div>
@@ -215,7 +177,7 @@ function toggleSidebar(open) {
     const sidebar = document.getElementById('adminSidebar');
     const backdrop = document.getElementById('sidebarBackdrop');
     if (!sidebar || !backdrop) return;
-    
+
     if (open) {
         sidebar.classList.add('active');
         backdrop.classList.add('active');

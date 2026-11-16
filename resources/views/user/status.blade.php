@@ -4,7 +4,10 @@
 @php
     $kondisi = $status['kondisi'];
     $perluPerpanjang = in_array($kondisi, ['segera', 'berakhir'], true);
-    $sudahDiajukan = ! empty($perpanjangan);
+    $statusPerpanjangan = $perpanjangan['status'] ?? null;
+    $menunggu = $statusPerpanjangan === \App\Support\PermohonanPerpanjangan::MENUNGGU;
+    $ditolak = $statusPerpanjangan === \App\Support\PermohonanPerpanjangan::DITOLAK;
+    $disetujui = $statusPerpanjangan === \App\Support\PermohonanPerpanjangan::DISETUJUI;
     $ambang = \App\Support\StatusKerjasama::ambangHari();
 @endphp
 
@@ -14,6 +17,36 @@
     </p>
 
     {{-- Pengumuman: hanya pada kondisi Segera Berakhir / Berakhir. --}}
+    {{-- Hasil keputusan admin atas permohonan perpanjangan. --}}
+    @if ($menunggu)
+        <div class="mitra-alert mitra-alert-warning" role="status" data-anim="naik" data-kelompok="kepala">
+            <span>
+                Permohonan perpanjangan {{ $perpanjangan['durasi'] }} tahun yang Anda ajukan pada
+                <strong>{{ \App\Support\StatusKerjasama::parseTanggal($perpanjangan['diajukan_pada'])?->translatedFormat('d F Y') ?? $perpanjangan['diajukan_pada'] }}</strong>
+                sedang menunggu peninjauan admin.
+            </span>
+        </div>
+    @endif
+
+    @if ($disetujui)
+        <div class="mitra-alert mitra-alert-success" role="status" data-anim="naik" data-kelompok="kepala">
+            <span>
+                Permohonan perpanjangan Anda <strong>disetujui</strong>. Masa aktif baru:
+                <strong>{{ \App\Support\StatusKerjasama::parseTanggal($perpanjangan['mulai_baru'])?->translatedFormat('d F Y') }}</strong>
+                s/d
+                <strong>{{ \App\Support\StatusKerjasama::parseTanggal($perpanjangan['selesai_baru'])?->translatedFormat('d F Y') }}</strong>.
+            </span>
+        </div>
+    @elseif ($ditolak)
+        <div class="mitra-alert mitra-alert-danger" role="alert" data-anim="naik" data-kelompok="kepala">
+            <span>
+                Permohonan perpanjangan Anda <strong>ditolak</strong> admin. Alasan:
+                <em>{{ $perpanjangan['alasan'] }}</em>. Silakan ajukan kembali dengan perbaikan.
+                <a href="#form-perpanjangan" data-buka-perpanjangan>Ajukan perpanjangan</a>
+            </span>
+        </div>
+    @endif
+
     @if ($kondisi === 'segera')
         <div class="mitra-alert mitra-alert-warning" role="status" data-anim="naik" data-kelompok="kepala">
             <span>
@@ -57,12 +90,12 @@
                 Periode kerja sama dihitung per tanggal sesuai zona waktu aplikasi. Data tanggal berasal dari pengajuan yang disetujui.
             </p>
 
-            @if ($sudahDiajukan)
+            @if ($menunggu)
                 <button type="button" class="mitra-btn mitra-btn-secondary" disabled
                         aria-describedby="ket-perpanjangan">
-                    Perpanjangan Diajukan
+                    Menunggu Keputusan Admin
                 </button>
-            @elseif ($perluPerpanjang)
+            @elseif ($perluPerpanjang || $ditolak)
                 <button type="button" class="mitra-btn mitra-btn-primary" data-buka-perpanjangan>
                     Perpanjang Masa Aktif
                 </button>
@@ -73,9 +106,9 @@
             @endif
         </div>
 
-        @if ($sudahDiajukan)
+        @if ($menunggu)
             <p class="status-foot-note" id="ket-perpanjangan">
-                Permohonan perpanjangan {{ $perpanjangan['durasi'] }} tahun diajukan pada {{ $perpanjangan['diajukan_pada'] }} dan sedang menunggu peninjauan admin.
+                Permohonan perpanjangan {{ $perpanjangan['durasi'] }} tahun diajukan pada {{ \App\Support\StatusKerjasama::parseTanggal($perpanjangan['diajukan_pada'])?->translatedFormat('d F Y') ?? $perpanjangan['diajukan_pada'] }} dan sedang menunggu peninjauan admin.
             </p>
         @endif
     </section>

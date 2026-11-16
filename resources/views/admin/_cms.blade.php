@@ -9,7 +9,7 @@
 </p>
 
 <form id="form-tambah" class="panel" hidden method="POST"
-      action="{{ route('admin.'.$jenis.'.store') }}" enctype="multipart/form-data">
+      action="{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.'.$jenis.'.store') }}" enctype="multipart/form-data">
     @csrf
     <div class="panel-head">
         <h2 class="panel-title">{{ $tambah }}</h2>
@@ -64,7 +64,7 @@
                             <div class="table-actions">
                                 <button type="button" class="btn btn-s"
                                         onclick="bukaEdit('{{ $r['id'] }}','{{ addslashes($r['judul']) }}','{{ addslashes($r['konten'] ?? '') }}')">Edit</button>
-                                <form method="POST" action="{{ route('admin.'.$jenis.'.delete', $r['id']) }}"
+                                <form method="POST" action="{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.'.$jenis.'.delete', $r['id']) }}"
                                       onsubmit="return confirm('Hapus item ini?')">
                                     @csrf
                                     <button type="submit" class="btn btn-s btn-hapus">Hapus</button>
@@ -146,8 +146,8 @@ function bukaEdit(id, judul, konten) {
     document.getElementById('prev-edit').hidden = true;
     document.getElementById('fi-edit').value = '';
 
-    // Prefix admin diambil dari konfigurasi agar tidak ditulis di klien.
-    var adminBase = "{{ url(config('admin_demo.path')) }}";
+    // Prefix panel diambil dari peran yang login, bukan ditulis di klien.
+    var adminBase = "{{ url(\App\Support\AdminAkses::path(\App\Support\AdminAkses::peranSesi() ?? 'superadmin')) }}";
     document.getElementById('form-edit').action = adminBase + '/' + jenis + '/' + id + '/edit';
 
     document.getElementById('modal-edit').classList.add('active');

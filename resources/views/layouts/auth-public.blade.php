@@ -19,10 +19,8 @@
 <body class="auth-page">
 <a href="#konten-utama" class="skip-link">Lewati ke konten utama</a>
 
-{{-- Login mitra tampil sebagai kartu mandiri di tengah, tanpa navbar atas. --}}
-@unless (request()->routeIs('login'))
-    @include('partials.navbar-app')
-@endunless
+{{-- Tampilkan navbar untuk semua halaman auth (login mitra & admin). --}}
+@include('partials.navbar-app')
 
 <main class="auth-main" id="konten-utama">
     @yield('content')

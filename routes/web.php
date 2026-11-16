@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\MitraController;
+use App\Support\LandingCms;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -60,7 +61,7 @@ Route::post('/pengajuan', function (Request $request) {
 
     // Simpan ke storage_pengajuan.json agar admin di port 8001 langsung melihatnya
     $filePath = storage_path('app/storage_pengajuan.json');
-    $list = file_exists($filePath) ? json_decode(file_get_contents($filePath), true) : [];
+    $list = file_exists($filePath) ? json_decode((string) file_get_contents($filePath), true) : [];
     if (! is_array($list)) {
         $list = [];
     }
@@ -104,12 +105,46 @@ Route::post('/pengajuan', function (Request $request) {
         ->with('ok', 'Pengajuan kerja sama dari '.$request->instansi.' berhasil dikirim! Tim KEMKOMDIGI akan memverifikasi berkas dan menghubungi PIC ('.$request->pic.') melalui Email ('.$request->email.') dan WhatsApp ('.$request->telp.').');
 })->middleware('throttle:pengajuan')->name('pengajuan.store');
 
+// Halaman detail artikel (publik)
+Route::get('/berita/{slug}', function (string $slug) {
+    $cmsAll = app(LandingCms::class)->all();
+    $artikelCms = $cmsAll['artikel'] ?? [];
+
+    if (empty($artikelCms)) {
+        // fallback default
+        $artikelCms = config('landing_cms.artikel', []);
+    }
+
+    $ditemukan = null;
+    foreach ($artikelCms as $a) {
+        if (Str::slug($a['judul'] ?? '') === $slug) {
+            $ditemukan = $a;
+            break;
+        }
+    }
+
+    abort_unless($ditemukan !== null, 404);
+
+    // Buat daftar artikel (untuk navigasi "artikel lain")
+    $daftar = array_map(fn ($a) => [
+        'slug' => Str::slug($a['judul'] ?? ''),
+        'judul' => $a['judul'] ?? '',
+        'tanggal' => $a['tanggal'] ?? '',
+        'gambar' => $a['gambar'] ?? '',
+    ], $artikelCms);
+
+    return view('berita-detail', [
+        'artikel' => $ditemukan,
+        'daftar' => $daftar,
+    ]);
+})->name('berita.detail');
+
 // Login mitra: tetap dapat diakses lewat URL langsung (/login). Tidak ada
 // tautan ke halaman ini dari homepage (lihat R1 pada laporan).
 Route::view('/login', 'login')->name('login');
 Route::post('/login', fn () => redirect()->route('mitra.status'))->middleware('throttle:mitra-login')->name('login.post');
 Route::post('/logout', function () {
-    session()->forget(['mitra_data', 'mitra_mou', 'mitra_perpanjangan']);
+    session()->forget(['mitra_data', 'mitra_mou']);
 
     return redirect()->route('landing');
 })->name('logout');

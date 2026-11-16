@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Support\DataDemo;
+use App\Support\PermohonanPerpanjangan;
 use App\Support\StatusKerjasama;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
@@ -41,7 +42,7 @@ class MitraController extends Controller
     public function status(Request $request): View
     {
         $mitra = $this->mitra($request);
-        $perpanjangan = (array) $request->session()->get('mitra_perpanjangan', []);
+        $perpanjangan = PermohonanPerpanjangan::terbaruUntuk((string) $mitra['username']);
 
         // Pratinjau pengembang: hanya di dalam mode debug, tidak disimpan.
         $pratinjau = null;
@@ -73,7 +74,10 @@ class MitraController extends Controller
         ]);
     }
 
-    /** Simpan permohonan perpanjangan ke session (demo), lalu kembali ke status. */
+    /**
+     * Simpan permohonan perpanjangan agar terbaca admin di Dashboard.
+     * Tidak memakai session: admin membaca berkas yang sama.
+     */
     public function ajukanPerpanjangan(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -85,12 +89,23 @@ class MitraController extends Controller
             'catatan.max' => 'Catatan maksimal 1000 karakter.',
         ]);
 
-        $request->session()->put('mitra_perpanjangan', [
-            'durasi' => (int) $validated['durasi'],
-            'catatan' => (string) ($validated['catatan'] ?? ''),
-            'diajukan_pada' => CarbonImmutable::now(config('app.timezone', 'UTC'))
-                ->translatedFormat('d F Y H:i'),
-        ]);
+        $mitra = $this->mitra($request);
+        $username = (string) $mitra['username'];
+
+        if (PermohonanPerpanjangan::terbaruUntuk($username) !== null
+            && PermohonanPerpanjangan::terbaruUntuk($username)['status'] === PermohonanPerpanjangan::MENUNGGU) {
+            return redirect()
+                ->route('mitra.status')
+                ->withErrors(['durasi' => 'Permohonan perpanjangan Anda masih menunggu peninjauan admin.']);
+        }
+
+        PermohonanPerpanjangan::ajukan(
+            $username,
+            (string) $mitra['instansi'],
+            (int) $validated['durasi'],
+            (string) ($validated['catatan'] ?? ''),
+            (string) ($mitra['selesai'] ?? ''),
+        );
 
         return redirect()
             ->route('mitra.status')

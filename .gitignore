@@ -43,3 +43,6 @@ yarn-error.log
 /boost.json
 /opencode.json
 /opencode.jsonc
+
+# Kredensial demo (jangan pernah di-commit)
+/KREDENSIAL_DEMO.md

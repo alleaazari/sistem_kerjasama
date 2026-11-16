@@ -35,4 +35,13 @@ return [
         ],
     ],
 
+    /*
+    | Gateway WhatsApp. Biarkan kosong untuk menonaktifkan pengiriman nyata;
+    | pesan hanya dicatat ke log selama pengembangan.
+    */
+    'wa_gateway' => [
+        'url' => env('WA_GATEWAY_URL', ''),
+        'key' => env('WA_GATEWAY_KEY', ''),
+    ],
+
 ];

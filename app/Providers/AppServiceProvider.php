@@ -40,6 +40,11 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('mitra-login', fn (Request $request) => Limit::perMinute(5)->by(Str::lower((string) $request->input('username')).'|'.$request->ip()));
         RateLimiter::for('pddikti', fn (Request $request) => Limit::perMinute(30)->by($request->ip()));
         RateLimiter::for('mitra-profile', fn (Request $request) => Limit::perMinute(10)->by($request->ip()));
+
+        // Login panel admin: per IP + username, supaya satu akun tidak bisa
+        // ditebak berulang dan satu IP tidak menyapu banyak akun sekaligus.
+        RateLimiter::for('admin-login', fn (Request $request) => Limit::perMinute(5)
+            ->by(Str::lower((string) $request->input('username')).'|'.$request->ip()));
     }
 
     /**

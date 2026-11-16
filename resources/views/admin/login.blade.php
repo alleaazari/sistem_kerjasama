@@ -1,10 +1,10 @@
 @extends('layouts.auth-public')
-@section('title', 'Masuk Admin')
+@section('title', $judulHalaman)
 
 @section('content')
 <div class="auth-card">
-    <h1>Masuk Admin</h1>
-    <p class="auth-lead">Panel administrator Portal Kerja Sama Komdigi. Halaman ini tidak ditautkan dari portal publik.</p>
+    <h1>{{ $judulHalaman }}</h1>
+    <p class="auth-lead">Panel {{ $labelPeran }} Portal Kerja Sama Komdigi. Halaman ini tidak ditautkan dari portal publik.</p>
 
     @if (session('info'))
         <div class="auth-notice" role="status">{{ session('info') }}</div>
@@ -24,14 +24,14 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.login.post') }}" data-form-login>
+    <form method="POST" action="{{ $aksi }}" data-form-login>
         @csrf
 
         <div class="auth-field">
-            <label for="u">Nama pengguna admin</label>
+            <label for="u">Nama pengguna {{ Str::lower($labelPeran) }}</label>
             <div class="auth-input-wrap">
                 <input type="text" id="u" name="username" value="{{ old('username') }}"
-                       autocomplete="username" required autofocus>
+                       autocomplete="username" required autofocus maxlength="255">
             </div>
         </div>
 
@@ -39,7 +39,7 @@
             <label for="p">Kata sandi</label>
             <div class="auth-input-wrap">
                 <input type="password" id="p" name="password" class="auth-input-password"
-                       autocomplete="current-password" required>
+                       autocomplete="current-password" required maxlength="255">
                 <button type="button" class="auth-password-toggle auth-hide-nojs"
                         data-toggle-password="p" aria-pressed="false" aria-controls="p">
                     Tampilkan
@@ -48,7 +48,7 @@
         </div>
 
         <button type="submit" class="app-btn app-btn-primary app-btn-block auth-submit" data-submit>
-            Masuk ke Panel Admin
+            Masuk sebagai {{ $labelPeran }}
         </button>
     </form>
 

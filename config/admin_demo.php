@@ -1,22 +1,23 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Konfigurasi panel lama — DIHAPUS
+|--------------------------------------------------------------------------
+| Sebelumnya berkas ini memuat akun plaintext (username + password) untuk
+| panel admin. Kredensial sekarang HANYA dibaca dari .env sebagai hash
+| bcrypt lewat config/admin_akses.php (SUPERADMIN_*, ADMIN_KERJASAMA_*,
+| DEVELOPER_*). Tidak ada password yang ditulis di dalam repo.
+|
+| Berkas ini sengaja dipertahankan sebagai penanda agar tidak ada kode lama
+| yang membacanya tanpa sadar: semua kunci di bawah bernilai kosong.
+|
+| TODO-BACKEND: hapus berkas ini setelah dipastikan tidak ada pemanggil
+| config('admin_demo.*') tersisa, lalu ganti dengan guard Eloquent.
+*/
+
 return [
-    'path'        => env('ADMIN_PATH', 'admin'),
-'allowed_ips' => env('ADMIN_ALLOWED_IPS', ''),
-    'accounts' => [
-        [
-            'name'     => 'Admin Kerja Sama',
-            'username' => 'admin',
-            'email'    => 'admin@komdigi.test',
-            'password' => 'admin#2026',
-            'role'     => 'admin',
-        ],
-        [
-            'name'     => 'Developer',
-            'username' => 'developer',
-            'email'    => 'developer@komdigi.test',
-            'password' => 'Dev#2026',
-            'role'     => 'developer',
-        ],
-    ],
+    'path' => '',
+    'allowed_ips' => '',
+    'accounts' => [],
 ];
