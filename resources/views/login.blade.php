@@ -3,11 +3,7 @@
 
 @section('content')
 <div class="auth-card">
-    <div class="auth-head">
-        <img class="auth-logo" src="{{ asset('assets/user/images/logo-komdigi.jpg') }}"
-             alt="Logo Komdigi" width="44" height="44">
-        <h1>Masuk Mitra</h1>
-    </div>
+    <h1>Masuk Mitra</h1>
     <p class="auth-lead">Gunakan nama pengguna dan kata sandi yang dikirimkan ke email PIC instansi Anda.</p>
 
     @if (session('info'))
@@ -22,7 +18,7 @@
 
     @if (config('app.debug'))
         <div class="auth-debug-hint">
-            <strong>Mode pengembangan.</strong> Akun demo untuk peninjauan lokal: nama pengguna <strong>{{ config('mitra.demo_user') }}</strong>, kata sandi <strong>{{ config('mitra.demo_password') }}</strong>. Tidak tampil saat aplikasi tidak dalam mode debug.
+            <strong>Catatan pengembangan.</strong> Kredensial akun demo tidak ditampilkan di antarmuka. Lihat berkas konfigurasi server saat pengembangan.
         </div>
     @endif
 

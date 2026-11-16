@@ -4,21 +4,25 @@
     oleh setiap layout yang meng-include partial ini.
 --}}
 <footer class="komdigi-footer">
+    <!-- Watermark logo besar di kanan, di belakang konten -->
+    <div class="kgf-watermark" aria-hidden="true">
+        <svg viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 40 L30 30 L40 40 L30 50 Z M60 40 L70 30 L80 40 L70 50 Z M40 60 L50 50 L60 60 L50 70 Z M60 60 L70 50 L80 60 L70 70 Z M40 40 L50 30 L60 40 L50 50 Z"/>
+        </svg>
+    </div>
+
     <div class="komdigi-footer-inner">
         <div class="kgf-top">
             <div class="kgf-brand">
                 <div class="kgf-logo-row">
-                    <img src="{{ asset('assets/user/images/logo-komdigi.jpg') }}" alt="Logo Kementerian Komunikasi dan Digital" class="kgf-logo" width="44" height="44">
+                    <img src="{{ asset('assets/user/images/logo-komdigi.jpg') }}"
+                         alt="Logo Kementerian Komunikasi dan Digital"
+                         class="kgf-logo" width="44" height="44">
                     <span class="kgf-brand-name">KOMDIGI</span>
                 </div>
-                <p class="kgf-tagline">
-                    Kementerian Komunikasi dan Digital<br>
-                    Republik Indonesia
-                </p>
             </div>
 
-            <nav class="kgf-col" aria-labelledby="kgf-judul-eselon">
-                <h2 class="kgf-col-title" id="kgf-judul-eselon">Unit Eselon I</h2>
+            <nav class="kgf-col" aria-label="Unit Eselon I">
                 <ul>
                     <li><a href="https://komdigi.go.id" target="_blank" rel="noopener noreferrer">Inspektorat Jenderal</a></li>
                     <li><a href="https://komdigi.go.id" target="_blank" rel="noopener noreferrer">Ditjen Infrastruktur Digital</a></li>
@@ -28,8 +32,7 @@
                 </ul>
             </nav>
 
-            <nav class="kgf-col" aria-labelledby="kgf-judul-badan">
-                <h2 class="kgf-col-title" id="kgf-judul-badan">Badan dan Unit Pendukung</h2>
+            <nav class="kgf-col" aria-label="Badan dan Unit Pendukung">
                 <ul>
                     <li><a href="https://komdigi.go.id" target="_blank" rel="noopener noreferrer">Ditjen Komunikasi Publik dan Media</a></li>
                     <li><a href="https://komdigi.go.id" target="_blank" rel="noopener noreferrer">BPSDM Komdigi</a></li>
@@ -39,11 +42,9 @@
                 </ul>
             </nav>
 
-            <nav class="kgf-col" aria-labelledby="kgf-judul-bantuan">
-                <h2 class="kgf-col-title" id="kgf-judul-bantuan">Bantuan</h2>
+            <nav class="kgf-col" aria-label="Bantuan">
                 <ul>
                     <li><a href="https://komdigi.go.id" target="_blank" rel="noopener noreferrer">FAQ</a></li>
-                    <li><a href="{{ route('landing') }}">Portal Utama</a></li>
                     <li><a href="https://komdigi.go.id" target="_blank" rel="noopener noreferrer">Tautan</a></li>
                     <li><a href="mailto:pelayanan@mail.komdigi.go.id">Hubungi Kami</a></li>
                 </ul>
@@ -72,10 +73,6 @@
                 <a href="https://x.com/kemkominfo" target="_blank" rel="noopener noreferrer" aria-label="X Komdigi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
                 <a href="https://www.tiktok.com/@kemkominfo" target="_blank" rel="noopener noreferrer" aria-label="TikTok Komdigi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.29 0 .56.04.82.1v-3.6a6.47 6.47 0 0 0-1.07-.09A6.36 6.36 0 0 0 2.85 15.5a6.36 6.36 0 0 0 10.86 4.49A6.32 6.32 0 0 0 15.5 15.5V9.07a8.28 8.28 0 0 0 4.84 1.56V7.18a4.83 4.83 0 0 1-.75-.49z"/></svg></a>
             </div>
-        </div>
-
-        <div class="kgf-copy">
-            Hak Cipta &copy; {{ date('Y') }} Kementerian Komunikasi dan Digital Republik Indonesia.
         </div>
     </div>
 </footer>

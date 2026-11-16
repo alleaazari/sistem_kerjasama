@@ -18,6 +18,9 @@
     <x-asset path="assets/user/css/landing.css" />
     <x-asset path="assets/user/css/landing-widgets.css" />
     @endif
+    @if (request()->routeIs('berita.detail'))
+    <x-asset path="assets/user/css/berita-detail.css" />
+    @endif
 </head>
 <body class="@yield('body_class')">
 @include('partials.header')

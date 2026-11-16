@@ -231,7 +231,7 @@ window.LP_WIDGETS = @json($widgetData);
                     <div class="hero-card-divider"></div>
 
                     <button type="button" class="hero-card-user hero-card-user-btn" onclick="openWilayahModal()" title="Lihat lokasi layanan 8 provinsi">
-                        <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=200&auto=format&fit=crop" alt="Kepala BBLSDM Komdigi" class="hero-user-avatar">
+                        <img src="{{ asset('assets/user/images/logo-komdigi.jpg') }}" alt="" class="hero-user-avatar" aria-hidden="true">
                         <div class="hero-user-text">
                             <strong>BBLSDM Komdigi Medan</strong>
                             <span>Layanan 8 provinsi</span>
@@ -391,7 +391,7 @@ window.LP_WIDGETS = @json($widgetData);
                 <time class="date">{{ $a[1] }}</time>
                 <h3>{{ $a[0] }}</h3>
                 <p class="excerpt">{{ \Illuminate\Support\Str::limit($a[3], 92) }}</p>
-                <a href="#" class="card-link">
+                <a href="{{ route('berita.detail', \Illuminate\Support\Str::slug($a[0])) }}" class="card-link">
                     Baca selengkapnya
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 </a>
