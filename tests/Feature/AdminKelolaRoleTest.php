@@ -274,3 +274,56 @@ test('akun admin_kelola tanpa email atau hash di .env tidak bisa dipakai', funct
 
     expect(session('admin_auth'))->toBeNull();
 });
+
+test('akun superadmin dan admin_kerjasama dari .env bisa masuk dengan akses penuh', function (string $peran, string $nama) {
+    config(['admin_demo.accounts' => [[
+        'name' => $nama,
+        'username' => 'uji',
+        'email' => 'uji@example.test',
+        'password_hash' => Hash::make('Rahasia#Uji2026'),
+        'role' => $peran,
+    ]]]);
+
+    $this->post(route('admin.login.post'), ['username' => 'uji', 'password' => 'Rahasia#Uji2026'])
+        ->assertRedirect(route('admin.inbox'));
+
+    expect(session('admin_auth.role'))->toBe($peran);
+
+    // Akses penuh: halaman kerja sama maupun konten terbuka.
+    foreach (array_merge(ruteKerjasama(), ruteKonten()) as $rute) {
+        $this->withSession(sesiPeran($peran))->get(route($rute))->assertOk();
+    }
+})->with([
+    ['superadmin', 'Super Administrator'],
+    ['admin_kerjasama', 'Administrator Kerja Sama'],
+]);
+
+test('akun .env yang kosong tidak membuat slot login terbuka', function (string $role) {
+    // Slot bawaan config tidak boleh bisa dipakai selama .env kosong.
+    foreach (config('admin_demo.accounts') as $acc) {
+        if ($acc['role'] !== $role) {
+            continue;
+        }
+
+        expect($acc['email'])->toBe('')
+            ->and($acc['password_hash'])->toBe('');
+
+        $this->post(route('admin.login.post'), ['username' => $acc['username'], 'password' => ''])
+            ->assertSessionHas('login_error');
+    }
+
+    expect(session('admin_auth'))->toBeNull();
+})->with(['superadmin', 'admin_kerjasama']);
+
+test('halaman uji email hanya untuk developer dan hanya di lingkungan lokal', function (string $role, int $harapan) {
+    $this->app['env'] = 'local';
+
+    $this->withSession(sesiPeran($role))
+        ->get(route('admin.test.email'))
+        ->assertStatus($harapan);
+})->with([
+    ['developer', 200],
+    ['admin_kelola', 404],
+    ['admin_kerjasama', 404],
+    ['superadmin', 404],
+]);

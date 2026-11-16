@@ -27,5 +27,21 @@ return [
             'password_hash' => (string) env('ADMIN_KELOLA_PASSWORD_HASH', ''),
             'role' => 'admin_kelola',
         ],
+        // Superadmin (akses penuh). Kredensial dari .env, hash bcrypt.
+        [
+            'name' => 'Super Administrator',
+            'username' => (string) env('ADMIN_SUPERADMIN_USERNAME', 'superadmin'),
+            'email' => (string) env('ADMIN_SUPERADMIN_EMAIL', ''),
+            'password_hash' => (string) env('ADMIN_SUPERADMIN_PASSWORD_HASH', ''),
+            'role' => 'superadmin',
+        ],
+        // Administrator kerja sama (akses penuh). Kredensial dari .env, hash bcrypt.
+        [
+            'name' => 'Administrator Kerja Sama',
+            'username' => (string) env('ADMIN_KERJASAMA_USERNAME', 'kerjasama'),
+            'email' => (string) env('ADMIN_KERJASAMA_EMAIL', ''),
+            'password_hash' => (string) env('ADMIN_KERJASAMA_PASSWORD_HASH', ''),
+            'role' => 'admin_kerjasama',
+        ],
     ],
 ];

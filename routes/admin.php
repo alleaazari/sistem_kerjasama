@@ -291,17 +291,12 @@ Route::middleware('admin.only:'.implode(',', AdminPeran::peranUntuk('konten')))-
 });
 
 // =====================================================================
-// DASHBOARD — dua bentuk, satu route
-// Peran kerja sama menerima antrean perpanjangan + hitungan pengajuan.
-// admin_kelola menerima ringkasan konten saja; data kerja sama tidak pernah
-// di-query maupun dikirim ke view (bukan sekadar disembunyikan).
-// TODO-BACKEND: pemetaan peran ke tabel users.
 // =====================================================================
-Route::middleware('admin.only:'.implode(',', AdminPeran::peranUntuk('kerja_sama')))->group(function () use (
-    $defaultPengajuan
-) {
-
-    // TEST EMAIL: hanya role developer, dan hanya tersedia di lingkungan lokal.
+// UJI EMAIL (developer, hanya di lingkungan lokal)
+// Grup sendiri: kalau ditaruh di dalam grup `kerja_sama`, developer tidak
+// akan pernah lolos karena middleware-nya bertumpuk.
+// =====================================================================
+Route::middleware('admin.only:'.implode(',', AdminPeran::peranUntuk('uji_email')))->group(function () {
     Route::get('/test-email', function (Request $request) {
         abort_unless(app()->isLocal(), 404);
 
@@ -320,7 +315,15 @@ Route::middleware('admin.only:'.implode(',', AdminPeran::peranUntuk('kerja_sama'
             return response('GAGAL mengirim email.<br>'.nl2br(e($e->getMessage())), 500)
                 ->header('Content-Type', 'text/html');
         }
-    })->middleware('admin.only:developer')->name('admin.test.email');
+    })->name('admin.test.email');
+});
+
+// =====================================================================
+// PANEL DATA KERJA SAMA (dashboard penuh, inbox, draf, masa aktif)
+// =====================================================================
+Route::middleware('admin.only:'.implode(',', AdminPeran::peranUntuk('kerja_sama')))->group(function () use (
+    $defaultPengajuan
+) {
 
     // ---------------- DASHBOARD ----------------
     // Antrean permohonan perpanjangan dari mitra: admin menyetujui (langsung
