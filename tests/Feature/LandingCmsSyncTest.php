@@ -16,6 +16,7 @@ function setupCmsStorage(): string
     $temp = sys_get_temp_dir().'/cms-test-'.uniqid();
     File::makeDirectory($temp.'/app', 0755, true);
     app()->useStoragePath($temp);
+
     return $temp;
 }
 
@@ -71,9 +72,9 @@ test('sesi admin tidak lagi dipakai untuk konten landing', function () {
 
 test('posting tentang admin menulis petinggi ke CMS persisten', function () {
     $temp = setupCmsStorage();
-    $this->withSession(['admin_auth' => ['name' => 'Admin', 'role' => 'admin']]);
+    $this->withSession(['admin_auth' => ['name' => 'Admin', 'role' => 'superadmin']]);
 
-    $response = $this->post(route('admin.tentang.update'), [
+    $response = $this->post(route('superadmin.tentang.update'), [
         'p_nama' => ['Dr. Uji Baru'],
         'p_jabatan' => ['Kepala BBLSDM'],
         'p_badge' => ['Uji'],
@@ -92,9 +93,9 @@ test('posting tentang admin menulis petinggi ke CMS persisten', function () {
 
 test('posting artikel admin menulis ke CMS persisten', function () {
     $temp = setupCmsStorage();
-    $this->withSession(['admin_auth' => ['name' => 'Admin', 'role' => 'admin']]);
+    $this->withSession(['admin_auth' => ['name' => 'Admin', 'role' => 'superadmin']]);
 
-    $this->post(route('admin.artikel.store'), [
+    $this->post(route('superadmin.artikel.store'), [
         'judul' => 'Artikel Uji CMS',
         'konten' => 'Konten uji',
     ])->assertRedirect();
@@ -108,9 +109,9 @@ test('posting artikel admin menulis ke CMS persisten', function () {
 
 test('posting galeri admin menulis ke CMS persisten', function () {
     $temp = setupCmsStorage();
-    $this->withSession(['admin_auth' => ['name' => 'Admin', 'role' => 'admin']]);
+    $this->withSession(['admin_auth' => ['name' => 'Admin', 'role' => 'superadmin']]);
 
-    $this->post(route('admin.galeri.store'), [
+    $this->post(route('superadmin.galeri.store'), [
         'judul' => 'Galeri Uji',
     ])->assertRedirect();
 

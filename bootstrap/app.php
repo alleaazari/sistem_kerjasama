@@ -3,6 +3,7 @@
 use App\Http\Middleware\AdminOnly;
 use App\Http\Middleware\HideAdmin;
 use App\Http\Middleware\SecurityHeaders;
+use App\Support\AdminAkses;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -14,9 +15,27 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
-            Route::middleware(['web', HideAdmin::class])
-                ->prefix(config('admin_demo.path'))
-                ->group(base_path('routes/admin.php'));
+            // Satu grup per peran: prefix URL + halaman login sendiri.
+            // Prefix dibaca dari .env lewat AdminAkses -> config/admin_akses.php.
+            foreach (AdminAkses::semua() as $peran) {
+                $grup = fn () => Route::middleware(['web', HideAdmin::class])
+                    ->prefix(AdminAkses::path($peran))
+                    ->name(AdminAkses::nama($peran).'.');
+
+                // Pintu masuk: login, logout, root peran.
+                $grup()->group(base_path('routes/admin_bersama.php'));
+
+                // Halaman kerja sama dipakai bersama (middleware per kemampuan).
+                $grup()->group(base_path('routes/admin_kerja.php'));
+
+                // Halaman yang memang hanya milik peran ini.
+                if ($peran === 'superadmin') {
+                    $grup()->group(base_path('routes/superadmin.php'));
+                }
+            }
+
+            // Tautan lama /{ADMIN_PATH}/* dialihkan ke padanan /superadmin/*.
+            Route::middleware('web')->group(base_path('routes/admin_alias.php'));
 
             // Rute halaman pengaturan (profil, keamanan, tampilan). Tanpa ini
             // Wayfinder tidak membuat @/routes/{profile,security,appearance}

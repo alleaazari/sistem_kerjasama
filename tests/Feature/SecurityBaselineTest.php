@@ -77,7 +77,7 @@ test('pddikti query below minimum length returns empty json', function () {
 
 test('test-email route is not available outside the local environment', function () {
     $response = $this->withSession(['admin_auth' => ['name' => 'Dev', 'role' => 'developer']])
-        ->get(route('admin.test.email'));
+        ->get(route('superadmin.test_email'));
 
     $response->assertNotFound();
 });

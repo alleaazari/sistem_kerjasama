@@ -1,22 +1,32 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Panel admin: Draf Proposal AI & Masa Aktif Mitra (dua halaman terpisah)
+|--------------------------------------------------------------------------
+| Kedua halaman dipakai bersama Superadmin dan Admin Kerja Sama, sehingga
+| diuji lewat prefix masing-masing: /superadmin/* dan /admin-kerjasama/*.
+|
+| Penyimpanan mode demo: storage/app/draf_mitra.json dan
+| storage/app/masa_aktif_mitra.json.
+*/
+
+use App\Support\AdminAkses;
 use App\Support\DrafMitra;
 use App\Support\MasaAktifMitra;
 use App\Support\StatusKerjasama;
 use Carbon\CarbonImmutable;
 
-/*
-|--------------------------------------------------------------------------
-| Panel admin: Draf Proposal AI & Masa Aktif Mitra (dua halaman terpisah)
-|--------------------------------------------------------------------------
-| Penyimpanan mode demo: storage/app/draf_mitra.json dan
-| storage/app/masa_aktif_mitra.json.
-*/
-
 /** Sesi admin untuk peran tertentu. */
-function sesiAdmin(string $role = 'admin'): array
+function sesiAdmin(string $role = 'superadmin'): array
 {
     return ['admin_auth' => ['name' => 'Uji', 'role' => $role]];
+}
+
+/** Prefix URL peran, mis. 'superadmin' atau 'admin-kerjasama'. */
+function awalan(string $role): string
+{
+    return '/'.AdminAkses::path($role);
 }
 
 beforeEach(function () {
@@ -31,37 +41,42 @@ afterAll(function () {
 
 // ---------------------------------------------------------------- akses peran
 
-test('halaman draf proposal dapat dibuka admin, admin_kerjasama, dan superadmin', function (string $role) {
+test('halaman draf proposal dapat dibuka superadmin dan admin_kerjasama', function (string $role) {
     $this->withSession(sesiAdmin($role))
-        ->get(route('admin.draf_proposal'))
+        ->get(route(AdminAkses::nama($role).'.draf_proposal'))
         ->assertOk()
         ->assertSee('Draf Proposal AI');
-})->with(['admin', 'admin_kerjasama', 'superadmin']);
+})->with(['superadmin', 'admin_kerjasama']);
 
-test('halaman masa aktif dapat dibuka admin, admin_kerjasama, dan superadmin', function (string $role) {
+test('halaman masa aktif dapat dibuka superadmin dan admin_kerjasama', function (string $role) {
     $this->withSession(sesiAdmin($role))
-        ->get(route('admin.masa_aktif'))
+        ->get(route(AdminAkses::nama($role).'.masa_aktif'))
         ->assertOk()
         ->assertSee('Masa Aktif Mitra');
-})->with(['admin', 'admin_kerjasama', 'superadmin']);
+})->with(['superadmin', 'admin_kerjasama']);
 
-test('role developer ditolak 404 dari kedua halaman', function (string $route) {
+test('role developer ditolak 404 dari kedua halaman', function (string $nama) {
     $this->withSession(sesiAdmin('developer'))
-        ->get(route($route))
+        ->get(route('superadmin.'.$nama))
         ->assertNotFound();
-})->with(['admin.draf_proposal', 'admin.masa_aktif']);
+})->with(['draf_proposal', 'masa_aktif']);
 
-test('mitra tanpa sesi admin diarahkan ke login, bukan diberi akses', function (string $route) {
+test('mitra tanpa sesi admin diarahkan ke login prefix, bukan diberi akses', function (string $role, string $nama) {
     $this->withSession(['mitra_data' => ['username' => 'user1']])
-        ->get(route($route))
-        ->assertRedirect(route('admin.login'));
-})->with(['admin.draf_proposal', 'admin.masa_aktif']);
+        ->get(route(AdminAkses::nama($role).'.'.$nama))
+        ->assertRedirect(route(AdminAkses::nama($role).'.login'));
+})->with([
+    ['superadmin', 'draf_proposal'],
+    ['admin_kerjasama', 'draf_proposal'],
+    ['superadmin', 'masa_aktif'],
+    ['admin_kerjasama', 'masa_aktif'],
+]);
 
 test('pengajuan perubahan masa aktif ditolak untuk role developer', function () {
     $row = MasaAktifMitra::all()[0];
 
     $this->withSession(sesiAdmin('developer'))
-        ->put(route('admin.masa_aktif.atur'), [
+        ->put(route('superadmin.masa_aktif.atur'), [
             'uuid' => $row['uuid'],
             'tanggal_mulai' => '2030-01-01',
             'tanggal_berakhir' => '2031-01-01',
@@ -71,22 +86,10 @@ test('pengajuan perubahan masa aktif ditolak untuk role developer', function () 
     expect(MasaAktifMitra::cari($row['uuid'])['tanggal_berakhir'])->not->toBe('2031-01-01');
 });
 
-// ---------------------------------------------------------------- redirect lama
-
-test('route lama /mitra-draf dialihkan permanen ke halaman draf proposal', function () {
-    $this->withSession(sesiAdmin())
-        ->get(route('admin.mitra_draf.lama'))
-        ->assertRedirect('/draf-proposal');
-});
-
-test('route lama tetap butuh sesi admin', function () {
-    $this->get(route('admin.mitra_draf.lama'))->assertRedirect(route('admin.login'));
-});
-
 // ---------------------------------------------------------------- draf proposal
 
 test('tabel draf proposal memuat kolom yang diminta saja', function () {
-    $html = $this->withSession(sesiAdmin())->get(route('admin.draf_proposal'))->assertOk()->getContent();
+    $html = $this->withSession(sesiAdmin())->get(route('superadmin.draf_proposal'))->assertOk()->getContent();
 
     // Periksa isi tabel saja, bukan seluruh halaman (sidebar memuat menu lain).
     preg_match('#<table class="data-table".*?</table>#s', $html, $tabel);
@@ -102,14 +105,14 @@ test('tabel draf proposal memuat kolom yang diminta saja', function () {
 });
 
 test('unduhan dimatikan selama berkas draf belum tersedia', function () {
-    $this->withSession(sesiAdmin())->get(route('admin.draf_proposal'))
+    $this->withSession(sesiAdmin())->get(route('superadmin.draf_proposal'))
         ->assertOk()
         ->assertSee('title="Menunggu backend: berkas draf belum tersedia"', false);
 });
 
 test('pencarian draf menyaring berdasarkan instansi atau judul', function () {
     $this->withSession(sesiAdmin())
-        ->get(route('admin.draf_proposal', ['q' => 'Universitas']))
+        ->get(route('superadmin.draf_proposal', ['q' => 'Universitas']))
         ->assertOk()
         ->assertSee('Universitas Indonesia')
         ->assertDontSee('Pemerintah Provinsi Jawa Barat');
@@ -117,7 +120,7 @@ test('pencarian draf menyaring berdasarkan instansi atau judul', function () {
 
 test('pencarian tanpa hasil menampilkan keadaan kosong yang jelas', function () {
     $this->withSession(sesiAdmin())
-        ->get(route('admin.draf_proposal', ['q' => 'tidak-ada-yang-cocok']))
+        ->get(route('superadmin.draf_proposal', ['q' => 'tidak-ada-yang-cocok']))
         ->assertOk()
         ->assertSee('Tidak ada draf proposal yang cocok');
 });
@@ -131,14 +134,14 @@ test('nomor halaman di luar jangkauan dijepit ke halaman terakhir', function () 
 
 test('unduhan lewat UUID palsu dijawab 404', function () {
     $this->withSession(sesiAdmin())
-        ->get(route('admin.draf_proposal.unduh', 'bukan-uuid'))
+        ->get(route('superadmin.draf_proposal.unduh', 'bukan-uuid'))
         ->assertNotFound();
 });
 
 // ---------------------------------------------------------------- masa aktif
 
 test('tabel masa aktif tidak memuat judul kemitraan dan tanggal pembuatan', function () {
-    $html = $this->withSession(sesiAdmin())->get(route('admin.masa_aktif'))->assertOk()->getContent();
+    $html = $this->withSession(sesiAdmin())->get(route('superadmin.masa_aktif'))->assertOk()->getContent();
 
     preg_match('#<table class="data-table".*?</table>#s', $html, $tabel);
     expect($tabel[0] ?? '')->not->toBe('');
@@ -173,7 +176,7 @@ test('admin memperbarui masa aktif dari data tersimpan, bukan dari klien', funct
     $row = MasaAktifMitra::all()[0];
 
     $this->withSession(sesiAdmin())
-        ->put(route('admin.masa_aktif.atur'), [
+        ->put(route('superadmin.masa_aktif.atur'), [
             'uuid' => $row['uuid'],
             'tanggal_mulai' => '2027-01-01',
             'tanggal_berakhir' => '2029-01-01',
@@ -192,7 +195,7 @@ test('tanggal berakhir lebih awal dari tanggal mulai ditolak validasi', function
     $row = MasaAktifMitra::all()[0];
 
     $this->withSession(sesiAdmin())
-        ->put(route('admin.masa_aktif.atur'), [
+        ->put(route('superadmin.masa_aktif.atur'), [
             'uuid' => $row['uuid'],
             'tanggal_mulai' => '2029-01-01',
             'tanggal_berakhir' => '2028-01-01',
@@ -207,7 +210,7 @@ test('alasan perubahan dibatasi 255 karakter', function () {
     $row = MasaAktifMitra::all()[0];
 
     $this->withSession(sesiAdmin())
-        ->put(route('admin.masa_aktif.atur'), [
+        ->put(route('superadmin.masa_aktif.atur'), [
             'uuid' => $row['uuid'],
             'tanggal_mulai' => '2027-01-01',
             'tanggal_berakhir' => '2028-01-01',
@@ -220,7 +223,7 @@ test('UUID yang tidak terdaftar tidak mengubah apa pun', function () {
     $sebelum = MasaAktifMitra::all();
 
     $this->withSession(sesiAdmin())
-        ->put(route('admin.masa_aktif.atur'), [
+        ->put(route('superadmin.masa_aktif.atur'), [
             'uuid' => '3f1c2b7e-0000-4000-8000-000000000000',
             'tanggal_mulai' => '2030-01-01',
             'tanggal_berakhir' => '2031-01-01',
@@ -232,7 +235,7 @@ test('UUID yang tidak terdaftar tidak mengubah apa pun', function () {
 
 test('pencarian masa aktif menyaring berdasarkan nama instansi', function () {
     $this->withSession(sesiAdmin())
-        ->get(route('admin.masa_aktif', ['q' => 'Universitas']))
+        ->get(route('superadmin.masa_aktif', ['q' => 'Universitas']))
         ->assertOk()
         ->assertSee('Universitas Indonesia')
         ->assertDontSee('Pemerintah Provinsi Jawa Barat');
@@ -248,7 +251,7 @@ test('label status di halaman admin memakai istilah Aktif, Segera Berakhir, Keda
         ['uuid' => '33333333-3333-4333-8333-333333333333', 'instansi' => 'Mitra Lewat', 'tanggal_mulai' => $hariIni->subYear()->toDateString(), 'tanggal_berakhir' => $hariIni->subDays(10)->toDateString(), 'alasan' => ''],
     ]));
 
-    $this->withSession(sesiAdmin())->get(route('admin.masa_aktif'))
+    $this->withSession(sesiAdmin())->get(route('superadmin.masa_aktif'))
         ->assertOk()
         ->assertSee('Mitra Aktif')
         ->assertSee('Segera Berakhir')
@@ -256,17 +259,17 @@ test('label status di halaman admin memakai istilah Aktif, Segera Berakhir, Keda
 });
 
 test('jangka waktu ditampilkan dalam format dd MMM yyyy', function () {
-    $html = $this->withSession(sesiAdmin())->get(route('admin.masa_aktif'))->assertOk()->getContent();
+    $html = $this->withSession(sesiAdmin())->get(route('superadmin.masa_aktif'))->assertOk()->getContent();
 
     // Format lama memakai nama bulan penuh; format baru memakai singkatan.
     expect($html)->not->toContain('Oktober 2026')
         ->not->toContain('November 2026');
 });
 
-test('kedua halaman menyediakan kerangka muat dan keadaan galat', function (string $route) {
-    $html = $this->withSession(sesiAdmin())->get(route($route))->assertOk()->getContent();
+test('kedua halaman menyediakan kerangka muat dan keadaan galat', function (string $nama) {
+    $html = $this->withSession(sesiAdmin())->get(route('superadmin.'.$nama))->assertOk()->getContent();
 
     expect($html)->toContain('baris-skeleton')
         ->toContain('baris-error')
         ->toContain('data-ulang');
-})->with(['admin.draf_proposal', 'admin.masa_aktif']);
+})->with(['draf_proposal', 'masa_aktif']);

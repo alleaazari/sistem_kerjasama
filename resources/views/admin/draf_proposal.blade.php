@@ -14,7 +14,7 @@
 
     {{-- Pencarian --}}
     <div class="panel-body">
-        <form method="GET" action="{{ route('admin.draf_proposal') }}" class="panel-toolbar" role="search">
+        <form method="GET" action="{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.draf_proposal') }}" class="panel-toolbar" role="search">
             <div class="row">
                 <label for="q">Cari instansi atau judul kemitraan</label>
                 <input type="text" id="q" name="q" value="{{ $kata }}" maxlength="100"
@@ -23,7 +23,7 @@
             <div class="form-actions">
                 <button type="submit" class="btn btn-s">Cari</button>
                 @if ($kata !== '')
-                    <a href="{{ route('admin.draf_proposal') }}" class="btn btn2 btn-s">Hapus pencarian</a>
+                    <a href="{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.draf_proposal') }}" class="btn btn2 btn-s">Hapus pencarian</a>
                 @endif
             </div>
         </form>
@@ -62,7 +62,7 @@
                     <td>
                         <div class="table-actions">
                             @if ($berkasSiap)
-                                <a href="{{ route('admin.draf_proposal.unduh', $r['uuid']) }}"
+                                <a href="{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.draf_proposal.unduh', $r['uuid']) }}"
                                    class="btn btn2 btn-s" data-unduh="{{ $r['uuid'] }}">Unduh Draf</a>
                             @else
                                 {{-- Berkas draf belum disimpan backend: tombol sengaja dimatikan. --}}
@@ -77,7 +77,7 @@
                     <td colspan="4" class="cell-empty">
                         @if ($kata !== '')
                             Tidak ada draf proposal yang cocok dengan pencarian &ldquo;{{ $kata }}&rdquo;.
-                            <br><a href="{{ route('admin.draf_proposal') }}">Tampilkan semua draf</a>
+                            <br><a href="{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.draf_proposal') }}">Tampilkan semua draf</a>
                         @else
                             Belum ada draf proposal dari mitra. Draf akan muncul di sini setelah mitra membuatnya.
                         @endif
@@ -97,11 +97,11 @@
             <div class="table-actions">
                 @if ($halaman > 1)
                     <a class="btn btn2 btn-s" rel="prev"
-                       href="{{ route('admin.draf_proposal', array_filter(['q' => $kata, 'page' => $halaman - 1])) }}">Sebelumnya</a>
+                       href="{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.draf_proposal', array_filter(['q' => $kata, 'page' => $halaman - 1])) }}">Sebelumnya</a>
                 @endif
                 @if ($halaman < $halamanAkhir)
                     <a class="btn btn2 btn-s" rel="next"
-                       href="{{ route('admin.draf_proposal', array_filter(['q' => $kata, 'page' => $halaman + 1])) }}">Berikutnya</a>
+                       href="{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.draf_proposal', array_filter(['q' => $kata, 'page' => $halaman + 1])) }}">Berikutnya</a>
                 @endif
             </div>
         </nav>

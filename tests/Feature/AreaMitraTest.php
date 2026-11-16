@@ -71,24 +71,22 @@ test('B1 login memakai CSS yang sama dengan landing dan punya satu h1', function
     expect($login)->toContain('tokens.css');
     expect($login)->toContain('base.css');
 
-    // Login mitra tampil sebagai kartu mandiri: tanpa navbar aplikasi atas.
-    expect($login)->not->toContain('class="app-navbar"');
+    // Login mitra menampilkan navbar aplikasi atas, sama dengan halaman admin.
+    expect($login)->toContain('class="app-navbar"');
 
     // Satu h1 saja.
     expect(substr_count($login, '<h1'))->toBe(1);
 });
 
-test('B2 login: logo di samping judul, satu Lihat Portal Umum, tanpa tautan kembali', function () {
+test('B2 login: tanpa logo di dalam kartu, satu Lihat Portal Umum, tanpa tautan kembali', function () {
     $response = $this->get('/login');
 
     $response->assertOk();
-    $response->assertSee('auth-logo', false);
     $response->assertSee('Lihat Portal Umum');
-    $response->assertDontSee('Lihat Portal Utama');
     $response->assertDontSee('Kembali ke beranda portal');
     $response->assertSee(route('landing'), false);
 
-    // Tepat satu tautan portal.
+    // Tepat satu tautan portal di dalam kartu (auth-foot).
     expect(substr_count($response->getContent(), 'Lihat Portal Umum'))->toBe(1);
 });
 
@@ -118,10 +116,10 @@ test('B3 galat login memakai role alert', function () {
 
 test('B3 kredensial demo hanya tampil sebagai teks bantuan saat app.debug true', function () {
     config(['app.debug' => false]);
-    $this->get('/login')->assertDontSee('Mode pengembangan')->assertDontSee(config('mitra.demo_user'));
+    $this->get('/login')->assertDontSee('Catatan pengembangan')->assertDontSee(config('mitra.demo_user'));
 
     config(['app.debug' => true]);
-    $this->get('/login')->assertSee('Mode pengembangan');
+    $this->get('/login')->assertSee('Catatan pengembangan');
 });
 
 // ---------------------------------------------------------------- R3 -------
@@ -161,10 +159,10 @@ test('R3 route lama generator/draf dialihkan ke status', function () {
 
 test('R3 mitra tidak dapat mengakses halaman admin', function () {
     $response = $this->withSession(['mitra_data' => ['username' => 'user1']])
-        ->get(route('admin.inbox'));
+        ->get(route('superadmin.inbox'));
 
     $response->assertRedirect();
-    expect($response->getTargetUrl())->toContain(route('admin.login'));
+    expect($response->getTargetUrl())->toContain(route('superadmin.login'));
 });
 
 // ---------------------------------------------------------------- D --------

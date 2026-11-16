@@ -14,7 +14,7 @@
         <button type="button" class="btn btn-s" onclick="openAddLeaderModal()">Tambah Profil Petinggi</button>
     </div>
 
-    <form method="POST" action="{{ route('admin.tentang.update') }}" onsubmit="saveProfilTentang(event)" class="panel-body" id="form-tentang" enctype="multipart/form-data">
+    <form method="POST" action="{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.tentang.update') }}" onsubmit="saveProfilTentang(event)" class="panel-body" id="form-tentang" enctype="multipart/form-data">
         @csrf
 
         <div id="leaders-container" class="leader-list">

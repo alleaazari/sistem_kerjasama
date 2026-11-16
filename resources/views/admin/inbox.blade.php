@@ -124,7 +124,7 @@
                         <button type="button" class="btn btn2 btn-s" onclick="isiAlasan('Dokumen proposal usulan belum memenuhi standar kelengkapan administrasi dan legalitas yang dipersyaratkan.')">Berkas belum lengkap</button>
                         <button type="button" class="btn btn2 btn-s" onclick="isiAlasan('Fokus program yang diajukan belum selaras dengan skala prioritas transformasi digital nasional tahun ini.')">Belum sesuai prioritas</button>
                     </div>
-                    <textarea id="reject-feedback" name="feedback" rows="3" required maxlength="1000" placeholder="Tuliskan alasan penolakan di sini"></textarea>
+                    <textarea id="reject-feedback" name="feedback" rows="3" required minlength="5" maxlength="1000" placeholder="Tuliskan alasan penolakan di sini"></textarea>
                 </div>
 
                 <div class="note-box note-box-danger">
@@ -207,8 +207,8 @@ function bukaModal(item) {
     document.getElementById('r-email').textContent = item.email || '-';
     document.getElementById('r-telp').textContent = item.telp || '-';
 
-    var approveTpl = "{{ route('admin.inbox.approve', ['id' => '__ID__']) }}";
-    var rejectTpl = "{{ route('admin.inbox.reject', ['id' => '__ID__']) }}";
+    var approveTpl = "{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.inbox.approve', ['id' => '__ID__']) }}";
+    var rejectTpl = "{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.inbox.reject', ['id' => '__ID__']) }}";
     document.getElementById('f-approve').action = approveTpl.replace('__ID__', item.id);
     document.getElementById('f-reject').action  = rejectTpl.replace('__ID__', item.id);
 

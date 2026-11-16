@@ -23,6 +23,8 @@ class LandingCms
 
     /**
      * Muat semua kunci. Urutan: session admin (cache) > file json > default config.
+     *
+     * @return array<string, mixed>
      */
     public function all(): array
     {
@@ -75,6 +77,9 @@ class LandingCms
         session()->forget('admin_cms.'.$key);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     protected function stored(): array
     {
         if (! File::exists($this->path())) {
@@ -86,6 +91,9 @@ class LandingCms
         return is_array($data) ? $data : [];
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     protected function write(array $data): void
     {
         $dir = dirname($this->path());
@@ -93,6 +101,6 @@ class LandingCms
             File::makeDirectory($dir, 0755, true);
         }
 
-        File::put($this->path(), json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        File::put($this->path(), (string) json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 }

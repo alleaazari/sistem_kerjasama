@@ -14,7 +14,7 @@
 
     {{-- Pencarian --}}
     <div class="panel-body">
-        <form method="GET" action="{{ route('admin.masa_aktif') }}" class="panel-toolbar" role="search">
+        <form method="GET" action="{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.masa_aktif') }}" class="panel-toolbar" role="search">
             <div class="row">
                 <label for="q">Cari nama instansi mitra</label>
                 <input type="text" id="q" name="q" value="{{ $kata }}" maxlength="100"
@@ -23,7 +23,7 @@
             <div class="form-actions">
                 <button type="submit" class="btn btn-s">Cari</button>
                 @if ($kata !== '')
-                    <a href="{{ route('admin.masa_aktif') }}" class="btn btn2 btn-s">Hapus pencarian</a>
+                    <a href="{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.masa_aktif') }}" class="btn btn2 btn-s">Hapus pencarian</a>
                 @endif
             </div>
         </form>
@@ -91,7 +91,7 @@
                         </div>
 
                         {{-- Form per baris: hanya muncul setelah tombol diklik. --}}
-                        <form method="POST" action="{{ route('admin.masa_aktif.atur') }}" class="form-atur" hidden>
+                        <form method="POST" action="{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.masa_aktif.atur') }}" class="form-atur" hidden>
                             @csrf
                             @method('PUT')
                             <input type="hidden" name="uuid" value="{{ $r['uuid'] }}">
@@ -126,7 +126,7 @@
                     <td colspan="4" class="cell-empty">
                         @if ($kata !== '')
                             Tidak ada mitra yang cocok dengan pencarian &ldquo;{{ $kata }}&rdquo;.
-                            <br><a href="{{ route('admin.masa_aktif') }}">Tampilkan semua mitra</a>
+                            <br><a href="{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.masa_aktif') }}">Tampilkan semua mitra</a>
                         @else
                             Belum ada data masa aktif mitra.
                         @endif
@@ -146,11 +146,11 @@
             <div class="table-actions">
                 @if ($halaman > 1)
                     <a class="btn btn2 btn-s" rel="prev"
-                       href="{{ route('admin.masa_aktif', array_filter(['q' => $kata, 'page' => $halaman - 1])) }}">Sebelumnya</a>
+                       href="{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.masa_aktif', array_filter(['q' => $kata, 'page' => $halaman - 1])) }}">Sebelumnya</a>
                 @endif
                 @if ($halaman < $halamanAkhir)
                     <a class="btn btn2 btn-s" rel="next"
-                       href="{{ route('admin.masa_aktif', array_filter(['q' => $kata, 'page' => $halaman + 1])) }}">Berikutnya</a>
+                       href="{{ route(\App\Support\AdminAkses::awalanRouteSesi().'.masa_aktif', array_filter(['q' => $kata, 'page' => $halaman + 1])) }}">Berikutnya</a>
                 @endif
             </div>
         </nav>
