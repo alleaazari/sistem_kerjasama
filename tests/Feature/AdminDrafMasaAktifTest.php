@@ -237,3 +237,36 @@ test('pencarian masa aktif menyaring berdasarkan nama instansi', function () {
         ->assertSee('Universitas Indonesia')
         ->assertDontSee('Pemerintah Provinsi Jawa Barat');
 });
+
+test('label status di halaman admin memakai istilah Aktif, Segera Berakhir, Kedaluwarsa', function () {
+    $hariIni = CarbonImmutable::now(config('app.timezone', 'UTC'))->startOfDay();
+
+    // Satu baris untuk tiap kondisi, ditulis langsung ke penyimpanan.
+    file_put_contents(MasaAktifMitra::path(), json_encode([
+        ['uuid' => '11111111-1111-4111-8111-111111111111', 'instansi' => 'Mitra Aktif', 'tanggal_mulai' => $hariIni->subMonth()->toDateString(), 'tanggal_berakhir' => $hariIni->addDays(300)->toDateString(), 'alasan' => ''],
+        ['uuid' => '22222222-2222-4222-8222-222222222222', 'instansi' => 'Mitra Segera', 'tanggal_mulai' => $hariIni->subMonth()->toDateString(), 'tanggal_berakhir' => $hariIni->addDays(10)->toDateString(), 'alasan' => ''],
+        ['uuid' => '33333333-3333-4333-8333-333333333333', 'instansi' => 'Mitra Lewat', 'tanggal_mulai' => $hariIni->subYear()->toDateString(), 'tanggal_berakhir' => $hariIni->subDays(10)->toDateString(), 'alasan' => ''],
+    ]));
+
+    $this->withSession(sesiAdmin())->get(route('admin.masa_aktif'))
+        ->assertOk()
+        ->assertSee('Mitra Aktif')
+        ->assertSee('Segera Berakhir')
+        ->assertSee('Kedaluwarsa');
+});
+
+test('jangka waktu ditampilkan dalam format dd MMM yyyy', function () {
+    $html = $this->withSession(sesiAdmin())->get(route('admin.masa_aktif'))->assertOk()->getContent();
+
+    // Format lama memakai nama bulan penuh; format baru memakai singkatan.
+    expect($html)->not->toContain('Oktober 2026')
+        ->not->toContain('November 2026');
+});
+
+test('kedua halaman menyediakan kerangka muat dan keadaan galat', function (string $route) {
+    $html = $this->withSession(sesiAdmin())->get(route($route))->assertOk()->getContent();
+
+    expect($html)->toContain('baris-skeleton')
+        ->toContain('baris-error')
+        ->toContain('data-ulang');
+})->with(['admin.draf_proposal', 'admin.masa_aktif']);

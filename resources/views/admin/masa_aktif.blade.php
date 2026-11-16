@@ -41,6 +41,19 @@
                 </tr>
             </thead>
             <tbody>
+                {{-- Kerangka muat: tampil saat berpindah halaman/mencari (lihat skrip di bawah). --}}
+                <tr class="baris-skeleton" hidden aria-hidden="true">
+                    <td><span class="skeleton skeleton-wide"></span></td>
+                    <td><span class="skeleton skeleton-wide"></span></td>
+                    <td><span class="skeleton skeleton-wide"></span></td>
+                    <td><span class="skeleton"></span></td>
+                </tr>
+                <tr class="baris-error" hidden>
+                    <td colspan="4" class="cell-empty" role="alert">
+                        <span class="teks-error">Data masa aktif gagal dimuat.</span>
+                        <br><button type="button" class="btn btn2 btn-s" data-ulang>Muat ulang</button>
+                    </td>
+                </tr>
                 @forelse ($rows as $r)
                 @php
                     $kondisi = $r['status']['kondisi'];
@@ -49,20 +62,27 @@
                         \App\Support\StatusKerjasama::SEGERA => 'badge badge-warning',
                         default => 'badge badge-danger',
                     };
+                    // Label tampilan khusus halaman admin. StatusKerjasama tidak diubah
+                    // agar halaman mitra tetap memakai labelnya sendiri.
+                    $labelTampil = match ($kondisi) {
+                        \App\Support\StatusKerjasama::AKTIF => 'Aktif',
+                        \App\Support\StatusKerjasama::SEGERA => 'Segera Berakhir',
+                        default => 'Kedaluwarsa',
+                    };
                 @endphp
                 <tr>
                     <td><b class="cell-strong">{{ $r['instansi'] }}</b></td>
                     <td class="cell-muted">
                         @if ($r['status']['mulai'] && $r['status']['selesai'])
-                            {{ $r['status']['mulai']->translatedFormat('d F Y') }}
+                            {{ $r['status']['mulai']->translatedFormat('d M Y') }}
                             &nbsp;s/d&nbsp;
-                            {{ $r['status']['selesai']->translatedFormat('d F Y') }}
+                            {{ $r['status']['selesai']->translatedFormat('d M Y') }}
                         @else
                             Tanggal periode belum tersedia
                         @endif
                     </td>
                     <td>
-                        <span class="{{ $kelas }}">{{ $r['status']['label'] }}</span>
+                        <span class="{{ $kelas }}">{{ $labelTampil }}</span>
                         <div class="cell-faint">{{ $r['status']['keterangan'] }}</div>
                     </td>
                     <td>
@@ -163,5 +183,40 @@ document.querySelectorAll('[data-batal]').forEach(function (tombol) {
         }
     });
 });
+
+// Keadaan muat: tampilkan kerangka saat halaman ditinggal lewat pencarian/paginasi,
+// dan pulihkan bila halaman kembali dari cache peramban.
+(function () {
+    var kerangka = document.querySelector('.baris-skeleton');
+    var galat = document.querySelector('.baris-error');
+    var isi = document.querySelectorAll('tbody tr:not(.baris-skeleton):not(.baris-error)');
+
+    function tampilkanKerangka() {
+        if (!kerangka) return;
+        if (galat) galat.hidden = true;
+        isi.forEach(function (tr) { tr.hidden = true; });
+        kerangka.hidden = false;
+        kerangka.setAttribute('aria-hidden', 'false');
+    }
+
+    function sembunyikanKerangka() {
+        if (!kerangka) return;
+        kerangka.hidden = true;
+        kerangka.setAttribute('aria-hidden', 'true');
+        isi.forEach(function (tr) { tr.hidden = false; });
+    }
+
+    document.querySelectorAll('form[role="search"], .pagination-nav a').forEach(function (el) {
+        el.addEventListener('submit', tampilkanKerangka);
+        el.addEventListener('click', tampilkanKerangka);
+    });
+
+    window.addEventListener('pageshow', sembunyikanKerangka);
+
+    var ulang = document.querySelector('[data-ulang]');
+    if (ulang) {
+        ulang.addEventListener('click', function () { window.location.reload(); });
+    }
+})();
 </script>
 @endsection

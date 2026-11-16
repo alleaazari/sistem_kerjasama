@@ -41,11 +41,24 @@
                 </tr>
             </thead>
             <tbody>
+                {{-- Kerangka muat: tampil saat berpindah halaman/mencari. --}}
+                <tr class="baris-skeleton" hidden aria-hidden="true">
+                    <td><span class="skeleton skeleton-wide"></span></td>
+                    <td><span class="skeleton skeleton-wide"></span></td>
+                    <td><span class="skeleton"></span></td>
+                    <td><span class="skeleton"></span></td>
+                </tr>
+                <tr class="baris-error" hidden>
+                    <td colspan="4" class="cell-empty" role="alert">
+                        <span class="teks-error">Daftar draf proposal gagal dimuat.</span>
+                        <br><button type="button" class="btn btn2 btn-s" data-ulang>Muat ulang</button>
+                    </td>
+                </tr>
                 @forelse ($rows as $r)
                 <tr>
                     <td><b class="cell-strong">{{ $r['instansi'] }}</b></td>
                     <td class="cell-muted">{{ $r['judul_ks'] }}</td>
-                    <td class="cell-muted">{{ \Illuminate\Support\Carbon::parse($r['buatan_pada'])->translatedFormat('d F Y') }}</td>
+                    <td class="cell-muted">{{ \Illuminate\Support\Carbon::parse($r['buatan_pada'])->translatedFormat('d M Y') }}</td>
                     <td>
                         <div class="table-actions">
                             @if ($berkasSiap)
@@ -116,7 +129,9 @@ document.querySelectorAll('[data-unduh]').forEach(function (tautan) {
             if (!res.ok) {
                 throw new Error(res.status === 403
                     ? 'Anda tidak berhak mengunduh draf ini.'
-                    : 'Berkas draf tidak ditemukan.');
+                    : (res.status === 404
+                        ? 'Berkas draf tidak ditemukan.'
+                        : 'Server gagal menyiapkan berkas. Coba lagi beberapa saat.'));
             }
 
             var blob = await res.blob();
@@ -150,7 +165,7 @@ function showToast(msg) {
     var toast = document.createElement('div');
     toast.className = 'toast-notification';
     var span = document.createElement('span');
-    span.textContent = msg; // teksContent: tidak ada HTML dari server
+    span.textContent = msg; // textContent: tidak ada HTML dari server
     toast.appendChild(span);
     document.body.appendChild(toast);
     setTimeout(function () {
@@ -159,5 +174,40 @@ function showToast(msg) {
         setTimeout(function () { toast.remove(); }, 400);
     }, 3000);
 }
+
+// Keadaan muat: kerangka saat halaman ditinggal lewat pencarian/paginasi,
+// dipulihkan bila halaman kembali dari cache peramban.
+(function () {
+    var kerangka = document.querySelector('.baris-skeleton');
+    var galat = document.querySelector('.baris-error');
+    var isi = document.querySelectorAll('tbody tr:not(.baris-skeleton):not(.baris-error)');
+
+    function tampilkanKerangka() {
+        if (!kerangka) return;
+        if (galat) galat.hidden = true;
+        isi.forEach(function (tr) { tr.hidden = true; });
+        kerangka.hidden = false;
+        kerangka.setAttribute('aria-hidden', 'false');
+    }
+
+    function sembunyikanKerangka() {
+        if (!kerangka) return;
+        kerangka.hidden = true;
+        kerangka.setAttribute('aria-hidden', 'true');
+        isi.forEach(function (tr) { tr.hidden = false; });
+    }
+
+    document.querySelectorAll('form[role="search"], .pagination-nav a').forEach(function (el) {
+        el.addEventListener('submit', tampilkanKerangka);
+        el.addEventListener('click', tampilkanKerangka);
+    });
+
+    window.addEventListener('pageshow', sembunyikanKerangka);
+
+    var ulang = document.querySelector('[data-ulang]');
+    if (ulang) {
+        ulang.addEventListener('click', function () { window.location.reload(); });
+    }
+})();
 </script>
 @endsection

@@ -17,6 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware(['web', HideAdmin::class])
                 ->prefix(config('admin_demo.path'))
                 ->group(base_path('routes/admin.php'));
+
+            // Rute halaman pengaturan (profil, keamanan, tampilan). Tanpa ini
+            // Wayfinder tidak membuat @/routes/{profile,security,appearance}
+            // sehingga `npm run build` gagal. Isi berkas tidak diubah.
+            Route::middleware('web')
+                ->group(base_path('routes/settings.php'));
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {

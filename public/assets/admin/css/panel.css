@@ -550,6 +550,8 @@ table.data-table tbody tr:hover {
 }
 
 .row input[type="text"],
+.row input[type="date"],
+.row select,
 .row textarea {
   width: 100%;
   min-height: 44px;
@@ -568,6 +570,8 @@ table.data-table tbody tr:hover {
 }
 
 .row input[type="text"]:focus-visible,
+.row input[type="date"]:focus-visible,
+.row select:focus-visible,
 .row textarea:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring-color);
   outline-offset: var(--focus-ring-offset);
@@ -598,6 +602,31 @@ table.data-table tbody tr:hover {
   max-height: 60vh;
   overflow-y: auto;
   overflow-wrap: anywhere;
+}
+
+/* ---- Kerangka muat (skeleton) ------------------------------------------- */
+.skeleton {
+  display: block;
+  height: 12px;
+  border-radius: var(--radius-sm);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.skeleton-wide {
+  width: 70%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton {
+    animation: skeletonPulse 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes skeletonPulse {
+  50% {
+    opacity: 0.55;
+  }
 }
 
 /* ---- Responsif ---------------------------------------------------------- */
