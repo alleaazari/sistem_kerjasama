@@ -1,11 +1,13 @@
 <?php
 
 use App\Http\Controllers\AdminMitraController;
+use App\Support\AdminPeran;
 use App\Support\LandingCms;
 use App\Support\PermohonanPerpanjangan;
 use App\Support\StatusKerjasama;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
@@ -212,10 +214,10 @@ if (! function_exists('kirimEmailPenolakanResmi')) {
 // =====================================================================
 // LOGIN ADMIN (publik) - akun dummy ada di config/admin_demo.php
 // =====================================================================
-// Akses root path rahasia langsung lempar ke inbox (pakai nama route agar ikut prefix)
+// Akses root path rahasia langsung lempar ke beranda peran (bukan selalu inbox).
 Route::get('/', function () {
     if (session()->has('admin_auth')) {
-        return redirect()->route('admin.inbox');
+        return redirect()->route(AdminPeran::beranda((string) session('admin_auth.role')));
     }
 
     return redirect()->route('admin.login');
@@ -223,7 +225,7 @@ Route::get('/', function () {
 
 Route::get('/login', function () {
     if (session()->has('admin_auth')) {
-        return redirect()->route('admin.inbox');
+        return redirect()->route(AdminPeran::beranda((string) session('admin_auth.role')));
     }
 
     return view('admin.login');
@@ -234,13 +236,25 @@ Route::post('/login', function (Request $request) {
     $pw = (string) $request->input('password', '');
 
     foreach (config('admin_demo.accounts', []) as $acc) {
-        $idCocok = strcasecmp($id, $acc['email']) === 0 || strcasecmp($id, $acc['username']) === 0;
-        if ($idCocok && hash_equals($acc['password'], $pw)) {
+        // Akun tanpa email/hash (mis. admin_kelola yang belum diisi di .env) tidak bisa dipakai.
+        if (isset($acc['password_hash'])) {
+            if ($acc['email'] === '' || $acc['password_hash'] === '') {
+                continue;
+            }
+            $idCocok = strcasecmp($id, $acc['email']) === 0 || strcasecmp($id, (string) $acc['username']) === 0;
+            $pwCocok = $idCocok && Hash::check($pw, $acc['password_hash']);
+        } else {
+            $idCocok = strcasecmp($id, $acc['email']) === 0 || strcasecmp($id, $acc['username']) === 0;
+            $pwCocok = $idCocok && hash_equals($acc['password'], $pw);
+        }
+
+        if ($pwCocok) {
             $request->session()->regenerate();
             session(['admin_auth' => ['name' => $acc['name'], 'role' => $acc['role']]]);
 
-            // Kembali ke halaman yang tadi diminta (mis. link lama), jatuh ke inbox bila tidak ada.
-            return redirect()->intended(route('admin.inbox'));
+            // Kembali ke halaman yang tadi diminta (mis. link lama), jatuh ke beranda peran.
+            // admin_kelola diarahkan ke Dashboard ringkas miliknya, bukan dashboard kerja sama.
+            return redirect()->intended(route(AdminPeran::beranda($acc['role'])));
         }
     }
 
@@ -257,10 +271,34 @@ Route::post('/logout', function (Request $request) {
 })->name('admin.logout');
 
 // =====================================================================
-// SEMUA HALAMAN DI BAWAH INI HANYA UNTUK ADMIN / DEVELOPER
+// DASHBOARD RINGKAS PENGELOLA KONTEN
+// Hanya angka konten; data kerja sama tidak di-query dan tidak dikirim ke view.
+// TODO-BACKEND: pemetaan peran ke tabel users.
 // =====================================================================
-Route::middleware('admin.only')->group(function () use (
-    $defaultPengajuan, $defaultArtikel, $defaultGaleri
+Route::middleware('admin.only:'.implode(',', AdminPeran::peranUntuk('konten')))->group(function () {
+    // URL sengaja bernama "admin-kelola" agar mudah dicari dan dikenali.
+    Route::get('/admin-kelola', function () {
+        $data = app(LandingCms::class)->all();
+
+        return view('admin.dashboard', [
+            'ringkas' => true,
+            'jumlahArtikel' => count((array) ($data['artikel'] ?? [])),
+            'jumlahGaleri' => count((array) ($data['galeri'] ?? [])),
+            'jumlahPetinggi' => count((array) ($data['petinggi'] ?? [])),
+            'visiTerisi' => trim((string) ($data['visi'] ?? '')) !== '',
+        ]);
+    })->name('admin.dashboard.kelola');
+});
+
+// =====================================================================
+// DASHBOARD — dua bentuk, satu route
+// Peran kerja sama menerima antrean perpanjangan + hitungan pengajuan.
+// admin_kelola menerima ringkasan konten saja; data kerja sama tidak pernah
+// di-query maupun dikirim ke view (bukan sekadar disembunyikan).
+// TODO-BACKEND: pemetaan peran ke tabel users.
+// =====================================================================
+Route::middleware('admin.only:'.implode(',', AdminPeran::peranUntuk('kerja_sama')))->group(function () use (
+    $defaultPengajuan
 ) {
 
     // TEST EMAIL: hanya role developer, dan hanya tersedia di lingkungan lokal.
@@ -289,6 +327,7 @@ Route::middleware('admin.only')->group(function () use (
     // memperpanjang) atau menolak (mitra membaca alasannya di halaman Status).
     Route::get('/dashboard', function () use ($defaultPengajuan) {
         return view('admin.dashboard', [
+            'ringkas' => false,
             'menunggu' => array_map(function (array $r) {
                 $akhir = StatusKerjasama::parseTanggal($r['selesai_lama'] ?? null);
 
@@ -306,7 +345,7 @@ Route::middleware('admin.only')->group(function () use (
                 fn (array $p) => ($p['status'] ?? null) === 'Menunggu'
             )),
         ]);
-    })->name('admin.dashboard');
+    })->middleware('admin.only:'.implode(',', AdminPeran::peranUntuk('kerja_sama')))->name('admin.dashboard');
 
     Route::post('/dashboard/{id}/setujui', function (Request $request, string $id) {
         $request->validate([
@@ -426,6 +465,15 @@ Route::middleware('admin.only')->group(function () use (
             'surat_preview' => $template['email_body'],
         ]);
     })->name('admin.inbox.reject');
+});
+
+// =====================================================================
+// KELOLA KONTEN (Profil & Visi Misi, Artikel, Galeri)
+// Daftar peran dibaca dari config/admin_peran.php (kemampuan `konten`) agar
+// route, menu, dan test memakai sumber yang sama.
+// Admin pengelola konten tidak boleh melihat/mengubah data kerja sama.
+// =====================================================================
+Route::middleware('admin.only:'.implode(',', AdminPeran::peranUntuk('konten')))->group(function () {
 
     // ---------------- ARTIKEL ----------------
     Route::get('/artikel', function () {
@@ -433,7 +481,6 @@ Route::middleware('admin.only')->group(function () use (
 
         return view('admin.artikel', ['rows' => $rows]);
     })->name('admin.artikel');
-
     Route::post('/artikel', function (Request $request) {
         $request->validate(['judul' => 'required|string|max:255']);
         $cms = app(LandingCms::class);
@@ -596,10 +643,9 @@ Route::middleware('admin.only')->group(function () use (
 // =====================================================================
 // DRAF PROPOSAL AI & MASA AKTIF MITRA (dua halaman terpisah)
 // =====================================================================
-// TODO-BACKEND: pemetaan peran superadmin/admin_kerjasama ke tabel users
-// dikerjakan teman backend. Sampai itu ada, akun "admin" di
-// config/admin_demo.php dianggap pengelola kerja sama.
-Route::middleware('admin.only:admin,admin_kerjasama,superadmin')->group(function () {
+// TODO-BACKEND: pemetaan peran ke tabel users. Sampai itu ada, peran dibaca
+// dari config/admin_demo.php (kemampuan `kerja_sama` di config/admin_peran.php).
+Route::middleware('admin.only:'.implode(',', AdminPeran::peranUntuk('kerja_sama')))->group(function () {
     // Alamat lama dipertahankan sebagai pengalihan agar tautan/bookmark tetap jalan.
     Route::redirect('/mitra-draf', '/draf-proposal')->name('admin.mitra_draf.lama');
 

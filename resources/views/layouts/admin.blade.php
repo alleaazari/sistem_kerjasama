@@ -39,12 +39,19 @@
         </div>
 
         <!-- DAFTAR NAVIGASI MENU (KIRI) -->
+        @php
+            // Peran & izin dibaca dari peta terpusat (config/admin_peran.php).
+            $peranAdmin = (string) session('admin_auth.role', '');
+            $bolehKonten = \App\Support\AdminPeran::boleh($peranAdmin, 'konten');
+            $bolehKerjasama = \App\Support\AdminPeran::boleh($peranAdmin, 'kerja_sama');
+        @endphp
         <div class="sidebar-nav-container">
+            @if ($bolehKerjasama || $bolehKonten)
             <div class="sidebar-nav-group">
-                <span class="sidebar-group-title">Menu Administrator</span>
+                <span class="sidebar-group-title">{{ $bolehKerjasama ? 'Menu Administrator' : 'Menu Pengelola Konten' }}</span>
 
-                <!-- 1. Dashboard -->
-                <a href="{{ route('admin.dashboard') }}" class="sidebar-link {{ request()->routeIs('admin.dashboard') ? 'on' : '' }}">
+                <!-- 1. Dashboard (isi menyesuaikan peran; badge hanya untuk peran kerja sama) -->
+                <a href="{{ route(\App\Support\AdminPeran::beranda($peranAdmin)) }}" class="sidebar-link {{ request()->routeIs('admin.dashboard*') ? 'on' : '' }}">
                     <div class="link-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="3" width="7" height="9" rx="1"></rect>
@@ -54,12 +61,15 @@
                         </svg>
                     </div>
                     <span class="link-label">Dashboard</span>
-                    @php($jumlahMenungguPerpanjangan = \App\Support\PermohonanPerpanjangan::jumlahMenunggu())
-                    @if ($jumlahMenungguPerpanjangan > 0)
-                        <span class="link-badge" title="Permohonan perpanjangan menunggu">{{ $jumlahMenungguPerpanjangan }}</span>
+                    @if ($bolehKerjasama)
+                        @php($jumlahMenungguPerpanjangan = \App\Support\PermohonanPerpanjangan::jumlahMenunggu())
+                        @if ($jumlahMenungguPerpanjangan > 0)
+                            <span class="link-badge" title="Permohonan perpanjangan menunggu">{{ $jumlahMenungguPerpanjangan }}</span>
+                        @endif
                     @endif
                 </a>
 
+                @if ($bolehKerjasama)
                 <!-- 2. Inbox Pengajuan -->
                 <a href="{{ route('admin.inbox') }}" class="sidebar-link {{ request()->routeIs('admin.inbox') ? 'on' : '' }}">
                     <div class="link-icon">
@@ -70,6 +80,9 @@
                     </div>
                     <span class="link-label">Inbox Pengajuan</span>
                 </a>
+                @endif
+
+                @if ($bolehKonten)
 
                 <!-- 3. Profil & Visi Misi -->
                 <a href="{{ route('admin.tentang') }}" class="sidebar-link {{ request()->routeIs('admin.tentang') ? 'on' : '' }}">
@@ -109,6 +122,12 @@
                     </div>
                     <span class="link-label">Kelola Galeri</span>
                 </a>
+                @endif
+            </div>
+
+            @if ($bolehKerjasama)
+            <div class="sidebar-nav-group">
+                <span class="sidebar-group-title">Data Kerja Sama</span>
 
                 <!-- 5. Draf Proposal AI -->
                 <a href="{{ route('admin.draf_proposal') }}" class="sidebar-link {{ request()->routeIs('admin.draf_proposal*') ? 'on' : '' }}">
@@ -133,6 +152,9 @@
                     </div>
                     <span class="link-label">Masa Aktif Mitra</span>
                 </a>
+            </div>
+            @endif
+            @endif
             </div>
 
             <!-- MENU SISTEM & PORTAL -->
@@ -163,8 +185,8 @@
                 <span class="avatar-status-dot" title="Admin Aktif"></span>
             </div>
             <div class="profile-info">
-                <span class="profile-name">Admin Utama</span>
-                <span class="profile-role">Super Administrator</span>
+                <span class="profile-name">{{ session('admin_auth.name', 'Admin') }}</span>
+                <span class="profile-role">{{ \App\Support\AdminPeran::label($peranAdmin) }}</span>
             </div>
             <form method="POST" action="{{ route('admin.logout') }}" style="margin:0;display:inline;">
                 @csrf
@@ -205,7 +227,7 @@
                     <span class="pulse-dot"></span>
                     <span>Sistem Aktif &bull; Komdigi RI</span>
                 </div>
-                <span class="who-logged">Logged in as: <b>Admin Utama Kerja Sama</b></span>
+                <span class="who-logged">Logged in as: <b>{{ session('admin_auth.name', 'Admin') }}</b></span>
                 <form method="POST" action="{{ route('admin.logout') }}" style="margin:0;display:inline;">
                     @csrf
                     <button class="btn btn2 btn-s" style="padding:5px 12px;font-size:12px;">Keluar</button>
