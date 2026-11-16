@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminSuperadminController;
 use App\Support\AdminAkses;
 use App\Support\LandingCms;
 use App\Support\PengajuanMasuk;
@@ -273,6 +274,16 @@ Route::middleware($hanya('galeri'))->group(function () {
 
         return back()->with('ok', 'Foto galeri berhasil diperbarui.');
     })->name('galeri.edit');
+});
+
+// ---------------- AKTIVITAS ADMIN KERJA SAMA (baca-saja) ----------------
+Route::middleware($hanya('aktivitas'))->group(function () {
+    Route::get('/aktivitas', [AdminSuperadminController::class, 'aktivitas'])->name('aktivitas');
+});
+
+// ---------------- KELOLA PENGGUNA (baca-saja sampai backend ada) ----------------
+Route::middleware($hanya('pengguna'))->group(function () {
+    Route::get('/pengguna', [AdminSuperadminController::class, 'pengguna'])->name('pengguna');
 });
 
 // ---------------- ALAT INTERNAL (lokal saja) ----------------

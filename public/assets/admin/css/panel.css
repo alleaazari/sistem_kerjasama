@@ -425,6 +425,32 @@ table.data-table tbody tr:hover {
   margin: var(--space-4) 0 0;
 }
 
+/* ---- Filter: deret field yang turun menjadi satu kolom di layar kecil --- */
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--space-3);
+}
+
+/* ---- Navigasi halaman --------------------------------------------------- */
+.pagination-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.pagination-nav p {
+  margin: 0;
+}
+
+/* ---- Tombol nonaktif (fitur menunggu backend) --------------------------- */
+.btn[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .panel-head-row {
   display: flex;
   flex-wrap: wrap;
