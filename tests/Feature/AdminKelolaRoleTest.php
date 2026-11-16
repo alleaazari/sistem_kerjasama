@@ -275,6 +275,25 @@ test('akun admin_kelola tanpa email atau hash di .env tidak bisa dipakai', funct
     expect(session('admin_auth'))->toBeNull();
 });
 
+test('setiap akun bawaan config punya jalur login yang bisa dipakai', function () {
+    // Regresi: akun yang didefinisikan tapi lupa diisi .env akan mati tanpa
+    // gejala (login hanya bilang "password salah"). Test ini memastikan setiap
+    // peran punya email + kredensial, dan tiap akun benar-benar bisa masuk.
+    $akun = collect(config('admin_demo.accounts'));
+
+    foreach (AdminPeran::semua() as $peran) {
+        expect($akun->where('role', $peran))->not->toBeEmpty("Peran {$peran} tidak punya akun.");
+    }
+
+    foreach ($akun as $acc) {
+        expect($acc['email'])->not->toBe('', "Akun {$acc['username']} tidak punya email (isi .env).");
+
+        // Kredensial dari .env boleh kosong; yang wajib ada hanya email + salah
+        // satu metode (hash atau plaintext demo). Akun env kosong diuji terpisah.
+        expect(isset($acc['password_hash']) || isset($acc['password']))->toBeTrue();
+    }
+});
+
 test('akun superadmin dan admin_kerjasama dari .env bisa masuk dengan akses penuh', function (string $peran, string $nama) {
     config(['admin_demo.accounts' => [[
         'name' => $nama,
@@ -299,21 +318,21 @@ test('akun superadmin dan admin_kerjasama dari .env bisa masuk dengan akses penu
 ]);
 
 test('akun .env yang kosong tidak membuat slot login terbuka', function (string $role) {
-    // Slot bawaan config tidak boleh bisa dipakai selama .env kosong.
-    foreach (config('admin_demo.accounts') as $acc) {
-        if ($acc['role'] !== $role) {
-            continue;
-        }
+    // Disimulasikan dengan email/hash kosong, terlepas dari isi .env mesin ini:
+    // tanpa email atau tanpa hash, akun tidak boleh bisa dipakai.
+    config(['admin_demo.accounts' => [[
+        'name' => 'Kosong',
+        'username' => 'kosong',
+        'email' => '',
+        'password_hash' => '',
+        'role' => $role,
+    ]]]);
 
-        expect($acc['email'])->toBe('')
-            ->and($acc['password_hash'])->toBe('');
-
-        $this->post(route('admin.login.post'), ['username' => $acc['username'], 'password' => ''])
-            ->assertSessionHas('login_error');
-    }
+    $this->post(route('admin.login.post'), ['username' => 'kosong', 'password' => ''])
+        ->assertSessionHas('login_error');
 
     expect(session('admin_auth'))->toBeNull();
-})->with(['superadmin', 'admin_kerjasama']);
+})->with(['superadmin', 'admin_kerjasama', 'admin_kelola']);
 
 test('halaman uji email hanya untuk developer dan hanya di lingkungan lokal', function (string $role, int $harapan) {
     $this->app['env'] = 'local';

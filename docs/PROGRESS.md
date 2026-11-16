@@ -442,4 +442,51 @@ Tidak ada password plaintext **baru**: hash `admin_kelola`/`superadmin`/
 `admin_kerjasama` hanya dibaca dari `.env`; `.env.example` hanya berisi placeholder
 kosong.
 
+### 12.3 Tidak bisa login ke panel admin (diperbaiki)
+
+Gejala: membuka `/admin-mitrakerjasama/login` lalu memasukkan kredensial
+`superadmin` / `kerjasama` / `kelola` selalu gagal ("Username atau password salah").
+
+Sebab: `.env` mesin ini belum punya `ADMIN_KELOLA_*`, `ADMIN_SUPERADMIN_*`,
+maupun `ADMIN_KERJASAMA_*`. Config membacanya dengan default string kosong, dan
+login sengaja melewati akun yang email/hash-nya kosong (fitur keamanan). Jadi
+ketiga akun **mati** — hanya akun demo lama (`admin`, `developer`) yang hidup.
+Tidak ada error di log; ini kegagalan senyap.
+
+Perbaikan:
+- `.env` (tidak di-commit, sesuai AGENTS.md §3) diisi tiga akun dengan hash bcrypt:
+  `superadmin@komdigi.test`, `kerjasama@komdigi.test`, `kelola@komdigi.test`.
+  Password-nya diberikan ke user lewat chat, tidak ditulis di repo.
+- `tests/Feature/AdminKelolaRoleTest.php`:
+  - test "akun .env yang kosong tidak membuat slot login terbuka" tidak lagi
+    membaca config asli (yang bergantung isi `.env`), melainkan menyuntikkan akun
+    kosong secara eksplisit — supaya hasil test tidak berubah antara mesin ber-`.env`
+    kosong dan terisi.
+  - test baru "setiap akun bawaan config punya jalur login yang bisa dipakai":
+    setiap peran di `config/admin_peran.php` wajib punya akun, dan setiap akun wajib
+    punya email terisi sehingga tidak mati senyap lagi.
+
+Hasil verifikasi login (bcrypt, dari `.env`):
+
+```
+superadmin      -> 302 /inbox, 8 halaman 200 (dashboard, inbox, draf, masa aktif,
+                   tentang, artikel, galeri, admin-kelola)
+admin_kerjasama -> 302 /inbox, 8 halaman 200
+admin_kelola    -> 302 /admin-kelola, dashboard/inbox/draf/masa-aktif 404,
+                   tentang/artikel/galeri/admin-kelola 200
+login via email juga berhasil untuk ketiga akun
+password salah  -> tetap ditolak, pesan generik
+akun env kosong -> tetap ditolak
+```
+
+Catatan operasional:
+- `throttle:5,1` pada `POST /login` membatasi 5 percobaan per menit per IP.
+  Saat menguji beberapa akun berturut-turut, percobaan ke-6 akan dibalas 429
+  (bukan karena password salah).
+- Setelah mengubah `.env`, jalankan `php artisan config:clear` bila config sempat
+  di-cache.
+- Ganti password dengan:
+  `php -r "echo password_hash('PASSWORD_BARU', PASSWORD_BCRYPT);"` lalu tempel ke
+  `ADMIN_*_PASSWORD_HASH`.
+
 
