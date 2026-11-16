@@ -1,4 +1,4 @@
-# PROGRESS — Sistem Kerjasama BBLSDM Komdigi Medan
+﻿# PROGRESS — Sistem Kerjasama BBLSDM Komdigi Medan
 
 Dokumen ini dirawat OpenCode. Tujuan: sesi berikutnya dapat melanjutkan tanpa konteks percakapan.
 
@@ -151,6 +151,47 @@ Belum (di luar cakupan Fase 1, dicatat):
 
 ---
 
+## 10. Perpanjangan Masa Aktif: Keputusan Admin (selesai)
+
+Permintaan: admin memperpanjang langsung dari dashboard, menerima/menolak permohonan
+perpanjangan mitra, dan keputusan tampil sebagai notifikasi di halaman Status mitra.
+
+DIBUAT:
+- `app/Support/PermohonanPerpanjangan.php` — penyimpanan JSON `storage/app/permohonan_perpanjangan.json`
+  (pola sama dengan `storage_pengajuan.json`). Status `Menunggu`/`Disetujui`/`Ditolak`.
+  Periode baru menyambung dari tanggal berakhir lama; bila sudah lewat, mulai hari ini
+  (keputusan user).
+- `resources/views/admin/dashboard.blade.php` — antrean permohonan, modal setujui (durasi
+  1/2/3 tahun) dan modal tolak (alasan wajib, 10–1000 karakter), tabel keputusan terakhir.
+- `tests/Feature/PerpanjanganTest.php` — 8 test / 25 assertion.
+
+DIUBAH:
+- `routes/admin.php` — `admin.dashboard`, `admin.dashboard.setujui`, `admin.dashboard.tolak`.
+  Tanggal berakhir diambil dari data tersimpan, bukan input klien; keputusan yang sudah
+  ditetapkan tidak dapat ditimpa.
+- `app/Http/Controllers/MitraController.php` — `ajukanPerpanjangan` menulis ke store
+  (bukan session) agar terbaca admin; tolak pengajuan ganda selama masih menunggu.
+- `resources/views/layouts/admin.blade.php` — menu Dashboard + badge jumlah menunggu;
+  tampilkan `session('error')`.
+- `resources/views/user/status.blade.php` — banner menunggu/disetujui/ditolak (alasan tampil),
+  tombol "Menunggu Keputusan Admin", ajukan ulang setelah ditolak.
+- `routes/web.php` — hapus `mitra_perpanjangan` dari `session()->forget()` logout (tidak lagi dipakai).
+- `public/assets/admin/css/panel.css` — `.row select`/`input[type=date]` ikut gaya field.
+
+Pengecekan:
+- `php artisan test`: 61 lolos, 250 assertion.
+- `pint` berkas baru/berubah (di luar `routes/admin.php`): lolos.
+- `pint --test routes/admin.php`: GAGAL, tetapi sudah gagal juga di HEAD (kode lama:
+  `use ($defaultPengajuan)` tak terpakai, spasi operator). Tidak diperbaiki di luar cakupan.
+- PHPStan: belum dijalankan ulang untuk perubahan ini.
+
+Catatan untuk backend:
+- Penyimpanan masih JSON (mode demo). Tabel `permohonan_perpanjangan` + Policy per-mitra
+  dibutuhkan saat Fase 2. `selesai_lama` saat ini disalin dari session mitra.
+- Belum ada notifikasi email/WA untuk keputusan perpanjangan (hanya tampil di halaman Status).
+
+---
+
 ## 7. Menunggu Konfirmasi User
 
 Daftar `docs/ATURAN_PEMBARUAN.md` bagian 4 butir 1–14 belum dijawab (selain rekomendasi default Fase 1).
@@ -173,3 +214,167 @@ Fase 2 (database + peran) butuh jawaban butir 2, 3, 10 minimal.
 
 - Pertimbangkan menambahkan script `npm run types`/`lint` sebagai alias agar `AGENTS.md` §7 valid,
   atau ubah `AGENTS.md` §7 (butuh persetujuan user karena `AGENTS.md` tidak boleh diubah sepihak).
+
+---
+
+## 11. Pisah Halaman: Draf Proposal AI & Masa Aktif Mitra (selesai)
+
+Permintaan: pisah satu halaman admin menjadi dua (draf proposal dan masa aktif),
+masing-masing route, controller method, view, dan item menu sendiri. Hanya
+`admin`/`admin_kerjasama`/`superadmin`; route lama dialihkan; pencarian + pagination;
+UUID di URL.
+
+DIBUAT:
+- `app/Support/DrafMitra.php` — penyimpanan JSON `storage/app/draf_mitra.json`, kolom
+  `uuid`, `instansi`, `judul_ks`, `tanggal_berakhir`, `buatan_pada`. Seed dari data dummy lama.
+- `app/Support/MasaAktifMitra.php` — `storage/app/masa_aktif_mitra.json`, kolom `uuid`,
+  `instansi`, `tanggal_mulai`, `tanggal_berakhir`, `alasan`. Status dihitung via
+  `StatusKerjasama::hitung()`, bukan string beku.
+- `app/Http/Controllers/AdminMitraController.php` — `draf`, `unduhDraf`, `masaAktif`,
+  `aturMasaAktif`.
+- `resources/views/admin/draf_proposal.blade.php` — kolom Instansi, Judul, Tanggal
+  Pembuatan, Aksi (Unduh Draf). Handler fetch untuk GET `.../{uuid}/unduh` dengan
+  loading + pesan 403/404 + nama berkas dari `Content-Disposition`; tombol dirender
+  `disabled` + tooltip "Menunggu backend" lewat `DrafMitra::berkasSiap()`.
+- `resources/views/admin/masa_aktif.blade.php` — kolom Instansi, Jangka Waktu, Status,
+  Aksi (Atur Masa Aktif). Tanpa judul kemitraan, tanpa unduh, tanpa tanggal pembuatan.
+- `tests/Feature/AdminDrafMasaAktifTest.php` — 26 test / 68 assertion.
+
+DIUBAH:
+- `routes/admin.php` — `admin.draf_proposal`, `admin.draf_proposal.unduh` (UUID),
+  `admin.masa_aktif`, `admin.masa_aktif.atur` (PUT); middleware
+  `admin.only:admin,admin_kerjasama,superadmin`; `admin.mitra_draf.lama` redirect ke
+  `/draf-proposal`.
+- `resources/views/layouts/admin.blade.php` — satu menu jadi dua: "Draf Proposal AI"
+  dan "Masa Aktif Mitra".
+
+DIHAPUS:
+- `resources/views/admin/mitra_draf.blade.php` — digantikan dua view di atas.
+
+Keamanan:
+- [x] Otorisasi per peran di middleware (`admin.only:...`) + test role developer 404 dan
+      tanpa sesi admin redirect ke login.
+- [x] UUID di URL, divalidasi aturan `uuid` (`whereUuid` + validasi form).
+- [x] `tanggal_berakhir >= tanggal_mulai`; `alasan` maks 255; tanggal diambil dari input
+      terverifikasi, `instansi` tidak diterima dari klien.
+- [x] XSS: toast memakai `textContent`, bukan `innerHTML`.
+
+Pengecekan:
+- `php artisan test`: 87 lolos, 318 assertion.
+- `pint --test` berkas baru: lolos. `routes/admin.php`: GAGAL, juga gagal di HEAD
+  (kode lama), tidak diperbaiki di luar cakupan.
+- `phpstan` berkas baru: lolos. Repo: 27 error LAMA di berkas lain.
+- `npm run build`: GAGAL, juga gagal di HEAD — `routes/settings.php` tidak terdaftar di
+  `bootstrap/app.php` sehingga Wayfinder tidak membuat `@/routes/security` dan
+  `@/actions/.../SecurityController`. Bukan akibat perubahan ini.
+- `npm run types:check`: 30 error LAMA (berkas Inertia/settings); tidak ada dari berkas baru.
+
+Menunggu konfirmasi / TODO-BACKEND:
+- Pemetaan peran `superadmin`/`admin_kerjasama` ke tabel `users` (akun `admin` dianggap
+  pengelola kerja sama untuk sementara).
+- Ganti JSON ke model + tabel DB (`draf_proposal`, `masa_aktif_mitra`).
+- Berkas draf belum disimpan: ubah `DrafMitra::BERKAS_SIAP` ke `true` saat backend siap.
+- Konflik: alur perpanjangan lewat Dashboard (`PermohonanPerpanjangan`) vs "Atur Masa Aktif"
+  di halaman ini — dua kanal yang menyentuh data berbeda. Perlu keputusan mana yang resmi.
+- `routes/settings.php` belum terdaftar -> build gagal (temuan lama, perlu keputusan).
+
+---
+
+## 12. Pemisahan Peran `admin_kelola` (selesai)
+
+Permintaan: peran `admin_kelola` hanya mengelola Profil & Visi Misi, Kelola Artikel,
+Kelola Galeri, dan Lihat Portal Umum. Tidak boleh melihat apa pun soal kerja sama.
+`admin_kerjasama` dan `superadmin` akses penuh. Akun demo lama (role `admin`) **tidak
+dikurangi** aksesnya. Kredensial `admin_kelola` dibaca dari `.env`, bukan plaintext di kode.
+
+DIBUAT:
+- `config/admin_peran.php` — SATU peta izin terpusat: `kemampuan` (konten, kerja_sama,
+  uji_email), `peran` (peran → daftar kemampuan), `label`, `beranda` (halaman pertama
+  setelah login). Sumber tunggal untuk route, menu, dan test.
+- `app/Support/AdminPeran.php` — pembaca peta: `semua()`, `kemampuan()`, `boleh()`,
+  `peranUntuk()` (menghasilkan argumen `admin.only:...`), `label()`, `beranda()`.
+- `resources/views/admin/dashboard.blade.php` — sebelumnya untracked, sekarang terpantau;
+  punya dua bentuk: ringkas konten (`$ringkas = true`) dan dashboard kerja sama.
+- `tests/Feature/AdminKelolaRoleTest.php` — 54 test / 107 assertion (matriks peran × route,
+  method mutasi, menu, dashboard, login `.env`).
+
+DIUBAH:
+- `config/admin_demo.php` — akun ketiga `admin_kelola` dari `ADMIN_KELOLA_USERNAME`/
+  `ADMIN_KELOLA_EMAIL`/`ADMIN_KELOLA_PASSWORD_HASH`. Akun tidak aktif bila email atau
+  hash kosong.
+- `routes/admin.php` — tiap grup memakai `AdminPeran::peranUntuk('<kemampuan>')`, bukan
+  daftar peran tulis tangan:
+  - `kerja_sama` → dashboard penuh, inbox, approve/reject, draf-proposal, masa-aktif;
+  - `konten` → `/admin-kelola` (dashboard ringkas), tentang, artikel, galeri;
+  - `uji_email` → `/test-email` (developer, hanya lokal).
+  Login memakai `Hash::check` untuk akun ber-`password_hash`; akun demo lama tetap
+  `hash_equals`. Redirect setelah login memakai `AdminPeran::beranda($role)`.
+- `resources/views/layouts/admin.blade.php` — menu, nama, dan label peran dirender dari
+  peta izin + sesi. Untuk `admin_kelola`: tidak ada Inbox, Draf Proposal AI, Masa Aktif,
+  maupun badge/counter kerja sama. Label grup berubah jadi "Menu Pengelola Konten".
+- `.env.example` — placeholder `ADMIN_KELOLA_USERNAME`, `ADMIN_KELOLA_EMAIL`,
+  `ADMIN_KELOLA_PASSWORD_HASH` (kosong).
+
+Matriks akhir (peran × menu):
+
+| Menu | admin_kelola | admin_kerjasama | superadmin | admin (demo lama) | developer |
+|---|---|---|---|---|---|
+| Admin Kelola Komdigi (`/admin-kelola`) | ✅ | ✅ | ✅ | ✅ | ❌ 404 |
+| Profil & Visi Misi | ✅ | ✅ | ✅ | ✅ | ❌ 404 |
+| Kelola Artikel | ✅ | ✅ | ✅ | ✅ | ❌ 404 |
+| Kelola Galeri | ✅ | ✅ | ✅ | ✅ | ❌ 404 |
+| Lihat Portal Umum | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Dashboard penuh | ❌ 404 | ✅ | ✅ | ✅ | ❌ 404 |
+| Inbox Pengajuan + approve/reject | ❌ 404 | ✅ | ✅ | ✅ | ❌ 404 |
+| Draf Proposal AI + unduh | ❌ 404 | ✅ | ✅ | ✅ | ❌ 404 |
+| Masa Aktif Mitra + atur | ❌ 404 | ✅ | ✅ | ✅ | ❌ 404 |
+| Uji email (`/test-email`) | ❌ 404 | ❌ 404 | ❌ 404 | ❌ 404 | ✅ (lokal) |
+
+Keputusan:
+- `admin_kelola` **diberi** Dashboard ringkas di URL sendiri `/admin-kelola`
+  (route `admin.dashboard.kelola`, judul halaman "Admin Kelola Komdigi"). Angka yang
+  dikirim hanya jumlah artikel, galeri, pejabat, dan status visi. Route dashboard kerja
+  sama menolak `admin_kelola` 404, jadi data perpanjangan/pengajuan **tidak di-query
+  dan tidak dikirim** ke view-nya.
+- Akun env tanpa hash/email = akun mati; password kosong tidak bisa lolos hanya karena
+  hash kosong.
+- Dashboard kerja sama dan dashboard ringkas berada di route terpisah, bukan satu route
+  dengan percabangan, agar guard-nya murni middleware dan test mudah dibaca.
+
+Keamanan:
+- [x] Otorisasi di sisi server lewat middleware `AdminOnly` (logika tidak diubah), bukan
+      hanya menyembunyikan menu. Test 404 untuk GET dan POST/PUT: `dashboard.setujui`,
+      `dashboard.tolak`, `inbox.approve`, `inbox.reject`, `draf_proposal.unduh`,
+      `masa_aktif.atur`, `mitra_draf.lama`.
+- [x] Tidak ada endpoint kerja sama di luar `routes/admin.php` (sudah diperiksa: route
+      mitra di `routes/web.php` hanya untuk sesi mitra), jadi tidak ada JSON/unduh yang
+      bocor.
+- [x] Password `admin_kelola` hanya hash bcrypt di `.env`; tidak ada password plaintext
+      baru di kode/config.
+- [x] Akses lama (`admin`, `admin_kerjasama`, `superadmin`, `developer`) tidak berkurang.
+- [x] Tamu (tanpa sesi) diarahkan ke halaman login untuk semua route admin.
+
+Pengecekan:
+- `php artisan test`: 145 lolos, 440 assertion.
+- `pint --test` (semua berkas yang diubah/dibuat): lolos.
+- `phpstan` berkas baru: lolos. Repo: 24 error LAMA di berkas lain, tidak ada dari
+  perubahan ini.
+- `npm run build`: lolos (9.5 s).
+- `npm run types:check`: 18 error LAMA di `resources/js/routes/**` hasil generate
+  Wayfinder (`Type '"query"' ...`), bukan dari perubahan ini.
+- `npm run lint`: **tidak ada** script ini; yang tersedia `check` / `check:fix`.
+
+Log URL admin_kelola: `/admin-kelola` (prefix `config('admin_demo.path')`, default
+`admin`), route `admin.dashboard.kelola`, judul "Admin Kelola Komdigi".
+
+Catatan untuk backend:
+- TODO-BACKEND: pemetaan peran ke tabel `users`. Sampai itu ada, peran dibaca dari
+  `config/admin_demo.php` + session, dan peta izin dari `config/admin_peran.php`.
+- Akun demo `admin`/`developer` masih menyimpan password plaintext di config — sebaiknya
+  dipindah ke hash seperti `admin_kelola`.
+
+Menunggu konfirmasi user:
+- Apakah akun `admin_kelola` wajib ganti password saat login pertama (AGENTS.md §5.8) —
+  belum diterapkan.
+
+
