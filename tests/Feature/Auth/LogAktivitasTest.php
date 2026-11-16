@@ -74,9 +74,30 @@ test('mengubah masa aktif mencatat log dengan UUID sebagai target', function () 
         ->and($log[0]['target'])->toBe($baris['uuid']);
 });
 
-test('aksi yang ditolak middleware tidak meninggalkan log', function () {
-    $this->withSession(sesiLog('admin_kerjasama'))
+test('admin kerja sama yang memutuskan pengajuan juga tercatat di log', function () {
+    $this->withSession(sesiLog('admin_kerjasama', 'Rina Kerjasama'))
         ->post(route('kerjasama.inbox.approve', '1'))
+        ->assertSessionHasNoErrors();
+
+    $this->withSession(sesiLog('admin_kerjasama', 'Rina Kerjasama'))
+        ->post(route('kerjasama.inbox.reject', '3'), ['feedback' => 'Kuota tahun anggaran sudah penuh.'])
+        ->assertSessionHasNoErrors();
+
+    $log = LogAktivitas::all();
+
+    expect($log)->toHaveCount(2)
+        ->and($log[0]['aksi'])->toBe('inbox.reject')
+        ->and($log[0]['peran'])->toBe('admin_kerjasama')
+        ->and($log[0]['nama'])->toBe('Rina Kerjasama')
+        ->and($log[0]['target'])->toBe('3')
+        ->and($log[1]['aksi'])->toBe('inbox.approve');
+});
+
+test('aksi yang ditolak middleware tidak meninggalkan log', function () {
+    // Admin Kerja Sama menembak halaman superadmin: ditolak sebelum controller
+    // jalan, jadi tidak boleh ada catatan log.
+    $this->withSession(sesiLog('admin_kerjasama'))
+        ->post(route('superadmin.inbox.approve', '1'))
         ->assertNotFound();
 
     expect(LogAktivitas::all())->toBe([]);

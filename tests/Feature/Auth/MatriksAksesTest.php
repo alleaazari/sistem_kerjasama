@@ -118,7 +118,9 @@ test('kontrak matriks: superadmin memegang semua halaman, admin kerja sama hanya
     )->not->toContain('uji_email');
 
     expect(AdminAkses::kemampuan('admin_kerjasama'))->toBe([
-        'inbox', 'draf', 'draf_proposal.unduh', 'masa_aktif', 'masa_aktif.atur',
+        'inbox', 'inbox.approve', 'inbox.reject',
+        'draf', 'draf_proposal.unduh',
+        'masa_aktif', 'masa_aktif.atur',
     ]);
 });
 
@@ -149,13 +151,23 @@ test('superadmin tidak bisa membuka halaman kerja sama di prefix admin kerja sam
     }
 });
 
-test('admin kerja sama tidak bisa menolak atau menyetujui pengajuan', function () {
+test('admin kerja sama boleh menyetujui dan menolak pengajuan di prefixnya sendiri', function () {
     $this->withSession(sesi('admin_kerjasama'))
         ->post(route('kerjasama.inbox.approve', '1'))
+        ->assertSessionHasNoErrors();
+
+    $this->withSession(sesi('admin_kerjasama'))
+        ->post(route('kerjasama.inbox.reject', '2'), ['feedback' => 'Alasan uji penolakan yang sah.'])
+        ->assertSessionHasNoErrors();
+});
+
+test('admin kerja sama tetap tidak bisa menyentuh route superadmin lewat URL khusus itu', function () {
+    $this->withSession(sesi('admin_kerjasama'))
+        ->post(route('superadmin.inbox.approve', '1'))
         ->assertNotFound();
 
     $this->withSession(sesi('admin_kerjasama'))
-        ->post(route('kerjasama.inbox.reject', '1'), ['feedback' => 'Alasan uji penolakan'])
+        ->post(route('superadmin.inbox.reject', '1'), ['feedback' => 'Alasan uji penolakan sah.'])
         ->assertNotFound();
 });
 
@@ -229,17 +241,20 @@ test('HTML superadmin memuat seluruh menu termasuk halaman baru', function () {
         ->toContain('Kelola Pengguna');
 });
 
-test('halaman inbox admin kerja sama tidak merender formulir keputusan', function () {
+test('halaman inbox admin kerja sama merender formulir keputusan atas pengajuan mitra', function () {
     $html = $this->withSession(sesi('admin_kerjasama'))
         ->get(route('kerjasama.inbox'))
         ->assertOk()
         ->getContent();
 
-    expect($html)->not->toContain('id="f-approve"')
-        ->not->toContain('id="f-reject"')
-        ->not->toContain('Setujui Pengajuan')
-        ->not->toContain('Tolak Pengajuan')
-        ->toContain('Super Administrator');
+    expect($html)->toContain('id="f-approve"')
+        ->toContain('id="f-reject"')
+        ->toContain('Setujui Pengajuan')
+        ->toContain('Tolak Pengajuan')
+        ->toContain('/admin-kerjasama/inbox/__ID__/approve')
+        ->toContain('/admin-kerjasama/inbox/__ID__/reject')
+        // Form harus mengarah ke prefix peran ini, bukan ke superadmin.
+        ->not->toContain('/superadmin/inbox/__ID__');
 });
 
 test('halaman inbox superadmin tetap merender formulir keputusan', function () {
@@ -251,5 +266,6 @@ test('halaman inbox superadmin tetap merender formulir keputusan', function () {
     expect($html)->toContain('id="f-approve"')
         ->toContain('id="f-reject"')
         ->toContain('Setujui Pengajuan')
-        ->toContain('Tolak Pengajuan');
+        ->toContain('Tolak Pengajuan')
+        ->toContain('/superadmin/inbox/__ID__/approve');
 });

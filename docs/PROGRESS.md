@@ -401,3 +401,147 @@ DIUBAH
 
 ### Langkah berikutnya
 - Menunggu perintah "Lanjut" untuk tahap berikutnya.
+
+## 11. Fase B — Matriks Akses, Log Aktivitas, Halaman Superadmin (SELESAI)
+
+Branch kerja: `feat/pisah-login-peran` (bukan `main`, tanpa push).
+
+### Matriks yang berlaku (ditegakkan SERVER, bukan menu)
+
+| Kemampuan | superadmin | admin_kerjasama |
+|---|---|---|
+| `dashboard` | ya | tidak (login langsung ke Inbox) |
+| `inbox` (lihat) | ya | ya |
+| `inbox.approve` (setuju) | ya | **tidak, 404** |
+| `inbox.reject` (tolak + surat & WA) | ya | **tidak, 404** |
+| `draf` / `draf_proposal.unduh` | ya | ya |
+| `masa_aktif` / `masa_aktif.atur` | ya | ya |
+| `tentang`, `artikel`, `galeri` | ya | tidak |
+| `aktivitas` | ya | tidak |
+| `pengguna` | ya | tidak |
+| `uji_email` | hanya akun `developer` | tidak |
+
+### Perubahan inti
+
+1. **Peta izin memisahkan halaman dan aksi.** `config/admin_akses.php` kini punya
+   `halaman` (bermenu, punya `route`/`label`/`ikon`) dan `aksi` (tanpa menu, kuncinya
+   sama dengan akhiran nama route: `inbox.approve`, `inbox.reject`, `draf_proposal.unduh`,
+   `masa_aktif.atur`). `peran.<nama>.kemampuan[]` memuat keduanya, sehingga
+   `admin.only:<peran...>` dibentuk otomatis dari peta. Aksi tanpa peran pemilik → 404.
+2. **Inbox pindah dari closure route ke controller.** `AdminInboxController` melayani
+   kedua prefix (satu implementasi), memanggil `LogAktivitas::catat()` setelah aksi
+   benar-benar terjadi (bukan saat ditolak).
+3. **Log aktivitas.** `app/Support/LogAktivitas.php`, berkas
+   `storage/app/log_aktivitas.json`, tulis dengan `LOCK_EX`. Kolom: waktu, peran, nama,
+   aksi, target, IP. Tidak pernah mencatat sandi/hash/isi surat.
+   TODO-BACKEND tercatat di kelas: pindah ke tabel `log_aktivitas`.
+4. **Menu dirender dari peta.** Layout tidak lagi memuat blok sidebar hardcode
+   (`Lihat Portal Umum` dulu ditulis manual dengan SVG inline). Tautan luar sekarang
+   berasal dari `admin_akses.tautan[]`; badge/counter dashboard hanya muncul untuk peran
+   yang punya kemampuan `dashboard`, sehingga admin_kerjasama tidak menerima markup
+   milik superadmin sama sekali.
+5. **Halaman baru superadmin.** `/superadmin/aktivitas` (filter peran/aksi/tanggal,
+   pencarian, paginasi, state kosong, read-only) dan `/superadmin/pengguna`
+   (daftar akun dari peta izin, tanpa hash, tombol aksi `disabled` + tooltip
+   "Menunggu backend").
+6. **Form keputusan inbox tidak dirender** untuk peran tanpa `inbox.approve`/`inbox.reject`;
+   JS-nya diberi guard agar tidak error saat elemen tidak ada.
+
+### File
+
+DIBUAT
+- `app/Support/LogAktivitas.php` — catat/saring/paginasi log, label aksi dari peta izin.
+- `app/Http/Controllers/AdminInboxController.php` — indeks/setujui/tolak, satu controller dua prefix.
+- `app/Http/Controllers/AdminSuperadminController.php` — `aktivitas()` dan `pengguna()` (read-only).
+- `resources/views/admin/aktivitas.blade.php` — tabel log + filter + paginasi + state kosong.
+- `resources/views/admin/pengguna.blade.php` — daftar akun, tanpa hash, aksi disabled.
+- `tests/Feature/Auth/MatriksAksesTest.php` — 14 test matriks peran × route × method.
+- `tests/Feature/Auth/LogAktivitasTest.php` — 14 test log + halaman.
+
+DIUBAH
+- `config/admin_akses.php` — `halaman` vs `aksi`, matriks peran, `tautan[]`, section `sistem`/`luar`.
+- `app/Support/AdminAkses.php` — `ruteKemampuan()` menerima aksi; `menu()` mengikutkan `tautan[]`;
+  `semuaAksi()`/`labelAksi()`; `ruteKemampuanSemua()` (tidak terpakai) dihapus.
+- `routes/admin_kerja.php` — route per aksi, memakai `AdminInboxController`.
+- `routes/superadmin.php` — tambah `/aktivitas` dan `/pengguna`.
+- `resources/views/layouts/admin.blade.php` — sidebar sepenuhnya dari peta izin.
+- `resources/views/partials/ikon-admin.blade.php` — ikon `aktivitas`, `pengguna`, `portal`.
+- `resources/views/admin/inbox.blade.php` — form keputusan bersyarat + guard JS.
+- `public/assets/admin/css/panel.css` — `.filter-grid`, `.pagination-nav`, `.btn[disabled]`.
+- `app/Http/Controllers/AdminMitraController.php` — log pada `draf_proposal.unduh` & `masa_aktif.atur`.
+
+### Keamanan (bagian 5)
+- [x] Otorisasi di server: setiap route panel memakai `admin.only:<peran dari peta izin>`;
+      test membuktikan semua route superadmin menolak admin_kerjasama (semua metode).
+- [x] Tidak ada duplikasi logika halaman kerja sama: satu controller, satu berkas route.
+- [x] Log tidak memuat sandi/hash (`LogAktivitasTest`: "log tidak pernah memuat kata sandi atau hash").
+- [x] Halaman pengguna tidak pernah menampilkan hash (test memeriksa `$2y$` dan `password_hash`).
+- [x] Filter tanggal divalidasi `date_format:Y-m-d` agar input salah tidak masuk kueri.
+- [x] Aksi yang ditolak middleware / target tidak ditemukan tidak menghasilkan log palsu.
+
+### Pengecekan
+- `php artisan test` → **158 test, 158 lolos, 559 assertion** (sebelum tahap ini 130).
+- `php vendor/bin/pint --test` → passed.
+- `php -d memory_limit=1G vendor/bin/phpstan analyse` → passed, 0 error.
+- `npm run build` → berhasil, 2280 modul.
+- `npm run types:check` → tidak berubah dari catatan fase A (45 error lama di keluaran
+  Wayfinder gitignored + 3 berkas starter kit tak terpakai).
+
+### Catatan untuk backend
+- `LogAktivitas` → tabel `log_aktivitas` (indeks `(peran, aksi, dibuat_pada)`); paginasi SQL.
+- `pengguna` → tabel `users` + kolom role; tombol Ubah/Reset Sandi masih disabled.
+- Pengajuan masih `{id}` berurutan dan JSON tanpa locking; belum UUID sebagai route key.
+- `AdminOnly` memakai 404 (bukan 403) untuk peran salah — konsisten dengan pola proyek.
+
+### Menunggu konfirmasi
+- Apakah `admin_kerjasama` memang tidak boleh menolak pengajuan (saat ini tidak boleh,
+  sesuai matriks). Bila perlu, tambahkan `inbox.reject` ke kemampuan peran itu — cukup
+  satu baris di config, tanpa mengubah route/controller.
+
+### Langkah berikutnya
+- Menunggu perintah "Lanjut" untuk tahap berikutnya.
+
+## 12. Fase C — Admin Kerja Sama Memutuskan Pengajuan (SELESAI)
+
+Perubahan keputusan user: **Admin Kerja Sama kini boleh menyetujui, menolak, dan
+mengunduh draf** — sama seperti Superadmin. Sebelumnya fase B membatasinya
+(hanya lihat) dan keputusan itu dibatalkan di sini.
+
+### Matriks terbaru
+
+| Kemampuan | superadmin | admin_kerjasama |
+|---|---|---|
+| `dashboard` | ya | tidak (login langsung ke Inbox) |
+| `inbox` (lihat) | ya | ya |
+| `inbox.approve` | ya | **ya** |
+| `inbox.reject` (surat resmi + WhatsApp) | ya | **ya** |
+| `draf` / `draf_proposal.unduh` | ya | ya |
+| `masa_aktif` / `masa_aktif.atur` | ya | ya |
+| `tentang`, `artikel`, `galeri`, `aktivitas`, `pengguna` | ya | **tidak (404)** |
+
+Perbedaan yang tetap berlaku: Admin Kerja Sama tidak punya dashboard, tidak
+mengelola konten portal, tidak melihat log aktivitas, dan tidak mengelola pengguna.
+Akses ke route `/superadmin/*` tetap ditolak 404 walau perannya kini punya aksi yang sama.
+
+### File
+
+DIUBAH
+- `config/admin_akses.php` — kemampuan `admin_kerjasama` ditambah `inbox.approve`,
+  `inbox.reject`; komentar matriks diperbarui.
+- `tests/Feature/Auth/MatriksAksesTest.php` — kontrak matriks baru; test formulir
+  keputusan kini memastikan form mengarah ke `/admin-kerjasama/inbox/…`, bukan superadmin;
+  tambah test bahwa aksi superadmin lewat URL superadmin tetap 404.
+- `tests/Feature/Auth/LogAktivitasTest.php` — tambah test log tercatat saat
+  Admin Kerja Sama menyetujui/menolak; test "ditolak middleware" memakai route superadmin.
+
+Tidak ada perubahan pada controller, route, atau view: `AdminInboxController` dan
+`admin_kerja.php` memang sudah satu implementasi untuk dua prefix sejak fase B.
+
+### Pengecekan
+- `php artisan test` → **160 test, 160 lolos**.
+- `pint --test` → passed; `phpstan` → 0 error; `npm run build` → berhasil.
+
+### Catatan keamanan
+Menolak pengajuan mengirim email resmi dan pesan WhatsApp. Kini kedua peran dapat
+melakukannya, dan setiap keputusan tercatat di log aktivitas (peran, nama, aksi,
+target, IP) sehingga jejak siapa memutuskan tetap ada.

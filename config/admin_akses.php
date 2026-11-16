@@ -26,7 +26,7 @@
 |   Superadmin      : dashboard, inbox + setuju/tolak, draf + unduh,
 |                     masa aktif + atur, profil/visi misi, artikel, galeri,
 |                     aktivitas, pengguna
-|   Admin Kerja Sama: inbox (hanya lihat), draf + unduh, masa aktif + atur
+|   Admin Kerja Sama: inbox + setuju/tolak, draf + unduh, masa aktif + atur
 |                     (setelah login langsung ke inbox, tanpa dashboard)
 |
 | Peran operasional punya prefix URL dan halaman login sendiri; kredensial
@@ -199,9 +199,10 @@ return [
             'nama' => 'kerjasama',
             'beranda' => 'inbox',
             // Tiga halaman kerja sama. Dashboard & konten bukan miliknya.
-            // Inbox hanya untuk dilihat: setujui/tolak milik Superadmin.
+            // Seperti Superadmin, peran ini mengelola pengajuan mitra:
+            // menyetujui, menolak (surat resmi + WhatsApp), dan mengunduh draf.
             'kemampuan' => [
-                'inbox',
+                'inbox', 'inbox.approve', 'inbox.reject',
                 'draf', 'draf_proposal.unduh',
                 'masa_aktif', 'masa_aktif.atur',
             ],
