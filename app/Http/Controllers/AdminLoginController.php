@@ -80,7 +80,7 @@ class AdminLoginController extends Controller
 
         // Satu pesan generik untuk semua kegagalan: akun tidak ada, password
         // salah, atau akun milik peran lain. Tidak membocorkan apa pun.
-        if ($akun === null || ! Hash::check((string) $data['password'], $akun['password_hash'])) {
+        if ($akun === null || ! $this->sandiCocok($akun, (string) $data['password'])) {
             return back()
                 ->withInput($request->only('username'))
                 ->with('login_error', self::PESAN_GAGAL);
@@ -135,9 +135,25 @@ class AdminLoginController extends Controller
     }
 
     /**
+     * Cocokkan kata sandi: hash bcrypt untuk akun .env, hash_equals untuk demo.
+     *
+     * @param  array{password_hash: string, password: string|null}  $akun
+     */
+    private function sandiCocok(array $akun, string $sandi): bool
+    {
+        if ($akun['password_hash'] !== '') {
+            return Hash::check($sandi, $akun['password_hash']);
+        }
+
+        $demo = (string) ($akun['password'] ?? '');
+
+        return $demo !== '' && hash_equals($demo, $sandi);
+    }
+
+    /**
      * Cari akun yang cocok di prefix ini saja.
      *
-     * @return array{name: string, username: string, email: string, password_hash: string, role: string}|null
+     * @return array{name: string, username: string, email: string, password_hash: string, password: string|null, role: string}|null
      */
     private function cariAkunAktif(string $peran, string $username): ?array
     {
@@ -159,6 +175,7 @@ class AdminLoginController extends Controller
                     'username' => $akun['username'],
                     'email' => $akun['email'],
                     'password_hash' => $akun['password_hash'],
+                    'password' => $akun['password'] ?? null,
                     'role' => $kandidat,
                 ];
             }

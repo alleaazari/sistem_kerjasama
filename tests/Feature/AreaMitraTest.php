@@ -114,12 +114,14 @@ test('B3 galat login memakai role alert', function () {
     expect($blade)->toContain('$errors->first()');
 });
 
-test('B3 kredensial demo hanya tampil sebagai teks bantuan saat app.debug true', function () {
-    config(['app.debug' => false]);
-    $this->get('/login')->assertDontSee('Catatan pengembangan')->assertDontSee(config('mitra.demo_user'));
-
+test('B3 kredensial demo tidak ditampilkan di halaman login', function () {
     config(['app.debug' => true]);
-    $this->get('/login')->assertSee('Catatan pengembangan');
+
+    $this->get('/login')
+        ->assertOk()
+        ->assertDontSee('Catatan pengembangan')
+        ->assertDontSee('Akun demo')
+        ->assertDontSee(config('mitra.demo_user'));
 });
 
 // ---------------------------------------------------------------- R3 -------

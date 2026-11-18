@@ -545,3 +545,71 @@ Tidak ada perubahan pada controller, route, atau view: `AdminInboxController` da
 Menolak pengajuan mengirim email resmi dan pesan WhatsApp. Kini kedua peran dapat
 melakukannya, dan setiap keputusan tercatat di log aktivitas (peran, nama, aksi,
 target, IP) sehingga jejak siapa memutuskan tetap ada.
+
+## 13. Fase D — Akun Demo Panel Admin (SELESAI)
+
+### Masalah
+Kredensial panel dibaca dari `.env`, sedangkan `.env` ada di `.gitignore`. Di
+mesin lain (mis. laptop rekan) `.env` baru berisi placeholder kosong, sehingga
+`AdminAkses::akunAktif()` mengembalikan `null` dan login admin **mati total**
+dengan pesan "Nama pengguna atau kata sandi tidak sesuai." Password juga tidak
+"terlihat" di VS Code karena yang disimpan hanya hash bcrypt — memang tidak bisa
+dibalik menjadi plaintext.
+
+### Keputusan
+Menambah akun demo yang **ikut ter-commit** di `config/admin_akses.php`
+(`demo`). Urutannya: nilai `.env` menang; bila `.env` kosong dan
+`APP_ENV` bukan `production`, akun demo dipakai. Di production akun demo
+tidak pernah aktif.
+
+Kata sandi demo disimpan plaintext di config (memang data dummy yang
+dipublikasikan agar bisa dipakai siapa pun) dan dibandingkan dengan
+`hash_equals`. Akun `.env` tetap memakai `Hash::check` (bcrypt).
+
+### Kredensial demo
+| Peran | URL login | Username | Password |
+|---|---|---|---|
+| Superadmin | `/superadmin/login` | `superadmin` | `123456` |
+| Admin Kerja Sama | `/admin-kerjasama/login` | `kerjasama` | `123456` |
+| Developer | `/superadmin/login` | `developer` | `123456` |
+
+Kredensial demo tetap berfungsi, tetapi **tidak lagi ditampilkan di halaman
+login**. Blok "Catatan pengembangan" / "Akun demo" sudah dihapus dari semua
+halaman login agar tampilan bersih. Rujukan kredensial: tabel di atas,
+`config/admin_akses.php`, dan `config/mitra.php`.
+
+### File
+DIBUAT
+- `tests/Feature/Auth/AdminLoginDemoTest.php` — 7 test: demo aktif saat `.env`
+  kosong, login sukses per peran, sandi salah ditolak, silang peran ditolak,
+  kredensial tampil di halaman login, dan demo mati total di production.
+
+DIUBAH
+- `config/admin_akses.php` — blok `demo` (3 akun) + komentar urutan sumber.
+- `app/Support/AdminAkses.php` — `akunAktif()` jatuh ke `akunDemo()`;
+  tambah `akunDemo()`, `kredensialDemo()`; `akunAktif()` kini mengembalikan
+  kunci `password` (null untuk akun `.env`).
+- `app/Http/Controllers/AdminLoginController.php` — `sandiCocok()` memilih
+  `Hash::check` atau `hash_equals`; mengirim `demo` ke view login.
+- `resources/views/admin/login.blade.php` — menampilkan kredensial demo.
+- `resources/views/login.blade.php` — menampilkan kredensial mitra demo.
+- `.env.example` — dokumentasi bahwa kosong = pakai akun demo.
+- `tests/Feature/AreaMitraTest.php` — teks bantuan login mitra disesuaikan.
+
+### Pengecekan
+- `php artisan test` → **167 test, 167 lolos** (590 assertion).
+- `pint --test` → passed; `phpstan` → 0 error.
+- Verifikasi HTTP nyata dengan `.env` dikosongkan: superadmin/123456 →
+  sesi `superadmin`; kerjasama/123456 → sesi `admin_kerjasama`; sandi salah dan
+  silang peran → ditolak dengan pesan generik.
+
+### Catatan keamanan
+Akun demo hanya hidup di luar production. Sebelum deploy: set
+`APP_ENV=production`, isi `SUPERADMIN_PASSWORD_HASH` dan
+`ADMIN_KERJASAMA_PASSWORD_HASH` dengan bcrypt, dan set
+`ADMIN_ALLOWED_IPS` bila panel perlu dibatasi per IP.
+
+### Masih terbuka (belum dikerjakan, butuh keputusan)
+- Area mitra (`/mitra/*`) masih tanpa autentikasi nyata — lihat audit keamanan.
+- Password demo `123456` sengaja lemah karena data dummy; jangan dipakai di
+  server yang dapat diakses publik.

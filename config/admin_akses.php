@@ -216,6 +216,36 @@ return [
     ],
 
     /*
+    | Akun DEMO panel admin (DATA DUMMY) — dipakai HANYA bila .env belum
+    | mengisi USERNAME/PASSWORD_HASH untuk peran itu DAN APP_ENV bukan
+    | production. Nilainya ikut ter-commit supaya proyek bisa langsung dicoba
+    | di mesin mana pun tanpa menyetel .env lebih dulu.
+    |
+    | Nama pengguna tiap peran WAJIB berbeda agar pemisahan peran tetap utuh.
+    | Di produksi (APP_ENV=production) akun demo ini tidak pernah aktif.
+    */
+    'demo' => [
+        'superadmin' => [
+            'name' => 'Super Administrator',
+            'username' => 'superadmin',
+            'email' => 'superadmin@komdigi.go.id',
+            'password' => '123456',
+        ],
+        'admin_kerjasama' => [
+            'name' => 'Admin Kerja Sama',
+            'username' => 'kerjasama',
+            'email' => 'kerjasama@komdigi.go.id',
+            'password' => '123456',
+        ],
+        'developer' => [
+            'name' => 'Developer',
+            'username' => 'developer',
+            'email' => 'developer@komdigi.go.id',
+            'password' => '123456',
+        ],
+    ],
+
+    /*
     | Akun internal tanpa prefix sendiri. Login lewat prefix `superadmin`,
     | tetapi hanya mendapat kemampuannya sendiri (bukan akses penuh).
     */

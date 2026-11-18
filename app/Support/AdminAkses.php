@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -228,9 +229,12 @@ final class AdminAkses
 
     /**
      * Akun aktif sebuah peran, atau null bila kredensialnya belum lengkap.
-     * Kredensial hanya dibaca dari .env berupa hash bcrypt.
      *
-     * @return array{name: string, username: string, email: string, password_hash: string}|null
+     * Urutan sumber: .env (hash bcrypt) lalu akun demo config/admin_akses.php
+     * yang hanya berlaku di luar production. Di production akun tanpa .env
+     * tetap mati, jadi login ditutup total.
+     *
+     * @return array{name: string, username: string, email: string, password_hash: string, password: string|null}|null
      */
     public static function akunAktif(string $peran): ?array
     {
@@ -240,9 +244,9 @@ final class AdminAkses
         $username = trim((string) ($akun['username'] ?? ''));
         $passwordHash = trim((string) ($akun['password_hash'] ?? ''));
 
-        // Tanpa username dan hash, akun dianggap mati (login ditutup total).
+        // .env belum lengkap: pakai akun demo bila diizinkan.
         if ($username === '' || $passwordHash === '') {
-            return null;
+            return self::akunDemo($peran);
         }
 
         $nama = trim((string) ($akun['name'] ?? ''));
@@ -252,6 +256,43 @@ final class AdminAkses
             'username' => $username,
             'email' => trim((string) ($akun['email'] ?? '')),
             'password_hash' => $passwordHash,
+            'password' => null,
+        ];
+    }
+
+    /**
+     * Akun demo sebuah peran dari config/admin_akses.php.
+     *
+     * Hanya aktif di luar production. Kata sandinya plaintext di config karena
+     * memang data dummy yang boleh dipublikasikan; perbandingan tetap memakai
+     * hash_equals agar tidak bocor lewat timing.
+     *
+     * @return array{name: string, username: string, email: string, password_hash: string, password: string}|null
+     */
+    public static function akunDemo(string $peran): ?array
+    {
+        if (app()->isProduction()) {
+            return null;
+        }
+
+        /** @var array<string, mixed> $demo */
+        $demo = (array) config('admin_akses.demo.'.$peran, []);
+
+        $username = trim((string) ($demo['username'] ?? ''));
+        $sandi = (string) ($demo['password'] ?? '');
+
+        if ($username === '' || $sandi === '') {
+            return null;
+        }
+
+        $nama = trim((string) ($demo['name'] ?? ''));
+
+        return [
+            'name' => $nama === '' ? self::label($peran) : $nama,
+            'username' => $username,
+            'email' => trim((string) ($demo['email'] ?? '')),
+            'password_hash' => '',
+            'password' => $sandi,
         ];
     }
 

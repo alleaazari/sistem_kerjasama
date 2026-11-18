@@ -18,12 +18,6 @@
         <div class="auth-alert" role="alert" id="galat-admin-validasi">{{ $errors->first() }}</div>
     @endif
 
-    @if (config('app.debug'))
-        <div class="auth-debug-hint">
-            <strong>Catatan pengembangan.</strong> Kredensial akun demo tidak ditampilkan di antarmuka. Lihat berkas konfigurasi server saat pengembangan.
-        </div>
-    @endif
-
     <form method="POST" action="{{ $aksi }}" data-form-login>
         @csrf
 
