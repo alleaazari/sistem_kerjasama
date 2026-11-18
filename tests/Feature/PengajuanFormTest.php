@@ -23,9 +23,7 @@ function payloadPengajuan(): array
         'email' => 'budi@example.com',
         'telp' => '0812000000',
         'bidang' => ['dts', 'skkni'],
-        'tujuan_mitra' => 'Kolaborasi riset dan peningkatan kompetensi ASN daerah.',
         'metode_pelatihan' => 'hybrid',
-        'tujuan_pelatihan' => 'Meningkatkan kompetensi ASN melalui sertifikasi SKKNI.',
         'pembiayaan' => 'cost_sharing',
     ];
 }
@@ -94,8 +92,31 @@ test('pengajuan menyimpan field baru beserta bidang dan pembiayaan', function ()
         ->and($data['metode_pelatihan'])->toBe('hybrid')
         ->and($data['pembiayaan'])->toBe('cost_sharing')
         ->and($data['bidang'])->toBe(['dts', 'skkni'])
-        ->and($data['tujuan_pelatihan'])->toContain('SKKNI')
         ->and($data['status'])->toBe('Menunggu');
+
+    File::deleteDirectory($temp);
+});
+
+test('field tujuan yang sudah dihapus tidak lagi disimpan', function () {
+    $temp = sys_get_temp_dir().'/kerjasama-pjn-'.uniqid();
+    File::makeDirectory($temp.'/app', 0755, true);
+    $this->app->useStoragePath($temp);
+
+    // Klien lama yang masih mengirim field usang harus tetap diterima.
+    $payload = payloadPengajuan() + [
+        'tujuan' => 'Sisa data lama.',
+        'tujuan_mitra' => 'Sisa data lama.',
+        'tujuan_pelatihan' => 'Sisa data lama.',
+    ];
+
+    $this->post(route('pengajuan.store'), $payload)
+        ->assertRedirect(route('pengajuan.create'))
+        ->assertSessionHasNoErrors();
+
+    $data = json_decode(File::get($temp.'/app/storage_pengajuan.json'), true)[0];
+    expect($data)->not->toHaveKey('tujuan')
+        ->and($data)->not->toHaveKey('tujuan_mitra')
+        ->and($data)->not->toHaveKey('tujuan_pelatihan');
 
     File::deleteDirectory($temp);
 });
@@ -106,10 +127,10 @@ test('pengajuan menolak data yang tidak lengkap', function () {
     $this->app->useStoragePath($temp);
 
     $payload = payloadPengajuan();
-    unset($payload['tujuan_mitra'], $payload['metode_pelatihan']);
+    unset($payload['metode_pelatihan']);
 
     $this->post(route('pengajuan.store'), $payload)
-        ->assertSessionHasErrors(['tujuan_mitra', 'metode_pelatihan']);
+        ->assertSessionHasErrors(['metode_pelatihan']);
 
     expect(File::exists($temp.'/app/storage_pengajuan.json'))->toBeFalse();
 

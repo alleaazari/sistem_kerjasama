@@ -102,7 +102,6 @@
             <div><dt>PIC</dt><dd id="d-pic"></dd></div>
             <div><dt>Email PIC</dt><dd id="d-email"></dd></div>
             <div><dt>No. WhatsApp</dt><dd id="d-telp"></dd></div>
-            <div class="detail-full"><dt>Tujuan Usulan</dt><dd id="d-tujuan"></dd></div>
         </dl>
 
         {{-- Pilih Aksi --}}
@@ -230,7 +229,7 @@ function tutupModalSurat() {
 
 function bukaModal(item) {
     currentItem = item;
-    ['instansi','organisasi','pic','email','telp','tujuan'].forEach(function(k) {
+    ['instansi','organisasi','pic','email','telp'].forEach(function(k) {
         var el = document.getElementById('d-' + k);
         if (el) el.textContent = item[k] || '-';
     });

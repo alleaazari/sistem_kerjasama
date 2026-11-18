@@ -38,9 +38,7 @@ Route::post('/pengajuan', function (Request $request) {
         'pic' => 'required|string|max:255',
         'email' => 'required|email|max:255',
         'telp' => 'required|string|max:30',
-        'tujuan_mitra' => 'required|string',
         'metode_pelatihan' => 'required|string',
-        'tujuan_pelatihan' => 'required|string',
         'pembiayaan' => 'required|string',
     ], [
         'instansi.required' => 'Nama Perguruan Tinggi / Instansi wajib diisi.',
@@ -53,9 +51,7 @@ Route::post('/pengajuan', function (Request $request) {
         'email.required' => 'Email resmi PIC wajib diisi.',
         'email.email' => 'Format email PIC tidak valid.',
         'telp.required' => 'Nomor telepon / WhatsApp PIC wajib diisi.',
-        'tujuan_mitra.required' => 'Tujuan pengajuan dari mitra wajib diisi.',
         'metode_pelatihan.required' => 'Metode pelatihan wajib dipilih.',
-        'tujuan_pelatihan.required' => 'Tujuan pelatihan wajib diisi.',
         'pembiayaan.required' => 'Skema pembiayaan (APBD / APBN / Cost Sharing) wajib dipilih.',
     ]);
 
@@ -74,8 +70,6 @@ Route::post('/pengajuan', function (Request $request) {
         }
     }
 
-    $tujuanUtama = $request->input('tujuan_mitra', $request->input('tujuan_pelatihan', 'Pengembangan Talenta & Transformasi Digital'));
-
     $newItem = [
         'id' => $newId,
         'instansi' => $request->input('instansi'),
@@ -83,9 +77,6 @@ Route::post('/pengajuan', function (Request $request) {
         'pic' => $request->input('pic'),
         'email' => $request->input('email'),
         'telp' => $request->input('telp'),
-        'tujuan' => $tujuanUtama,
-        'tujuan_mitra' => $request->input('tujuan_mitra'),
-        'tujuan_pelatihan' => $request->input('tujuan_pelatihan'),
         'metode_pelatihan' => $request->input('metode_pelatihan'),
         'pembiayaan' => $request->input('pembiayaan'),
         'bidang' => $request->input('bidang', []),

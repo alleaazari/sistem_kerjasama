@@ -44,9 +44,7 @@ test('pengajuan submission is rate limited', function () {
         'pic' => 'Budi',
         'email' => 'budi@example.com',
         'telp' => '0812000000',
-        'tujuan_mitra' => 'Kolaborasi riset',
         'metode_pelatihan' => 'daring',
-        'tujuan_pelatihan' => 'Literasi digital',
         'pembiayaan' => 'APBN',
     ];
 

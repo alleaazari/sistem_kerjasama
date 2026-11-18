@@ -69,7 +69,6 @@
                 <label class="pjn-label" for="instansi">
                     Nama Perguruan Tinggi / Instansi
                     <span class="pjn-required">*</span>
-                    <span class="pjn-pddikti-badge">API PDDIKTI LIVE</span>
                 </label>
                 <div class="pjn-search-wrap" id="pddikti-wrap">
                     <div class="pjn-search-icon">
@@ -255,13 +254,6 @@
                 </div>
             </div>
 
-<!-- New fields added -->
-<div class="pjn-field">
-    <label class="pjn-label" for="tujuan_mitra">Tujuan Pengajuan dari Mitra (alasan) <span class="pjn-required">*</span></label>
-    <textarea id="tujuan_mitra" name="tujuan_mitra" rows="4" placeholder="Jelaskan alasan dan latar belakang pengajuan kerjasama..." class="pjn-input" required>{{ old('tujuan_mitra') }}</textarea>
-    <p class="pjn-hint">Berikan alasan yang jelas, minimal 30 karakter.</p>
-</div>
-
 <div class="pjn-field">
     <label class="pjn-label" for="metode_pelatihan">Metode Pelatihan <span class="pjn-required">*</span></label>
     <select id="metode_pelatihan" name="metode_pelatihan" class="pjn-input" required>
@@ -273,12 +265,6 @@
         <option value="magang" {{ old('metode_pelatihan')=='magang'?'selected':'' }}>Magang / Praktik</option>
         <option value="seminar" {{ old('metode_pelatihan')=='seminar'?'selected':'' }}>Seminar / Webinar</option>
     </select>
-</div>
-
-<div class="pjn-field">
-    <label class="pjn-label" for="tujuan_pelatihan">Tujuan Pelatihan <span class="pjn-required">*</span></label>
-    <textarea id="tujuan_pelatihan" name="tujuan_pelatihan" rows="4" placeholder="Contoh: meningkatkan kompetensi ASN, sertifikasi SKKNI, literasi digital..." class="pjn-input" required>{{ old('tujuan_pelatihan') }}</textarea>
-    <p class="pjn-hint">Sebutkan tujuan spesifik pelatihan, minimal 30 karakter.</p>
 </div>
 
 <div class="pjn-field">
@@ -653,20 +639,6 @@ textarea.pjn-input { resize: vertical; min-height: 90px; }
 }
 
 /* PDDIKTI SEARCH */
-.pjn-pddikti-badge {
-    display: inline-flex;
-    align-items: center;
-    background: #eff6ff;
-    color: #1d4ed8;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 7px;
-    border-radius: 4px;
-    border: 1px solid #bfdbfe;
-    margin-left: 6px;
-    letter-spacing: 0.5px;
-    vertical-align: middle;
-}
 .pjn-search-wrap {
     position: relative;
 }
@@ -1468,15 +1440,7 @@ function validatePengajuanForm() {
         clearFieldError(null, bidangGroup);
     }
 
-    // 11. Tujuan Pengajuan Mitra
-    var tujuanMitra = document.getElementById('tujuan_mitra');
-    if (!tujuanMitra || !tujuanMitra.value.trim()) {
-        reportErr(tujuanMitra, null, 'Tujuan pengajuan dari mitra wajib diisi');
-    } else {
-        clearFieldError(tujuanMitra, null);
-    }
-
-    // 12. Metode Pelatihan
+    // 11. Metode Pelatihan
     var metode = document.getElementById('metode_pelatihan');
     if (!metode || !metode.value) {
         reportErr(metode, null, 'Metode pelatihan wajib dipilih');
@@ -1484,15 +1448,7 @@ function validatePengajuanForm() {
         clearFieldError(metode, null);
     }
 
-    // 13. Tujuan Pelatihan
-    var tujuanPelatihan = document.getElementById('tujuan_pelatihan');
-    if (!tujuanPelatihan || !tujuanPelatihan.value.trim()) {
-        reportErr(tujuanPelatihan, null, 'Tujuan pelatihan wajib diisi');
-    } else {
-        clearFieldError(tujuanPelatihan, null);
-    }
-
-    // 14. Pembiayaan (Radio)
+    // 12. Pembiayaan (Radio)
     var pembiayaanSelected = form.querySelector('input[type="radio"][name="pembiayaan"]:checked');
     var pembiayaanGroup = form.querySelector('.pjn-pembiayaan-group');
     if (!pembiayaanSelected) {
@@ -1562,7 +1518,7 @@ function pjnSetupSteps() {
 var PJN_STEP_RULES = [
     { card: 'pjn-step-1', fields: ['pddikti-input', 'jenis_instansi', 'organisasi', 'kota', 'provinsi', 'alamat'] },
     { card: 'pjn-step-2', fields: ['pic', 'email', 'telp'] },
-    { card: 'pjn-step-3', fields: ['tujuan_mitra', 'metode_pelatihan', 'tujuan_pelatihan'], groups: ['.pjn-checkbox-group', '.pjn-pembiayaan-group'] }
+    { card: 'pjn-step-3', fields: ['metode_pelatihan'], groups: ['.pjn-checkbox-group', '.pjn-pembiayaan-group'] }
 ];
 
 function pjnStepFilled(idx) {
