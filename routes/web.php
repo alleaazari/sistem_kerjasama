@@ -2,11 +2,13 @@
 
 use App\Http\Controllers\MitraController;
 use App\Support\LandingCms;
+use App\Support\Wilayah;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 // Default data mitra (dipakai jika belum ada session / belum ada database)
 // DATA DUMMY terpusat ada di App\Support\DataDemo (dipakai MitraController).
@@ -32,8 +34,12 @@ Route::post('/pengajuan', function (Request $request) {
         'instansi' => 'required|string|max:255',
         'jenis_instansi' => 'required|string',
         'organisasi' => 'required|string|max:255',
-        'kota' => 'required|string|max:100',
-        'provinsi' => 'required|string|max:100',
+        'provinsi' => ['required', 'string', 'max:100', Rule::in(Wilayah::provinsi())],
+        'kota' => ['required', 'string', 'max:100', function (string $attribute, mixed $value, Closure $fail) use ($request): void {
+            if (! Wilayah::valid($request->input('provinsi'), is_string($value) ? $value : null)) {
+                $fail('Kota / Kabupaten tidak terdaftar pada provinsi yang dipilih.');
+            }
+        }],
         'alamat' => 'required|string',
         'pic' => 'required|string|max:255',
         'email' => 'required|email|max:255',
@@ -44,8 +50,9 @@ Route::post('/pengajuan', function (Request $request) {
         'instansi.required' => 'Nama Perguruan Tinggi / Instansi wajib diisi.',
         'jenis_instansi.required' => 'Jenis instansi wajib dipilih.',
         'organisasi.required' => 'Unit Kerja / Divisi / Fakultas wajib diisi.',
-        'kota.required' => 'Kota / Kabupaten wajib diisi.',
         'provinsi.required' => 'Provinsi wajib dipilih.',
+        'provinsi.in' => 'Provinsi tidak dikenali.',
+        'kota.required' => 'Kota / Kabupaten wajib dipilih.',
         'alamat.required' => 'Alamat lengkap instansi wajib diisi.',
         'pic.required' => 'Nama lengkap PIC wajib diisi.',
         'email.required' => 'Email resmi PIC wajib diisi.',

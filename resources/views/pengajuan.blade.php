@@ -116,56 +116,41 @@
                 </div>
             </div>
 
+            @php
+                // Sumber tunggal: resources/data/wilayah.json (App\Support\Wilayah).
+                $wilayah = \App\Support\Wilayah::peta();
+                $provinsiTerpilih = (string) old('provinsi', '');
+                if (! isset($wilayah[$provinsiTerpilih])) {
+                    $provinsiTerpilih = '';
+                }
+            @endphp
             <div class="pjn-grid-2">
                 <div class="pjn-field">
-                    <label class="pjn-label" for="kota">Kota / Kabupaten <span class="pjn-required">*</span></label>
-                    <input type="text" id="kota" name="kota" value="{{ old('kota') }}" placeholder="cth. Medan, Bandung, Surabaya" class="pjn-input" required>
+                    <label class="pjn-label" for="provinsi">Provinsi <span class="pjn-required">*</span></label>
+                    <select id="provinsi" name="provinsi" class="pjn-input" required
+                            aria-describedby="provinsi-hint" autocomplete="address-level1">
+                        <option value="">-- Pilih Provinsi --</option>
+                        @foreach ($wilayah as $namaProvinsi => $daftarKota)
+                        <option value="{{ $namaProvinsi }}" {{ $provinsiTerpilih === $namaProvinsi ? 'selected' : '' }}>{{ $namaProvinsi }}</option>
+                        @endforeach
+                    </select>
+                    <p class="pjn-hint" id="provinsi-hint">Ketik untuk mencari nama provinsi.</p>
                 </div>
                 <div class="pjn-field">
-                    <label class="pjn-label" for="provinsi">Provinsi <span class="pjn-required">*</span></label>
-                    <select id="provinsi" name="provinsi" class="pjn-input" required>
-                        <option value="">-- Pilih Provinsi --</option>
-                        <option value="Aceh" {{ old('provinsi')=='Aceh'?'selected':'' }}>Aceh</option>
-                        <option value="Sumatera Utara" {{ old('provinsi')=='Sumatera Utara'?'selected':'' }}>Sumatera Utara</option>
-                        <option value="Sumatera Barat" {{ old('provinsi')=='Sumatera Barat'?'selected':'' }}>Sumatera Barat</option>
-                        <option value="Riau" {{ old('provinsi')=='Riau'?'selected':'' }}>Riau</option>
-                        <option value="Kepulauan Riau" {{ old('provinsi')=='Kepulauan Riau'?'selected':'' }}>Kepulauan Riau</option>
-                        <option value="Jambi" {{ old('provinsi')=='Jambi'?'selected':'' }}>Jambi</option>
-                        <option value="Kepulauan Bangka Belitung" {{ old('provinsi')=='Kepulauan Bangka Belitung'?'selected':'' }}>Kepulauan Bangka Belitung</option>
-                        <option value="Sumatera Selatan" {{ old('provinsi')=='Sumatera Selatan'?'selected':'' }}>Sumatera Selatan</option>
-                        <option value="Bengkulu" {{ old('provinsi')=='Bengkulu'?'selected':'' }}>Bengkulu</option>
-                        <option value="Lampung" {{ old('provinsi')=='Lampung'?'selected':'' }}>Lampung</option>
-                        <option value="Banten" {{ old('provinsi')=='Banten'?'selected':'' }}>Banten</option>
-                        <option value="DKI Jakarta" {{ old('provinsi')=='DKI Jakarta'?'selected':'' }}>DKI Jakarta</option>
-                        <option value="Jawa Barat" {{ old('provinsi')=='Jawa Barat'?'selected':'' }}>Jawa Barat</option>
-                        <option value="Jawa Tengah" {{ old('provinsi')=='Jawa Tengah'?'selected':'' }}>Jawa Tengah</option>
-                        <option value="DI Yogyakarta" {{ old('provinsi')=='DI Yogyakarta'?'selected':'' }}>DI Yogyakarta</option>
-                        <option value="Jawa Timur" {{ old('provinsi')=='Jawa Timur'?'selected':'' }}>Jawa Timur</option>
-                        <option value="Bali" {{ old('provinsi')=='Bali'?'selected':'' }}>Bali</option>
-                        <option value="Nusa Tenggara Barat" {{ old('provinsi')=='Nusa Tenggara Barat'?'selected':'' }}>Nusa Tenggara Barat</option>
-                        <option value="Nusa Tenggara Timur" {{ old('provinsi')=='Nusa Tenggara Timur'?'selected':'' }}>Nusa Tenggara Timur</option>
-                        <option value="Kalimantan Barat" {{ old('provinsi')=='Kalimantan Barat'?'selected':'' }}>Kalimantan Barat</option>
-                        <option value="Kalimantan Tengah" {{ old('provinsi')=='Kalimantan Tengah'?'selected':'' }}>Kalimantan Tengah</option>
-                        <option value="Kalimantan Selatan" {{ old('provinsi')=='Kalimantan Selatan'?'selected':'' }}>Kalimantan Selatan</option>
-                        <option value="Kalimantan Timur" {{ old('provinsi')=='Kalimantan Timur'?'selected':'' }}>Kalimantan Timur</option>
-                        <option value="Kalimantan Utara" {{ old('provinsi')=='Kalimantan Utara'?'selected':'' }}>Kalimantan Utara</option>
-                        <option value="Sulawesi Utara" {{ old('provinsi')=='Sulawesi Utara'?'selected':'' }}>Sulawesi Utara</option>
-                        <option value="Gorontalo" {{ old('provinsi')=='Gorontalo'?'selected':'' }}>Gorontalo</option>
-                        <option value="Sulawesi Tengah" {{ old('provinsi')=='Sulawesi Tengah'?'selected':'' }}>Sulawesi Tengah</option>
-                        <option value="Sulawesi Barat" {{ old('provinsi')=='Sulawesi Barat'?'selected':'' }}>Sulawesi Barat</option>
-                        <option value="Sulawesi Selatan" {{ old('provinsi')=='Sulawesi Selatan'?'selected':'' }}>Sulawesi Selatan</option>
-                        <option value="Sulawesi Tenggara" {{ old('provinsi')=='Sulawesi Tenggara'?'selected':'' }}>Sulawesi Tenggara</option>
-                        <option value="Maluku" {{ old('provinsi')=='Maluku'?'selected':'' }}>Maluku</option>
-                        <option value="Maluku Utara" {{ old('provinsi')=='Maluku Utara'?'selected':'' }}>Maluku Utara</option>
-                        <option value="Papua Barat" {{ old('provinsi')=='Papua Barat'?'selected':'' }}>Papua Barat</option>
-                        <option value="Papua" {{ old('provinsi')=='Papua'?'selected':'' }}>Papua</option>
-                        <option value="Papua Tengah" {{ old('provinsi')=='Papua Tengah'?'selected':'' }}>Papua Tengah</option>
-                        <option value="Papua Pegunungan" {{ old('provinsi')=='Papua Pegunungan'?'selected':'' }}>Papua Pegunungan</option>
-                        <option value="Papua Selatan" {{ old('provinsi')=='Papua Selatan'?'selected':'' }}>Papua Selatan</option>
-                        <option value="Papua Barat Daya" {{ old('provinsi')=='Papua Barat Daya'?'selected':'' }}>Papua Barat Daya</option>
+                    <label class="pjn-label" for="kota">Kota / Kabupaten <span class="pjn-required">*</span></label>
+                    <select id="kota" name="kota" class="pjn-input" required
+                            data-terpilih="{{ (string) old('kota', '') }}"
+                            @if ($provinsiTerpilih === '') disabled @endif
+                            aria-describedby="kota-hint" autocomplete="address-level2">
+                        <option value="">-- Pilih Kota / Kabupaten --</option>
+                        @foreach (($wilayah[$provinsiTerpilih] ?? []) as $namaKota)
+                        <option value="{{ $namaKota }}" {{ old('kota') === $namaKota ? 'selected' : '' }}>{{ $namaKota }}</option>
+                        @endforeach
                     </select>
+                    <p class="pjn-hint" id="kota-hint">Pilih provinsi dulu, lalu pilih kota/kabupaten.</p>
                 </div>
             </div>
+            <p class="sr-only" id="wilayah-status" role="status" aria-live="polite"></p>
 
             <div class="pjn-field">
                 <label class="pjn-label" for="alamat">Alamat Lengkap Instansi <span class="pjn-required">*</span></label>
@@ -627,6 +612,18 @@ textarea.pjn-input.is-invalid {
 .pjn-input:focus {
     border-color: #1d4ed8;
     box-shadow: 0 0 0 3px rgba(29,78,216,0.12);
+}
+.pjn-input:disabled {
+    background: #f1f5f9;
+    color: #64748b;
+    cursor: not-allowed;
+}
+select.pjn-input {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 38px;
 }
 .pjn-input::placeholder { color: #94a3b8; }
 textarea.pjn-input { resize: vertical; min-height: 90px; }
@@ -1185,18 +1182,8 @@ function selectPT(id, nama, kota, provinsi, jenis) {
     document.getElementById('pddikti-id').value = id;
     document.getElementById('pddikti-dropdown').style.display = 'none';
 
-    // Auto-fill kota & provinsi if empty
-    var kotaField = document.getElementById('kota');
-    var provField = document.getElementById('provinsi');
-    if (kotaField && !kotaField.value && kota) kotaField.value = kota;
-    if (provField && !provField.value) {
-        for (var i = 0; i < provField.options.length; i++) {
-            if (provField.options[i].value.toLowerCase().indexOf(provinsi.toLowerCase()) !== -1 ||
-                provinsi.toLowerCase().indexOf(provField.options[i].value.toLowerCase()) !== -1) {
-                provField.selectedIndex = i; break;
-            }
-        }
-    }
+    // Auto-fill provinsi & kota dari hasil PDDIKTI; dropdown ikut disinkronkan.
+    sinkronWilayah(provinsi, kota);
 
     var info = document.getElementById('pddikti-selected-info');
     info.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#1d4ed8" stroke-width="2"/><path d="M9 12l2 2 4-4" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Terverifikasi: <b>' + escHtml(nama) + '</b>' + (kota ? ' &mdash; ' + escHtml(kota) : '') + '</span>';
@@ -1380,20 +1367,20 @@ function validatePengajuanForm() {
         clearFieldError(org, null);
     }
 
-    // 4. Kota
-    var kota = document.getElementById('kota');
-    if (!kota || !kota.value.trim()) {
-        reportErr(kota, null, 'Kota / Kabupaten wajib diisi');
-    } else {
-        clearFieldError(kota, null);
-    }
-
-    // 5. Provinsi
+    // 4. Provinsi
     var prov = document.getElementById('provinsi');
     if (!prov || !prov.value) {
         reportErr(prov, null, 'Provinsi wajib dipilih');
     } else {
         clearFieldError(prov, null);
+    }
+
+    // 5. Kota / Kabupaten (bergantung pada provinsi terpilih)
+    var kota = document.getElementById('kota');
+    if (!kota || kota.disabled || !kota.value.trim()) {
+        reportErr(kota, null, 'Kota / Kabupaten wajib dipilih setelah provinsi');
+    } else {
+        clearFieldError(kota, null);
     }
 
     // 6. Alamat
@@ -1561,9 +1548,132 @@ function pjnUpdateSteps() {
     }
 }
 
+/* =================== WILAYAH BERTINGKAT (PROVINSI → KOTA) =================== */
+// Data ditanam di halaman dari resources/data/wilayah.json (App\Support\Wilayah),
+// jadi tidak ada unduhan tambahan saat runtime.
+var WILAYAH_DATA = @json($wilayah);
+var WILAYAH_LABEL_KOSONG = '-- Pilih Kota / Kabupaten --';
+
+function wilayahStatus(teks) {
+    var s = document.getElementById('wilayah-status');
+    if (s) s.textContent = teks;
+}
+
+function isiDropdownKota(namaProvinsi, pilihan) {
+    var kota = document.getElementById('kota');
+    if (!kota) return;
+
+    var daftar = (namaProvinsi && WILAYAH_DATA[namaProvinsi]) ? WILAYAH_DATA[namaProvinsi] : [];
+
+    while (kota.options.length > 0) kota.remove(0);
+
+    var kosong = document.createElement('option');
+    kosong.value = '';
+    kosong.textContent = daftar.length > 0 ? WILAYAH_LABEL_KOSONG : '-- Provinsi belum dipilih --';
+    kota.appendChild(kosong);
+
+    daftar.forEach(function (nama) {
+        var opt = document.createElement('option');
+        opt.value = nama;
+        opt.textContent = nama;
+        kota.appendChild(opt);
+    });
+
+    kota.disabled = daftar.length === 0;
+    kota.value = (pilihan && daftar.indexOf(pilihan) !== -1) ? pilihan : '';
+
+    wilayahStatus(daftar.length > 0
+        ? daftar.length + ' kota/kabupaten dimuat untuk ' + namaProvinsi + '.'
+        : 'Pilih provinsi untuk memuat kota/kabupaten.');
+}
+
+function sinkronWilayah(provinsi, kota) {
+    var prov = document.getElementById('provinsi');
+    if (!prov) return;
+
+    var cocok = '';
+    Array.prototype.slice.call(prov.options).forEach(function (opt) {
+        if (cocok) return;
+        var nilai = opt.value.toLowerCase();
+        var cari = String(provinsi || '').toLowerCase().trim();
+        if (nilai && cari && (nilai === cari || nilai.indexOf(cari) !== -1 || cari.indexOf(nilai) !== -1)) {
+            cocok = opt.value;
+        }
+    });
+
+    // Hanya isi otomatis bila belum ada provinsi terpilih.
+    if (!prov.value && cocok) prov.value = cocok;
+
+    isiDropdownKota(prov.value, kota || '');
+}
+
+// Ketik-untuk-mencari pada <select> provinsi (native, tanpa pustaka).
+function pasangCariProvinsi() {
+    var prov = document.getElementById('provinsi');
+    if (!prov) return;
+
+    var buffer = '';
+    var timer = null;
+
+    prov.addEventListener('keydown', function (e) {
+        if (e.key.length !== 1 && e.key !== 'Backspace') return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+        buffer = e.key === 'Backspace' ? '' : buffer + e.key.toLowerCase();
+        if (buffer.length === 0 || buffer.length > 3) { buffer = ''; return; }
+        if (e.key.length === 1) e.preventDefault();
+
+        clearTimeout(timer);
+        timer = setTimeout(function () { buffer = ''; }, 1200);
+
+        var opsi = Array.prototype.slice.call(prov.options);
+        if (buffer.length === 1) {
+            var awal = opsi.findIndex(function (opt) {
+                return opt.value && opt.value.toLowerCase().charAt(0) === buffer;
+            });
+            if (awal !== -1) {
+                prov.selectedIndex = awal;
+                prov.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            return;
+        }
+
+        var cocok = opsi.findIndex(function (opt) {
+            return opt.value && opt.value.toLowerCase().indexOf(buffer) === 0;
+        });
+        if (cocok !== -1) {
+            prov.selectedIndex = cocok;
+            prov.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    });
+}
+
+function pasangWilayahBertingkat() {
+    var prov = document.getElementById('provinsi');
+    var kota = document.getElementById('kota');
+    if (!prov || !kota) return;
+
+    // Keadaan awal: hormati nilai old() setelah validasi gagal.
+    isiDropdownKota(prov.value, kota.getAttribute('data-terpilih') || kota.value);
+    pasangCariProvinsi();
+
+    prov.addEventListener('change', function () {
+        // Provinsi berubah: kota selalu direset agar tidak ada kombinasi palsu.
+        isiDropdownKota(prov.value, '');
+        if (kota.value) kota.value = '';
+        pjnUpdateSteps();
+    });
+
+    kota.addEventListener('change', function () {
+        if (kota.value) clearFieldError(kota, null);
+        pjnUpdateSteps();
+    });
+}
+
 // Real-time input error clearing & draft auto-save
 document.addEventListener('DOMContentLoaded', function() {
     restoreDraft();
+    pasangWilayahBertingkat();
     pjnSetupSteps();
     pjnUpdateSteps();
 
@@ -1582,7 +1692,9 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('change', function(e) {
         var el = e.target;
         if (el) {
-            if (el.type === 'checkbox' && el.name === 'bidang[]') {
+            if (el.id === 'provinsi') {
+                // Perubahan provinsi sudah ditangani pasangWilayahBertingkat().
+            } else if (el.type === 'checkbox' && el.name === 'bidang[]') {
                 var bidangGroup = form.querySelector('.pjn-checkbox-group');
                 var anyChecked = form.querySelectorAll('input[type="checkbox"][name="bidang[]"]:checked').length > 0;
                 if (anyChecked) clearFieldError(null, bidangGroup);

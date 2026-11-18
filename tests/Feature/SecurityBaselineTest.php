@@ -38,7 +38,7 @@ test('pengajuan submission is rate limited', function () {
         'instansi' => 'Universitas Uji',
         'jenis_instansi' => 'perguruan_tinggi',
         'organisasi' => 'Fakultas Ilmu Komputer',
-        'kota' => 'Medan',
+        'kota' => 'Kota Medan',
         'provinsi' => 'Sumatera Utara',
         'alamat' => 'Jl. Uji No. 1',
         'pic' => 'Budi',
