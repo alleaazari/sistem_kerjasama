@@ -71,6 +71,10 @@
             <div>
                 <p class="status-eyebrow" id="judul-status">Status Kemitraan Komdigi</p>
                 <h2 class="status-instansi">{{ $mitra['instansi'] }}</h2>
+                <p class="status-bidang">
+                    <span class="status-bidang-kode">Bidang: {{ $bidang['kode'] !== '' ? $bidang['kode'] : '-' }}</span>
+                    <span class="status-bidang-label">{{ $bidang['label'] !== '' ? $bidang['label'] : '-' }}</span>
+                </p>
             </div>
             <span class="status-badge">{{ $status['label'] }}</span>
         </div>
@@ -126,7 +130,7 @@
             </div>
             <div class="summary-item">
                 <dt>Bidang kerja sama</dt>
-                <dd>{{ \App\Support\BidangKerjasama::label($mitra['bidang'] ?? '') ?: '-' }}</dd>
+                <dd>{{ $bidang['label'] !== '' ? $bidang['label'] : '-' }}</dd>
             </div>
             <div class="summary-item">
                 <dt>Penanggung jawab (PIC)</dt>

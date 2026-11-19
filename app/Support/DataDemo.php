@@ -26,7 +26,6 @@ final class DataDemo
             'username' => 'user1',
             'instansi' => 'Pemerintah Provinsi Jawa Barat (DATA DUMMY)',
             'organisasi' => 'Dinas Komunikasi dan Informatika',
-            'bidang' => 'VSGA',
             'pic' => 'Rina Wulandari, S.STP., M.Si.',
             'email' => 'rina@jabarprov.go.id',
             'telp' => '081234567890',

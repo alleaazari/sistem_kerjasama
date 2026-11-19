@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use Illuminate\Support\Str;
+
 /**
  * Penyimpanan pengajuan kerja sama (mode demo: satu berkas JSON).
  *
@@ -58,6 +60,30 @@ final class PengajuanMasuk
             self::path(),
             json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
         );
+    }
+
+    /**
+     * Pengajuan milik satu akun mitra, dicocokkan dari email PIC (alamat
+     * pengiriman kredensial). Pemanggil hanya boleh mengirim email dari
+     * session, bukan dari parameter URL.
+     *
+     * @return array<string, mixed>|null
+     */
+    public static function untukEmail(string $email): ?array
+    {
+        $email = Str::lower(trim($email));
+
+        if ($email === '') {
+            return null;
+        }
+
+        foreach (self::all() as $baris) {
+            if (Str::lower(trim((string) ($baris['email'] ?? ''))) === $email) {
+                return $baris;
+            }
+        }
+
+        return null;
     }
 
     /**

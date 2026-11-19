@@ -27,6 +27,10 @@ final class BidangKerjasama
     /** Label untuk kode tersimpan; string kosong bila kode tidak dikenal. */
     public static function label(mixed $kode): string
     {
+        if (! is_string($kode) && ! is_int($kode)) {
+            return '';
+        }
+
         return self::daftar()[(string) $kode] ?? '';
     }
 }

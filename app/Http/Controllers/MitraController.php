@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateProfilRequest;
+use App\Support\BidangKerjasama;
 use App\Support\DataDemo;
+use App\Support\PengajuanMasuk;
 use App\Support\PermohonanPerpanjangan;
 use App\Support\StatusKerjasama;
 use Carbon\CarbonImmutable;
@@ -39,6 +41,27 @@ class MitraController extends Controller
         $request->session()->put('mitra_data', $data);
     }
 
+    /**
+     * Bidang kerja sama milik mitra ini, dicari dari pengajuan dengan email
+     * PIC yang sama dengan identitas session. Tidak memakai id/parameter URL.
+     *
+     * @param  array<string, mixed>  $mitra
+     * @return array{kode: string, label: string}
+     */
+    private function bidang(array $mitra): array
+    {
+        $pengajuan = PengajuanMasuk::untukEmail((string) ($mitra['email'] ?? ''));
+        $kode = $pengajuan['bidang'] ?? null;
+
+        // Data lama bisa berupa array atau teks bebas; anggap tidak ada.
+        $kode = is_string($kode) ? $kode : '';
+        $label = BidangKerjasama::label($kode);
+
+        return $kode !== '' && $label !== ''
+            ? ['kode' => $kode, 'label' => $label]
+            : ['kode' => '', 'label' => ''];
+    }
+
     /** Kunci session untuk permohonan perpanjangan (demo). */
     public function status(Request $request): View
     {
@@ -69,6 +92,7 @@ class MitraController extends Controller
 
         return view('user.status', [
             'mitra' => $mitra,
+            'bidang' => $this->bidang($mitra),
             'status' => $status,
             'perpanjangan' => $perpanjangan,
             'pratinjau' => $pratinjau,
@@ -115,7 +139,9 @@ class MitraController extends Controller
 
     public function profil(Request $request): View
     {
-        return view('user.profile', ['mitra' => $this->mitra($request)]);
+        $mitra = $this->mitra($request);
+
+        return view('user.profile', ['mitra' => $mitra, 'bidang' => $this->bidang($mitra)]);
     }
 
     /**
