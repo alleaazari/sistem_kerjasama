@@ -22,7 +22,7 @@ function payloadPengajuan(): array
         'pic' => 'Budi',
         'email' => 'budi@gmail.com',
         'telp' => '0812000000',
-        'bidang' => ['dts', 'skkni'],
+        'bidang' => 'VSGA',
         'metode_pelatihan' => 'hybrid',
         'pembiayaan' => 'cost_sharing',
     ];
@@ -91,7 +91,7 @@ test('pengajuan menyimpan field baru beserta bidang dan pembiayaan', function ()
     expect($data['jenis_instansi'])->toBe('perguruan_tinggi')
         ->and($data['metode_pelatihan'])->toBe('hybrid')
         ->and($data['pembiayaan'])->toBe('cost_sharing')
-        ->and($data['bidang'])->toBe(['dts', 'skkni'])
+        ->and($data['bidang'])->toBe('VSGA')
         ->and($data['status'])->toBe('Menunggu');
 
     File::deleteDirectory($temp);

@@ -23,7 +23,7 @@ function payloadWilayah(string $provinsi, string $kota): array
         'pic' => 'Budi',
         'email' => 'budi@gmail.com',
         'telp' => '0812000000',
-        'bidang' => ['dts'],
+        'bidang' => 'VSGA',
         'metode_pelatihan' => 'hybrid',
         'pembiayaan' => 'apbn',
     ];

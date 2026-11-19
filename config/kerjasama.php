@@ -18,4 +18,18 @@ return [
         'yahoo.co.id',
         '.ac.id',
     ],
+
+    /*
+    |----------------------------------------------------------------------
+    | Bidang kerja sama yang diminati
+    |----------------------------------------------------------------------
+    | Kunci = kode yang disimpan di data & divalidasi server.
+    | Nilai = label resmi yang tampil di form, halaman mitra, dan draf MoU.
+    | Menambah bidang cukup menambah satu baris di sini.
+    */
+    'bidang' => [
+        'VSGA' => 'Vocational School Graduate Academy (VSGA)',
+        'GTA' => 'Government Transformation Academy (GTA)',
+        // TODO: bidang ketiga ditentukan mentor
+    ],
 ];

@@ -217,31 +217,17 @@
         <div class="pjn-card-body">
 
             <div class="pjn-field">
-                <label class="pjn-label">Bidang Kerja Sama yang Diminati <span class="pjn-required">*</span></label>
-                <div class="pjn-checkbox-group">
-                    @php
-                    $bidang_options = [
-                        'dts' => 'Digital Talent Scholarship (DTS)',
-                        'gta' => 'Government Transformation Academy (GTA)',
-                        'vsga' => 'Vocational School Graduate Academy (VSGA)',
-                        'skkni' => 'Fasilitasi Uji Kompetensi SKKNI',
-                        'pelatihan' => 'Pelatihan Teknis TIK',
-                        'infrastruktur' => 'Infrastruktur & Jaringan Telekomunikasi',
-                        'spbe' => 'Sistem Pemerintahan Berbasis Elektronik (SPBE)',
-                        'riset' => 'Riset & Inovasi Bersama',
-                        'literasi' => 'Literasi Digital Masyarakat',
-                        'lainnya' => 'Lainnya',
-                    ];
-                    $old_bidang = old('bidang', []);
-                    @endphp
-                    @foreach($bidang_options as $val => $label)
+                <span class="pjn-label" id="bidang-label">Bidang Kerja Sama yang Diminati <span class="pjn-required">*</span></span>
+                <div class="pjn-checkbox-group" role="radiogroup" aria-labelledby="bidang-label" aria-required="true">
+                    @foreach (\App\Support\BidangKerjasama::daftar() as $kode => $label)
                     <label class="pjn-checkbox-label">
-                        <input type="checkbox" name="bidang[]" value="{{ $val }}" {{ in_array($val, $old_bidang) ? 'checked' : '' }} class="pjn-checkbox">
+                        <input type="radio" name="bidang" value="{{ $kode }}" {{ old('bidang') === $kode ? 'checked' : '' }} class="pjn-checkbox" required>
                         <span class="pjn-checkbox-custom"></span>
                         {{ $label }}
                     </label>
                     @endforeach
                 </div>
+                @error('bidang')<p class="pjn-field-error">{{ $message }}</p>@enderror
             </div>
 
 <div class="pjn-field">
@@ -766,7 +752,16 @@ textarea.pjn-input { resize: vertical; min-height: 90px; }
     transform: translateY(1px);
     box-shadow: none;
 }
-.pjn-checkbox { display: none; }
+/* Input asli tetap ada di DOM agar bisa difokus keyboard (radio: panah kiri/kanan). */
+.pjn-checkbox {
+    position: absolute;
+    width: 1px; height: 1px;
+    opacity: 0;
+}
+.pjn-checkbox:focus-visible ~ .pjn-checkbox-custom {
+    outline: 3px solid #1d4ed8;
+    outline-offset: 2px;
+}
 .pjn-checkbox-custom {
     width: 18px; height: 18px;
     border: 2px solid #cbd5e1;
@@ -1243,12 +1238,9 @@ function saveDraft() {
             if (inp.name) data[inp.name] = inp.value;
         });
 
-        // Checkboxes
-        var checks = form.querySelectorAll('input[type="checkbox"][name="bidang[]"]:checked');
-        data['bidang'] = [];
-        checks.forEach(function(cb) {
-            data['bidang'].push(cb.value);
-        });
+        // Bidang kerja sama (radio tunggal)
+        var bidangTerpilih = form.querySelector('input[type="radio"][name="bidang"]:checked');
+        if (bidangTerpilih) data['bidang'] = bidangTerpilih.value;
 
         // Radio
         var selectedRadio = form.querySelector('input[type="radio"][name="pembiayaan"]:checked');
@@ -1277,11 +1269,9 @@ function restoreDraft() {
         if (!form) return;
 
         Object.keys(data).forEach(function(key) {
-            if (key === 'bidang' && Array.isArray(data[key])) {
-                data[key].forEach(function(val) {
-                    var cb = form.querySelector('input[type="checkbox"][name="bidang[]"][value="' + val + '"]');
-                    if (cb) cb.checked = true;
-                });
+            if (key === 'bidang') {
+                var rb = form.querySelector('input[type="radio"][name="bidang"][value="' + data[key] + '"]');
+                if (rb) rb.checked = true;
             } else if (key === 'pembiayaan') {
                 var rad = form.querySelector('input[type="radio"][name="pembiayaan"][value="' + data[key] + '"]');
                 if (rad) rad.checked = true;
@@ -1302,7 +1292,9 @@ function setFieldError(fieldEl, groupEl, msg) {
     if (fieldEl) fieldEl.classList.add('is-invalid');
     if (groupEl) groupEl.classList.add('pjn-group-invalid');
 
-    var parent = groupEl || fieldEl.closest('.pjn-field') || fieldEl.parentElement;
+    var parent = groupEl
+        ? (groupEl.closest('.pjn-field') || groupEl)
+        : (fieldEl.closest('.pjn-field') || fieldEl.parentElement);
     if (!parent) return;
 
     var existingErr = parent.querySelector('.pjn-field-error');
@@ -1314,7 +1306,9 @@ function setFieldError(fieldEl, groupEl, msg) {
         errDiv.querySelector('span').textContent = msg;
         parent.appendChild(errDiv);
     } else {
-        existingErr.querySelector('span').textContent = msg;
+        var span = existingErr.querySelector('span');
+        if (span) span.textContent = msg;
+        else existingErr.textContent = msg;
     }
 }
 
@@ -1323,7 +1317,9 @@ function clearFieldError(fieldEl, groupEl) {
     if (fieldEl) fieldEl.classList.remove('is-invalid');
     if (groupEl) groupEl.classList.remove('pjn-group-invalid');
 
-    var parent = groupEl || (fieldEl ? (fieldEl.closest('.pjn-field') || fieldEl.parentElement) : null);
+    var parent = groupEl
+        ? (groupEl.closest('.pjn-field') || groupEl)
+        : (fieldEl ? (fieldEl.closest('.pjn-field') || fieldEl.parentElement) : null);
     if (parent) {
         var existingErr = parent.querySelector('.pjn-field-error');
         if (existingErr) existingErr.remove();
@@ -1463,11 +1459,11 @@ function validatePengajuanForm() {
         clearFieldError(telp, null);
     }
 
-    // 10. Bidang Kerja Sama (Checkbox min 1)
-    var bidangChecked = form.querySelectorAll('input[type="checkbox"][name="bidang[]"]:checked');
+    // 10. Bidang Kerja Sama (radio, wajib satu)
+    var bidangDipilih = form.querySelector('input[type="radio"][name="bidang"]:checked');
     var bidangGroup = form.querySelector('.pjn-checkbox-group');
-    if (bidangChecked.length === 0) {
-        reportErr(null, bidangGroup, 'Pilih minimal salah satu bidang kerja sama yang diminati');
+    if (!bidangDipilih) {
+        reportErr(null, bidangGroup, 'Pilih bidang kerja sama yang diminati');
     } else {
         clearFieldError(null, bidangGroup);
     }
@@ -1569,9 +1565,7 @@ function pjnStepFilled(idx) {
     (rule.groups || []).forEach(function (sel) {
         var group = document.querySelector(sel);
         if (!group) return;
-        var any = sel.indexOf('checkbox') !== -1
-            ? group.querySelectorAll('input[type="checkbox"]:checked').length > 0
-            : group.querySelectorAll('input[type="radio"]:checked').length > 0;
+        var any = group.querySelectorAll('input:checked').length > 0;
         filled = filled && any;
     });
 
@@ -1745,10 +1739,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (el) {
             if (el.id === 'provinsi') {
                 // Perubahan provinsi sudah ditangani pasangWilayahBertingkat().
-            } else if (el.type === 'checkbox' && el.name === 'bidang[]') {
+            } else if (el.type === 'radio' && el.name === 'bidang') {
                 var bidangGroup = form.querySelector('.pjn-checkbox-group');
-                var anyChecked = form.querySelectorAll('input[type="checkbox"][name="bidang[]"]:checked').length > 0;
-                if (anyChecked) clearFieldError(null, bidangGroup);
+                clearFieldError(null, bidangGroup);
             } else if (el.type === 'radio' && el.name === 'pembiayaan') {
                 var pembiayaanGroup = form.querySelector('.pjn-pembiayaan-group');
                 clearFieldError(null, pembiayaanGroup);

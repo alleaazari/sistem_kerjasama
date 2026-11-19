@@ -53,7 +53,7 @@ Route::post('/pengajuan', function (StorePengajuanRequest $request) {
         'telp' => $request->input('telp'),
         'metode_pelatihan' => $request->input('metode_pelatihan'),
         'pembiayaan' => $request->input('pembiayaan'),
-        'bidang' => $request->input('bidang', []),
+        'bidang' => $request->input('bidang'),
         'jenis_instansi' => $request->input('jenis_instansi'),
         'kota' => $request->input('kota'),
         'provinsi' => $request->input('provinsi'),

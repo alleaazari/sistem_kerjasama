@@ -24,6 +24,7 @@
         'Jabatan' => $jabatan,
         'Instansi' => $instansi,
         'Unit kerja' => $unitKerja,
+        'Bidang kerja sama' => \App\Support\BidangKerjasama::label($mitra['bidang'] ?? ''),
         'Alamat' => $alamat,
         'Kota / kabupaten' => $kota,
         'Provinsi' => $provinsi,

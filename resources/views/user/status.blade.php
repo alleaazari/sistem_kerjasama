@@ -125,6 +125,10 @@
                 <dd>{{ $mitra['organisasi'] }}</dd>
             </div>
             <div class="summary-item">
+                <dt>Bidang kerja sama</dt>
+                <dd>{{ \App\Support\BidangKerjasama::label($mitra['bidang'] ?? '') ?: '-' }}</dd>
+            </div>
+            <div class="summary-item">
                 <dt>Penanggung jawab (PIC)</dt>
                 <dd>{{ $mitra['pic'] }}</dd>
             </div>

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Support\AturanPic;
+use App\Support\BidangKerjasama;
 use App\Support\Wilayah;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
@@ -43,6 +44,7 @@ class StorePengajuanRequest extends FormRequest
                 }
             }],
             'alamat' => 'required|string',
+            'bidang' => ['required', 'string', Rule::in(BidangKerjasama::kode())],
             'metode_pelatihan' => 'required|string',
             'pembiayaan' => 'required|string',
         ], AturanPic::rules());
@@ -59,6 +61,9 @@ class StorePengajuanRequest extends FormRequest
             'provinsi.in' => 'Provinsi tidak dikenali.',
             'kota.required' => 'Kota / Kabupaten wajib dipilih.',
             'alamat.required' => 'Alamat lengkap instansi wajib diisi.',
+            'bidang.required' => 'Bidang kerja sama wajib dipilih.',
+            'bidang.string' => 'Bidang kerja sama tidak valid.',
+            'bidang.in' => 'Bidang kerja sama tidak dikenali.',
             'metode_pelatihan.required' => 'Metode pelatihan wajib dipilih.',
             'pembiayaan.required' => 'Skema pembiayaan (APBD / APBN / Cost Sharing) wajib dipilih.',
         ]);

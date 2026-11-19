@@ -44,6 +44,7 @@ test('pengajuan submission is rate limited', function () {
         'pic' => 'Budi',
         'email' => 'budi@gmail.com',
         'telp' => '0812000000',
+        'bidang' => 'VSGA',
         'metode_pelatihan' => 'daring',
         'pembiayaan' => 'APBN',
     ];

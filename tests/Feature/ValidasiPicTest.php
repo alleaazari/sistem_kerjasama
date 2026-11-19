@@ -34,7 +34,7 @@ function payloadPic(): array
         'jabatan_pic' => 'Wakil Rektor IV, Kepala Biro',
         'email' => 'budi@gmail.com',
         'telp' => '081234567890',
-        'bidang' => ['dts'],
+        'bidang' => 'VSGA',
         'metode_pelatihan' => 'hybrid',
         'pembiayaan' => 'apbn',
     ];

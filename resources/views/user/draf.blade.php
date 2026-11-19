@@ -17,10 +17,9 @@
                 <div class="row">
                     <label for="kategori_ks">Kategori Bidang Kerjasama</label>
                     <select id="kategori_ks">
-                        <option value="Pelatihan Literasi Digital & Digital Talent Scholarship (DTS)">Pelatihan Literasi Digital &amp; Digital Talent Scholarship (DTS)</option>
-                        <option value="Perluasan Infrastruktur Telekomunikasi & Jaringan Sinyal">Perluasan Infrastruktur Telekomunikasi &amp; Jaringan Sinyal</option>
-                        <option value="Program Magang, Uji Kompetensi SKKNI & Beasiswa SDM">Program Magang, Uji Kompetensi SKKNI &amp; Beasiswa SDM</option>
-                        <option value="Pengembangan Sistem Pemerintahan Berbasis Elektronik (SPBE) & Smart City">Pengembangan SPBE &amp; Smart City Daerah</option>
+                        @foreach (\App\Support\BidangKerjasama::daftar() as $kode => $label)
+                        <option value="{{ $kode }}">{{ $label }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="row">
@@ -106,6 +105,9 @@
         var duration = document.getElementById('durasi_ks').value;
         var target = document.getElementById('target_peserta').value;
         var goal = document.getElementById('tujuan_ks').value;
+        // Kode bidang dari config; dokumen memakai label resminya.
+        var labelBidang = @json(\App\Support\BidangKerjasama::daftar());
+        var categoryLabel = labelBidang[category] || category;
 
         progressFill.style.width = '30%';
         stepTitle.textContent = 'Step 1/3: Menganalisis Visi Misi Komdigi & BPSDM...';
@@ -138,7 +140,7 @@
                 <div style="text-align:center;margin-bottom:20px;">
                     <h4 style="font-size:15px;font-weight:700;text-transform:uppercase;color:#0b3a6b;margin-bottom:4px;">DRAF NOTA KESEPAHAMAN (MEMORANDUM OF UNDERSTANDING)</h4>
                     <div style="font-size:12px;color:#64748b;">Nomor: 045/KS/KOMDIGI/${new Date().getFullYear()} &nbsp;|&nbsp; Nomor Mitra: 012/DISCOM/${new Date().getFullYear()}</div>
-                    <div style="font-size:12px;font-weight:600;color:#1d4ed8;margin-top:2px;">TENTANG: ${category.toUpperCase()}</div>
+                    <div style="font-size:12px;font-weight:600;color:#1d4ed8;margin-top:2px;">TENTANG: ${categoryLabel.toUpperCase()}</div>
                 </div>
 
                 <p style="text-align:justify;">Pada hari ini, <b>Selasa</b> tanggal <b>Dua Belas</b> bulan <b>Oktober</b> tahun <b>Dua Ribu Dua Puluh Enam</b>, bertempat di Jakarta, kami yang bertanda tangan di bawah ini:</p>
@@ -156,7 +158,7 @@
                 <h5 style="color:#0b3a6b;font-size:13px;margin-top:14px;">PASAL 2: RUANG LINGKUP KERJA SAMA</h5>
                 <p>Ruang lingkup kerjasama ini meliputi:</p>
                 <ul>
-                    <li>Penyelenggaraan ${category} dengan target sasaran ${target}.</li>
+                    <li>Penyelenggaraan ${categoryLabel} dengan target sasaran ${target}.</li>
                     <li>Fasilitasi sarana infrastruktur digital, modul pembelajaran, serta penguji kompetensi bersertifikat SKKNI.</li>
                     <li>Pertukaran data, informasi, dan riset teknologi informasi berbasis Sistem Pemerintahan Berbasis Elektronik (SPBE).</li>
                 </ul>
