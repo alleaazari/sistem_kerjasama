@@ -1,14 +1,13 @@
 <?php
 
 use App\Http\Controllers\MitraController;
+use App\Http\Requests\StorePengajuanRequest;
 use App\Support\LandingCms;
-use App\Support\Wilayah;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 
 // Default data mitra (dipakai jika belum ada session / belum ada database)
 // DATA DUMMY terpusat ada di App\Support\DataDemo (dipakai MitraController).
@@ -29,39 +28,7 @@ $mitraDefault = [
 // Halaman publik
 Route::view('/', 'landing')->name('landing');
 Route::view('/pengajuan', 'pengajuan')->name('pengajuan.create');
-Route::post('/pengajuan', function (Request $request) {
-    $request->validate([
-        'instansi' => 'required|string|max:255',
-        'jenis_instansi' => 'required|string',
-        'organisasi' => 'required|string|max:255',
-        'provinsi' => ['required', 'string', 'max:100', Rule::in(Wilayah::provinsi())],
-        'kota' => ['required', 'string', 'max:100', function (string $attribute, mixed $value, Closure $fail) use ($request): void {
-            if (! Wilayah::valid($request->input('provinsi'), is_string($value) ? $value : null)) {
-                $fail('Kota / Kabupaten tidak terdaftar pada provinsi yang dipilih.');
-            }
-        }],
-        'alamat' => 'required|string',
-        'pic' => 'required|string|max:255',
-        'email' => 'required|email|max:255',
-        'telp' => 'required|string|max:30',
-        'metode_pelatihan' => 'required|string',
-        'pembiayaan' => 'required|string',
-    ], [
-        'instansi.required' => 'Nama Perguruan Tinggi / Instansi wajib diisi.',
-        'jenis_instansi.required' => 'Jenis instansi wajib dipilih.',
-        'organisasi.required' => 'Unit Kerja / Divisi / Fakultas wajib diisi.',
-        'provinsi.required' => 'Provinsi wajib dipilih.',
-        'provinsi.in' => 'Provinsi tidak dikenali.',
-        'kota.required' => 'Kota / Kabupaten wajib dipilih.',
-        'alamat.required' => 'Alamat lengkap instansi wajib diisi.',
-        'pic.required' => 'Nama lengkap PIC wajib diisi.',
-        'email.required' => 'Email resmi PIC wajib diisi.',
-        'email.email' => 'Format email PIC tidak valid.',
-        'telp.required' => 'Nomor telepon / WhatsApp PIC wajib diisi.',
-        'metode_pelatihan.required' => 'Metode pelatihan wajib dipilih.',
-        'pembiayaan.required' => 'Skema pembiayaan (APBD / APBN / Cost Sharing) wajib dipilih.',
-    ]);
-
+Route::post('/pengajuan', function (StorePengajuanRequest $request) {
     // Simpan ke storage_pengajuan.json agar admin di port 8001 langsung melihatnya
     $filePath = storage_path('app/storage_pengajuan.json');
     $list = file_exists($filePath) ? json_decode((string) file_get_contents($filePath), true) : [];
@@ -140,35 +107,64 @@ Route::get('/berita/{slug}', function (string $slug) {
 // Login mitra: tetap dapat diakses lewat URL langsung (/login). Tidak ada
 // tautan ke halaman ini dari homepage (lihat R1 pada laporan).
 Route::view('/login', 'login')->name('login');
-Route::post('/login', fn () => redirect()->route('mitra.status'))->middleware('throttle:mitra-login')->name('login.post');
-Route::post('/logout', function () {
-    session()->forget(['mitra_data', 'mitra_mou']);
+Route::post('/login', function (Request $request) {
+    $data = $request->validate([
+        'username' => ['required', 'string', 'max:255'],
+        'password' => ['required', 'string', 'max:255'],
+    ], [
+        'username.required' => 'Nama pengguna wajib diisi.',
+        'password.required' => 'Kata sandi wajib diisi.',
+    ]);
+
+    // Mode demo: satu akun mitra dari config/mitra.php. Akun peran panel
+    // (admin) tidak dilayani di pintu ini; pintunya terpisah.
+    $cocok = Str::lower(trim($data['username'])) === Str::lower(trim((string) config('mitra.demo_user')))
+        && hash_equals((string) config('mitra.demo_password'), (string) $data['password']);
+
+    if (! $cocok) {
+        return back()
+            ->withInput($request->only('username'))
+            ->with('login_error', 'Nama pengguna atau kata sandi tidak sesuai.');
+    }
+
+    $request->session()->regenerate();
+    $request->session()->put('mitra_data', ['username' => (string) config('mitra.demo_user')]);
+
+    return redirect()->intended(route('mitra.status'));
+})->middleware('throttle:mitra-login')->name('login.post');
+Route::post('/logout', function (Request $request) {
+    $request->session()->forget(['mitra_data', 'mitra_mou']);
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
 
     return redirect()->route('landing');
 })->name('logout');
 
-// Area mitra: tepat tiga fitur (Status, Profil, MoU).
-Route::get('/mitra', [MitraController::class, 'status'])->name('mitra.status');
-Route::post('/mitra/perpanjangan', [MitraController::class, 'ajukanPerpanjangan'])
-    ->middleware('throttle:mitra-profile')->name('mitra.status.perpanjang');
+// Area mitra: tepat tiga fitur (Status, Profil, MoU). Seluruh route di sini
+// dijaga `mitra.only`: belum masuk -> login mitra, sesi admin -> 404.
+Route::middleware('mitra.only')->group(function () {
+    Route::get('/mitra', [MitraController::class, 'status'])->name('mitra.status');
+    Route::post('/mitra/perpanjangan', [MitraController::class, 'ajukanPerpanjangan'])
+        ->middleware('throttle:mitra-profile')->name('mitra.status.perpanjang');
 
-Route::get('/mitra/profile', [MitraController::class, 'profil'])->name('mitra.profile');
-Route::post('/mitra/profile', [MitraController::class, 'updateProfil'])
-    ->middleware('throttle:mitra-profile')->name('mitra.profile.update');
+    Route::get('/mitra/profile', [MitraController::class, 'profil'])->name('mitra.profile');
+    Route::post('/mitra/profile', [MitraController::class, 'updateProfil'])
+        ->middleware('throttle:mitra-profile')->name('mitra.profile.update');
 
-Route::get('/mitra/mou', [MitraController::class, 'mou'])->name('mitra.mou');
-Route::post('/mitra/mou', [MitraController::class, 'kirimMou'])
-    ->middleware('throttle:mitra-profile')->name('mitra.mou.kirim');
-Route::get('/mitra/mou/{id}', [MitraController::class, 'detailMou'])->name('mitra.mou.detail');
-Route::get('/mitra/mou/{id}/berkas', [MitraController::class, 'pratinjauMou'])->name('mitra.mou.berkas');
-Route::get('/mitra/mou/{id}/unduh', [MitraController::class, 'unduhMou'])->name('mitra.mou.unduh');
-Route::post('/mitra/profile/foto', [MitraController::class, 'unggahFoto'])
-    ->middleware('throttle:mitra-profile')->name('mitra.profile.foto.unggah');
-Route::get('/mitra/profile/foto', [MitraController::class, 'foto'])->name('mitra.profile.foto');
+    Route::get('/mitra/mou', [MitraController::class, 'mou'])->name('mitra.mou');
+    Route::post('/mitra/mou', [MitraController::class, 'kirimMou'])
+        ->middleware('throttle:mitra-profile')->name('mitra.mou.kirim');
+    Route::get('/mitra/mou/{id}', [MitraController::class, 'detailMou'])->name('mitra.mou.detail');
+    Route::get('/mitra/mou/{id}/berkas', [MitraController::class, 'pratinjauMou'])->name('mitra.mou.berkas');
+    Route::get('/mitra/mou/{id}/unduh', [MitraController::class, 'unduhMou'])->name('mitra.mou.unduh');
+    Route::post('/mitra/profile/foto', [MitraController::class, 'unggahFoto'])
+        ->middleware('throttle:mitra-profile')->name('mitra.profile.foto.unggah');
+    Route::get('/mitra/profile/foto', [MitraController::class, 'foto'])->name('mitra.profile.foto');
 
-// Fitur lama yang dikeluarkan dari menu & area mitra: dialihkan ke Status.
-// Berkas view (user/draf.blade.php) sengaja TIDAK dihapus.
-Route::redirect('/mitra/draf', '/mitra')->name('mitra.draf');
+    // Fitur lama yang dikeluarkan dari menu & area mitra: dialihkan ke Status.
+    // Berkas view (user/draf.blade.php) sengaja TIDAK dihapus.
+    Route::redirect('/mitra/draf', '/mitra')->name('mitra.draf');
+});
 
 // API Proxy PDDIKTI Real-Time
 Route::get('/api/pddikti', function (Request $request) {

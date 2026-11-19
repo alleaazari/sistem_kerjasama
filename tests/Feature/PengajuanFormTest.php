@@ -20,7 +20,7 @@ function payloadPengajuan(): array
         'provinsi' => 'Sumatera Utara',
         'alamat' => 'Jl. Uji No. 1',
         'pic' => 'Budi',
-        'email' => 'budi@example.com',
+        'email' => 'budi@gmail.com',
         'telp' => '0812000000',
         'bidang' => ['dts', 'skkni'],
         'metode_pelatihan' => 'hybrid',

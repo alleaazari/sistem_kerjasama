@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateProfilRequest;
 use App\Support\DataDemo;
 use App\Support\PermohonanPerpanjangan;
 use App\Support\StatusKerjasama;
@@ -187,31 +188,15 @@ class MitraController extends Controller
      * Simpan profil. Field, nama field, dan aturan validasi SAMA dengan
      * versi sebelumnya (routes/web.php) agar perilaku server tidak berubah.
      */
-    public function updateProfil(Request $request): RedirectResponse
+    public function updateProfil(UpdateProfilRequest $request): RedirectResponse
     {
-        $request->validate([
-            'instansi' => 'required|string|max:255',
-            'organisasi' => 'required|string|max:255',
-            'pic' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'telp' => 'required|string|max:30',
-            'alamat' => 'required|string',
-        ], [
-            'instansi.required' => 'Nama instansi wajib diisi.',
-            'organisasi.required' => 'Unit kerja wajib diisi.',
-            'pic.required' => 'Nama PIC wajib diisi.',
-            'email.required' => 'Email resmi wajib diisi.',
-            'email.email' => 'Format email tidak valid.',
-            'telp.required' => 'Nomor telepon wajib diisi.',
-            'alamat.required' => 'Alamat wajib diisi.',
-        ]);
-
         $existing = $this->mitra($request);
 
         $updated = array_merge($existing, [
             'instansi' => $request->input('instansi'),
             'organisasi' => $request->input('organisasi'),
             'pic' => $request->input('pic'),
+            'jabatan_pic' => $request->input('jabatan_pic', $existing['jabatan_pic'] ?? ''),
             'email' => $request->input('email'),
             'telp' => $request->input('telp'),
             'alamat' => $request->input('alamat'),

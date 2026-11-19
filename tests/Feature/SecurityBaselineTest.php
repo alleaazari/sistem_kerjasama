@@ -42,7 +42,7 @@ test('pengajuan submission is rate limited', function () {
         'provinsi' => 'Sumatera Utara',
         'alamat' => 'Jl. Uji No. 1',
         'pic' => 'Budi',
-        'email' => 'budi@example.com',
+        'email' => 'budi@gmail.com',
         'telp' => '0812000000',
         'metode_pelatihan' => 'daring',
         'pembiayaan' => 'APBN',

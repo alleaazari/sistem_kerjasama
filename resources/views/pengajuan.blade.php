@@ -176,22 +176,27 @@
             <div class="pjn-grid-2">
                 <div class="pjn-field">
                     <label class="pjn-label" for="pic">Nama Lengkap PIC <span class="pjn-required">*</span></label>
-                    <input type="text" id="pic" name="pic" value="{{ old('pic') }}" placeholder="cth. Dr. Budi Santoso, M.Kom." class="pjn-input" required>
+                    <input type="text" id="pic" name="pic" value="{{ old('pic') }}" placeholder="cth. Dr. Budi Santoso, M.Kom." class="pjn-input" maxlength="100" required>
+                    @error('pic')<p class="pjn-field-error">{{ $message }}</p>@enderror
                 </div>
                 <div class="pjn-field">
                     <label class="pjn-label" for="jabatan_pic">Jabatan PIC</label>
-                    <input type="text" id="jabatan_pic" name="jabatan_pic" value="{{ old('jabatan_pic') }}" placeholder="cth. Wakil Rektor IV, Kepala Biro" class="pjn-input">
+                    <input type="text" id="jabatan_pic" name="jabatan_pic" value="{{ old('jabatan_pic') }}" placeholder="cth. Wakil Rektor IV, Kepala Biro" class="pjn-input" maxlength="100">
+                    @error('jabatan_pic')<p class="pjn-field-error">{{ $message }}</p>@enderror
                 </div>
             </div>
             <div class="pjn-grid-2">
                 <div class="pjn-field">
                     <label class="pjn-label" for="email">Email Official / Resmi PIC <span class="pjn-required">*</span></label>
-                    <input type="email" id="email" name="email" value="{{ old('email') }}" placeholder="pic@instansi.ac.id" class="pjn-input" required>
-                    <p class="pjn-hint">Username & password login akan dikirim ke email ini jika disetujui.</p>
+                    <input type="email" id="email" name="email" value="{{ old('email') }}" placeholder="pic@instansi.ac.id" class="pjn-input" maxlength="255" required>
+                    <p class="pjn-hint">Domain yang diterima: Gmail, Yahoo, atau email kampus (.ac.id). Username &amp; password login akan dikirim ke email ini jika disetujui.</p>
+                    @error('email')<p class="pjn-field-error">{{ $message }}</p>@enderror
                 </div>
                 <div class="pjn-field">
                     <label class="pjn-label" for="telp">No. Telepon / WhatsApp PIC <span class="pjn-required">*</span></label>
-                    <input type="text" id="telp" name="telp" value="{{ old('telp') }}" placeholder="08xx-xxxx-xxxx" class="pjn-input" required>
+                    <input type="tel" id="telp" name="telp" value="{{ old('telp') }}" placeholder="081234567890" class="pjn-input" inputmode="numeric" maxlength="15" autocomplete="tel" required>
+                    <p class="pjn-hint">Hanya angka, 9 sampai 15 digit. Contoh: 081234567890.</p>
+                    @error('telp')<p class="pjn-field-error">{{ $message }}</p>@enderror
                 </div>
             </div>
         </div>
@@ -983,6 +988,23 @@ textarea.pjn-input { resize: vertical; min-height: 90px; }
 </style>
 
 <script>
+/* =================== ATURAN PIC (sama dengan server) =================== */
+var POLA_NAMA = /^[\p{L}\s.,'\u2019-]+$/u;
+var POLA_TELEPON = /^[0-9]{9,15}$/;
+var DOMAIN_EMAIL = @json(array_values((array) config('kerjasama.email_domains', [])));
+
+// Domain cocok persis; entri berawalan titik dicocokkan sebagai akhiran domain.
+// Dipakai hanya untuk pesan cepat — keputusan akhir tetap di server.
+function domainEmailDiizinkan(alamat) {
+    var domain = String(alamat).split('@').pop().toLowerCase();
+    return DOMAIN_EMAIL.some(function (izin) {
+        izin = String(izin).toLowerCase();
+        return izin.charAt(0) === '.'
+            ? domain !== izin.slice(1) && domain.slice(-izin.length) === izin
+            : domain === izin;
+    });
+}
+
 /* =================== PDDIKTI AUTOCOMPLETE =================== */
 
 // Large curated local fallback dataset (all major PT in Indonesia)
@@ -1287,7 +1309,9 @@ function setFieldError(fieldEl, groupEl, msg) {
     if (!existingErr) {
         var errDiv = document.createElement('div');
         errDiv.className = 'pjn-field-error';
-        errDiv.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#dc2626" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="16" x2="12.01" y2="16" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/></svg><span>' + msg + '</span>';
+        errDiv.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#dc2626" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="16" x2="12.01" y2="16" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/></svg><span></span>';
+        // Pesan selalu teks biasa, tidak pernah HTML.
+        errDiv.querySelector('span').textContent = msg;
         parent.appendChild(errDiv);
     } else {
         existingErr.querySelector('span').textContent = msg;
@@ -1393,27 +1417,48 @@ function validatePengajuanForm() {
 
     // 7. PIC
     var pic = document.getElementById('pic');
-    if (!pic || !pic.value.trim()) {
+    var jabatan = document.getElementById('jabatan_pic');
+    var picVal = pic ? pic.value.trim() : '';
+    if (!picVal) {
         reportErr(pic, null, 'Nama lengkap PIC wajib diisi');
+    } else if (picVal.length > 100) {
+        reportErr(pic, null, 'Nama lengkap PIC maksimal 100 karakter');
+    } else if (!POLA_NAMA.test(picVal)) {
+        reportErr(pic, null, 'Nama lengkap PIC hanya boleh berisi huruf, spasi, titik, koma, apostrof, dan strip');
     } else {
         clearFieldError(pic, null);
+    }
+
+    var jabVal = jabatan ? jabatan.value.trim() : '';
+    if (jabVal.length > 100) {
+        reportErr(jabatan, null, 'Jabatan PIC maksimal 100 karakter');
+    } else if (jabVal && !POLA_NAMA.test(jabVal)) {
+        reportErr(jabatan, null, 'Jabatan PIC hanya boleh berisi huruf, spasi, titik, koma, apostrof, dan strip');
+    } else {
+        clearFieldError(jabatan, null);
     }
 
     // 8. Email PIC
     var email = document.getElementById('email');
     var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email || !email.value.trim()) {
+    var emailVal = email ? email.value.trim() : '';
+    if (!emailVal) {
         reportErr(email, null, 'Email resmi PIC wajib diisi');
-    } else if (!emailRegex.test(email.value.trim())) {
+    } else if (!emailRegex.test(emailVal)) {
         reportErr(email, null, 'Format email tidak valid (contoh: pic@instansi.ac.id)');
+    } else if (!domainEmailDiizinkan(emailVal)) {
+        reportErr(email, null, 'Domain email tidak diizinkan. Gunakan Gmail, Yahoo, atau email kampus (.ac.id)');
     } else {
         clearFieldError(email, null);
     }
 
     // 9. Telepon / WA
     var telp = document.getElementById('telp');
-    if (!telp || !telp.value.trim()) {
+    var telpVal = telp ? telp.value.trim() : '';
+    if (!telpVal) {
         reportErr(telp, null, 'Nomor telepon / WhatsApp PIC wajib diisi');
+    } else if (!POLA_TELEPON.test(telpVal)) {
+        reportErr(telp, null, 'Nomor telepon / WhatsApp PIC hanya boleh berisi angka, 9 sampai 15 digit');
     } else {
         clearFieldError(telp, null);
     }
@@ -1516,7 +1561,9 @@ function pjnStepFilled(idx) {
         var el = document.getElementById(id);
         if (!el) return false;
         var val = String(el.value || '').trim();
-        return el.type === 'email' ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) : val.length > 0;
+        if (el.type === 'email') return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) && domainEmailDiizinkan(val);
+        if (id === 'telp') return POLA_TELEPON.test(val);
+        return val.length > 0;
     });
 
     (rule.groups || []).forEach(function (sel) {
@@ -1682,6 +1729,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     form.addEventListener('input', function(e) {
         var el = e.target;
+        // Nomor telepon: buang semua karakter non-angka (mengetik maupun tempel).
+        if (el && el.id === 'telp') {
+            el.value = el.value.replace(/[^0-9]/g, '');
+        }
         if (el && el.value && el.value.trim().length > 0) {
             clearFieldError(el, null);
         }

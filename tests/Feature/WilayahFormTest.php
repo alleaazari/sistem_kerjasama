@@ -21,7 +21,7 @@ function payloadWilayah(string $provinsi, string $kota): array
         'provinsi' => $provinsi,
         'alamat' => 'Jl. Uji No. 1',
         'pic' => 'Budi',
-        'email' => 'budi@example.com',
+        'email' => 'budi@gmail.com',
         'telp' => '0812000000',
         'bidang' => ['dts'],
         'metode_pelatihan' => 'hybrid',

@@ -18,6 +18,15 @@
         });
     });
 
+    // Nomor telepon: buang semua karakter non-angka (mengetik maupun tempel).
+    var telp = document.getElementById('telp');
+    if (telp) {
+        telp.addEventListener('input', function () {
+            var bersih = telp.value.replace(/[^0-9]/g, '');
+            if (bersih !== telp.value) { telp.value = bersih; }
+        });
+    }
+
     // Tampilkan nama berkas yang dipilih (teks biasa, bukan HTML).
     var input = document.getElementById('berkas');
     var label = document.getElementById('nama-berkas');

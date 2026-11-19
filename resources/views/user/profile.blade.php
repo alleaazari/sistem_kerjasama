@@ -162,10 +162,20 @@
                 <div class="field">
                     <label for="pic">Nama penanggung jawab (PIC)</label>
                     <input type="text" id="pic" name="pic" value="{{ old('pic', $mitra['pic']) }}"
-                           required maxlength="255" autocomplete="name"
+                           required maxlength="100" autocomplete="name"
                            @error('pic') aria-invalid="true" aria-describedby="galat-pic" @enderror>
                     @error('pic')
                         <span class="field-error" id="galat-pic">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="field">
+                    <label for="jabatan_pic">Jabatan PIC</label>
+                    <input type="text" id="jabatan_pic" name="jabatan_pic" value="{{ old('jabatan_pic', $mitra['jabatan_pic'] ?? '') }}"
+                           maxlength="100" autocomplete="organization-title"
+                           @error('jabatan_pic') aria-invalid="true" aria-describedby="galat-jabatan_pic" @enderror>
+                    @error('jabatan_pic')
+                        <span class="field-error" id="galat-jabatan_pic">{{ $message }}</span>
                     @enderror
                 </div>
 
@@ -174,6 +184,7 @@
                     <input type="email" id="email" name="email" value="{{ old('email', $mitra['email']) }}"
                            required maxlength="255" autocomplete="email"
                            @error('email') aria-invalid="true" aria-describedby="galat-email" @enderror>
+                    <span class="field-help">Domain yang diterima: Gmail, Yahoo, atau email kampus (.ac.id).</span>
                     @error('email')
                         <span class="field-error" id="galat-email">{{ $message }}</span>
                     @enderror
@@ -182,8 +193,9 @@
                 <div class="field">
                     <label for="telp">Nomor telepon / WhatsApp PIC</label>
                     <input type="tel" id="telp" name="telp" value="{{ old('telp', $mitra['telp']) }}"
-                           required maxlength="30" autocomplete="tel"
+                           required maxlength="15" inputmode="numeric" pattern="[0-9]{9,15}" autocomplete="tel"
                            @error('telp') aria-invalid="true" aria-describedby="galat-telp" @enderror>
+                    <span class="field-help">Hanya angka, 9 sampai 15 digit.</span>
                     @error('telp')
                         <span class="field-error" id="galat-telp">{{ $message }}</span>
                     @enderror
