@@ -85,6 +85,10 @@
                 @endforeach
             </ul>
         @endif
+
+        <p class="field-help">
+            Belum punya dokumen? <a href="{{ route('mitra.mou.draf') }}">Buat draf MoU dari template bidang Anda</a>.
+        </p>
     </section>
 
     <section class="mitra-card" aria-labelledby="judul-kirim-mou" data-anim="naik" data-kelompok="form-mou">

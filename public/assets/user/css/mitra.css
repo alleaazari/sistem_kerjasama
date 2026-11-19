@@ -658,6 +658,18 @@
   resize: vertical;
 }
 
+/* Draf MoU: ruang sunting lega, tinggi mengikuti isi dokumen. */
+.field textarea.draf-mou-isi {
+  min-height: 460px;
+  line-height: var(--leading-normal);
+}
+
+.draf-mou-bidang {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
 .field input:focus-visible,
 .field textarea:focus-visible,
 .field select:focus-visible,
@@ -1343,6 +1355,8 @@ table.mitra-table tr:last-child td {
 .reader-isi p {
   margin: 0 0 var(--space-3);
   text-align: left;
+  /* Draf MoU menyimpan baris judul/pasal; spasi ganda tetap dirapikan. */
+  white-space: pre-line;
 }
 
 @media (max-width: 640px) {

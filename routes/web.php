@@ -154,6 +154,9 @@ Route::middleware('mitra.only')->group(function () {
     Route::get('/mitra/mou', [MitraController::class, 'mou'])->name('mitra.mou');
     Route::post('/mitra/mou', [MitraController::class, 'kirimMou'])
         ->middleware('throttle:mitra-profile')->name('mitra.mou.kirim');
+    Route::get('/mitra/mou/draf', [MitraController::class, 'drafMou'])->name('mitra.mou.draf');
+    Route::post('/mitra/mou/draf', [MitraController::class, 'simpanDrafMou'])
+        ->middleware('throttle:mou-draf')->name('mitra.mou.draf.simpan');
     Route::get('/mitra/mou/{id}', [MitraController::class, 'detailMou'])->name('mitra.mou.detail');
     Route::get('/mitra/mou/{id}/berkas', [MitraController::class, 'pratinjauMou'])->name('mitra.mou.berkas');
     Route::get('/mitra/mou/{id}/unduh', [MitraController::class, 'unduhMou'])->name('mitra.mou.unduh');

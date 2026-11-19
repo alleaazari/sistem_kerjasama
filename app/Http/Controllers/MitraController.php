@@ -8,6 +8,7 @@ use App\Support\DataDemo;
 use App\Support\PengajuanMasuk;
 use App\Support\PermohonanPerpanjangan;
 use App\Support\StatusKerjasama;
+use App\Support\TemplateMou;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -244,6 +245,107 @@ class MitraController extends Controller
             'mitra' => $mitra,
             'daftar' => $this->daftarMou($request),
         ]);
+    }
+
+    /**
+     * Generator draf MoU. Bidang selalu berasal dari pengajuan milik mitra
+     * (email session), bukan dari parameter URL, sehingga mitra tidak bisa
+     * memilih template bidang lain.
+     */
+    public function drafMou(Request $request): View
+    {
+        $mitra = $this->mitra($request);
+        $bidang = $this->bidang($mitra);
+        $template = $bidang['kode'] !== '' ? TemplateMou::untuk($bidang['kode']) : null;
+
+        $draf = $template !== null
+            ? TemplateMou::render($template, TemplateMou::data($mitra, $bidang['label']))
+            : '';
+
+        // Draf yang pernah disimpan mitra ini dimuat kembali saat halaman dibuka.
+        $tersimpan = $request->session()->get('mitra_mou_draf');
+
+        if (is_string($tersimpan) && trim($tersimpan) !== '') {
+            $draf = $tersimpan;
+        }
+
+        return view('user.mou-draf', [
+            'mitra' => $mitra,
+            'bidang' => $bidang,
+            'template' => $template,
+            'draf' => $draf,
+        ]);
+    }
+
+    /**
+     * Simpan draf yang sudah disunting, atau kirim ke admin. Bidang tetap
+     * diambil dari pengajuan mitra; input bidang dari klien diabaikan.
+     */
+    public function simpanDrafMou(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'aksi' => 'required|in:simpan,kirim',
+            'isi' => 'required|string|max:'.TemplateMou::MAKS_ISI,
+        ], [
+            'aksi.required' => 'Pilih tindakan untuk draf MoU.',
+            'aksi.in' => 'Tindakan draf MoU tidak dikenali.',
+            'isi.required' => 'Isi draf MoU wajib diisi.',
+            'isi.max' => 'Isi draf MoU maksimal '.TemplateMou::MAKS_ISI.' karakter.',
+        ]);
+
+        $mitra = $this->mitra($request);
+        $bidang = $this->bidang($mitra);
+        $template = $bidang['kode'] !== '' ? TemplateMou::untuk($bidang['kode']) : null;
+
+        if ($template === null) {
+            return back()
+                ->withInput()
+                ->withErrors(['isi' => 'Template MoU untuk bidang kerja sama Anda belum tersedia. Hubungi admin kerja sama.']);
+        }
+
+        $teks = TemplateMou::bersihkanDraf((string) $validated['isi']);
+
+        if ($teks === '') {
+            return back()
+                ->withInput()
+                ->withErrors(['isi' => 'Isi draf MoU tidak boleh kosong.']);
+        }
+
+        if ($validated['aksi'] === 'simpan') {
+            $request->session()->put('mitra_mou_draf', $teks);
+
+            return redirect()
+                ->route('mitra.mou.draf')
+                ->with('ok', 'Draf MoU disimpan. Anda dapat menyuntingnya lagi sebelum dikirim.');
+        }
+
+        $id = (string) Str::uuid();
+        $daftar = $this->daftarMou($request);
+
+        array_unshift($daftar, [
+            'id' => $id,
+            'pemilik' => $mitra['username'],
+            'judul' => $template['judul'],
+            'nomor' => 'Draf MoU '.$bidang['kode'],
+            'keterangan' => 'Draf MoU dari template bidang '.$bidang['kode'].', menunggu peninjauan admin.',
+            'status' => 'Menunggu Peninjauan',
+            'tanggal' => CarbonImmutable::now(config('app.timezone', 'UTC'))->toDateString(),
+            'nama_asli' => null,
+            'berkas' => null,
+            'ukuran' => 0,
+            'mime' => null,
+            'bidang' => $bidang['kode'],
+            'isi' => [
+                ['judul' => 'Isi Draf MoU', 'paragraf' => TemplateMou::paragraf($teks)],
+            ],
+        ]);
+
+        $request->session()->put('mitra_mou', $daftar);
+        $request->session()->forget('mitra_mou_draf');
+
+        return redirect()
+            ->route('mitra.mou.detail', $id)
+            ->with('ok', 'Draf MoU berhasil dikirim dan menunggu peninjauan admin.');
     }
 
     /** Simpan berkas MoU di disk privat + metadata di session (demo). */

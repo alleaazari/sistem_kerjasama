@@ -18,9 +18,9 @@ final class PengajuanMasuk
 {
     /** Data contoh saat berkas belum ada. */
     public const CONTOH = [
-        ['id' => 1, 'instansi' => 'Pemerintah Provinsi Jawa Barat', 'organisasi' => 'Dinas Komunikasi dan Informatika', 'pic' => 'Rina Wulandari', 'email' => 'rina@jabarprov.go.id', 'telp' => '0812-3456-7890', 'status' => 'Menunggu'],
-        ['id' => 2, 'instansi' => 'Universitas Indonesia', 'organisasi' => 'Direktorat Kerja Sama & Riset', 'pic' => 'Dr. Bagas Pratama', 'email' => 'bagas@ui.ac.id', 'telp' => '0813-1111-2222', 'status' => 'Disetujui'],
-        ['id' => 3, 'instansi' => 'PT Telekomunikasi Nusantara', 'organisasi' => 'Divisi Hubungan Pemerintah', 'pic' => 'Maya Sari', 'email' => 'maya@telenusa.co.id', 'telp' => '0857-9999-0000', 'status' => 'Ditolak'],
+        ['id' => 1, 'instansi' => 'Pemerintah Provinsi Jawa Barat', 'organisasi' => 'Dinas Komunikasi dan Informatika', 'pic' => 'Rina Wulandari', 'email' => 'rina@jabarprov.go.id', 'telp' => '0812-3456-7890', 'status' => 'Menunggu', 'bidang' => 'VSGA'],
+        ['id' => 2, 'instansi' => 'Universitas Indonesia', 'organisasi' => 'Direktorat Kerja Sama & Riset', 'pic' => 'Dr. Bagas Pratama', 'email' => 'bagas@ui.ac.id', 'telp' => '0813-1111-2222', 'status' => 'Disetujui', 'bidang' => 'GTA'],
+        ['id' => 3, 'instansi' => 'PT Telekomunikasi Nusantara', 'organisasi' => 'Divisi Hubungan Pemerintah', 'pic' => 'Maya Sari', 'email' => 'maya@telenusa.co.id', 'telp' => '0857-9999-0000', 'status' => 'Ditolak', 'bidang' => 'VSGA'],
     ];
 
     public static function path(): string
