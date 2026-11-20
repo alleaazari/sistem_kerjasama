@@ -613,3 +613,59 @@ Akun demo hanya hidup di luar production. Sebelum deploy: set
 - Area mitra (`/mitra/*`) masih tanpa autentikasi nyata — lihat audit keamanan.
 - Password demo `123456` sengaja lemah karena data dummy; jangan dipakai di
   server yang dapat diakses publik.
+
+## 15. Template MoU per Bidang (SELESAI)
+
+### Ringkasan
+Halaman `/superadmin/template-mou` khusus Superadmin: daftar template tiap
+bidang dari `config/kerjasama.php` (VSGA, GTA, dan slot bidang baru), editor
+teks dengan chip placeholder, pratinjau memakai data contoh, tombol
+"Kembalikan ke bawaan" berkonfirmasi, serta riwayat perubahan (siapa, kapan,
+versi) dari log aktivitas. Admin Kerja Sama, Developer, dan Mitra ditolak 404
+untuk GET, PUT, maupun POST.
+
+### Keputusan
+- Penyimpanan tetap `storage/app/template_mou.json` (mode demo) dengan tambahan
+  `versi`, `diperbarui_oleh`, `diperbarui_pada`. Setiap simpan/reset menaikkan versi.
+- Riwayat memakai `LogAktivitas` (`template_mou.update`, `template_mou.reset`);
+  isi template tidak dicatat ke log, hanya kode bidang + versi.
+- Isi template adalah teks biasa. Form Request menolak tag HTML dan placeholder
+  di luar daftar dikenal; render mitra dan pratinjau tetap di-escape Blade.
+- Generator mitra membaca template terbaru saat halaman dibuka. Draf yang sudah
+  disimpan di sesi mitra tidak diubah, sesuai permintaan.
+- Bidang ketiga belum ditentukan mentor; halaman otomatis menampilkan slot baru
+  ("Belum ada template") begitu kodenya ditambahkan ke config.
+
+### File
+DIBUAT
+- `app/Http/Requests/SimpanTemplateMouRequest.php` — validasi judul/catatan/isi,
+  tolak tag HTML dan placeholder asing.
+- `resources/views/admin/template_mou.blade.php` — daftar bidang, editor,
+  chip placeholder, pratinjau contoh, riwayat.
+- `tests/Feature/TemplateMouAdminTest.php` — 12 test: simpan sukses + log,
+  placeholder asing, HTML, field wajib, role lain (GET/PUT/POST), kode asing,
+  reset, slot bidang baru, generator memakai versi terbaru.
+
+DIUBAH
+- `app/Support/TemplateMou.php` — metadata versi, `simpanPerubahan`,
+  `kembalikan`, `bawaan`, daftar placeholder, deteksi HTML, pratinjau.
+- `app/Http/Controllers/AdminSuperadminController.php` — aksi editor + riwayat.
+- `routes/superadmin.php` — GET/PUT/POST dengan kode bidang dibatasi config.
+- `config/admin_akses.php` — kemampuan `template_mou`, aksi
+  `template_mou.update`/`reset`, entri menu Konten.
+- `public/assets/admin/css/panel.css` — grid editor, chip, pratinjau, reset.
+- `tests/Feature/Auth/MatriksAksesTest.php` — parameter route diambil dari
+  definisi route, sehingga route ber-`{kode}` ikut teruji.
+
+### Pengecekan
+- `php artisan test` → 256 test, 256 lolos (929 assertion).
+- `pint --test` → passed; `phpstan` (memory 1G) → 0 error; `npm run build` → berhasil.
+- `npm run types:check` → gagal, tetapi hanya pada berkas Wayfinder yang sudah
+  ada sebelumnya (`resources/js/actions/...`, `resources/js/routes/...`); tidak
+  ada perubahan TypeScript pada fase ini.
+
+### Catatan untuk backend
+Belum ada tabel `template_mou` maupun tabel riwayat versi; riwayat penuh hanya
+tersimpan di `log_aktivitas.json` dan halaman menampilkan 8 perubahan terakhir.
+Saat backend dibangun: tabel template (per bidang) + tabel versi (isi tiap
+versi), Policy/gerbang khusus Superadmin, dan audit trail SQL.

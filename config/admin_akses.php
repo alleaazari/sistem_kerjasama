@@ -113,6 +113,13 @@ return [
             'ikon' => 'galeri',
         ],
 
+        'template_mou' => [
+            'route' => 'template_mou',
+            'label' => 'Template MoU',
+            'section' => 'konten',
+            'ikon' => 'artikel',
+        ],
+
         'pengguna' => [
             'route' => 'pengguna',
             'label' => 'Kelola Pengguna',
@@ -138,6 +145,8 @@ return [
         'inbox.reject' => 'Menolak pengajuan',
         'draf_proposal.unduh' => 'Mengunduh draf proposal',
         'masa_aktif.atur' => 'Mengubah masa aktif',
+        'template_mou.update' => 'Menyimpan template MoU',
+        'template_mou.reset' => 'Mengembalikan template MoU ke bawaan',
     ],
 
     /* Grup menu sidebar (urutan tampil). */
@@ -183,6 +192,7 @@ return [
                 'masa_aktif', 'masa_aktif.atur',
                 'aktivitas',
                 'tentang', 'artikel', 'galeri',
+                'template_mou',
                 'pengguna',
             ],
             'akun' => [

@@ -11,6 +11,7 @@
 */
 
 use App\Support\AdminAkses;
+use App\Support\BidangKerjasama;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
 
@@ -38,23 +39,20 @@ function rutePanel(): array
                 continue;
             }
 
-            $parameter = [];
-
-            if (str_contains($namaRoute, '.unduh')) {
-                $parameter = ['uuid' => '11111111-1111-4111-8111-111111111111'];
-            } elseif (preg_match('/\.(approve|reject|setujui|tolak|delete|edit)$/', $namaRoute)) {
-                $parameter = ['id' => '1'];
-            }
-
-            $method = match (true) {
-                str_ends_with($namaRoute, '.unduh'),
-                ! str_contains($namaRoute, '.') => 'get',
-                default => $kemampuan === 'masa_aktif.atur' ? 'put' : 'get',
-            };
-
-            // Metode mengikuti definisi route yang sebenarnya.
+            // Metode dan parameter mengikuti definisi route yang sebenarnya,
+            // sehingga route berparameter (mis. {kode}) tetap bisa dipanggil.
             $rute = Route::getRoutes()->getByName($namaRoute);
             $method = $rute === null ? 'get' : strtolower((string) ($rute->methods()[0] ?? 'get'));
+
+            $parameter = [];
+
+            foreach ($rute?->parameterNames() ?? [] as $nama) {
+                $parameter[$nama] = match ($nama) {
+                    'uuid' => '11111111-1111-4111-8111-111111111111',
+                    'kode' => BidangKerjasama::kode()[0] ?? 'VSGA',
+                    default => '1',
+                };
+            }
 
             $daftar[$namaRoute] = [
                 'nama' => $namaRoute,

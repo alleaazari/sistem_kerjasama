@@ -4,6 +4,7 @@ namespace App\Support;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 /**
  * Template draf MoU per bidang kerja sama (mode demo: satu berkas JSON).
@@ -13,8 +14,9 @@ use Illuminate\Support\Str;
  * saat pertama kali dibaca.
  *
  * TODO-BACKEND: pindah ke tabel `template_mou` (kode_bidang unik, judul,
- * catatan, isi, diperbarui_oleh, diperbarui_pada) dan kelola lewat panel
- * superadmin. Kontrak method dipertahankan agar pemanggil tidak berubah.
+ * catatan, isi, versi, diperbarui_oleh, diperbarui_pada) beserta riwayat
+ * versinya. Kontrak method dipertahankan agar panel dan generator tidak
+ * berubah.
  */
 final class TemplateMou
 {
@@ -24,6 +26,21 @@ final class TemplateMou
     /** Batas panjang satu nilai isian yang disisipkan ke placeholder. */
     public const MAKS_NILAI = 255;
 
+    /**
+     * Placeholder yang dikenal generator. Kunci = nama placeholder tanpa
+     * kurung kurawal; nilai = label untuk panel Superadmin.
+     *
+     * @var array<string, string>
+     */
+    public const PLACEHOLDER = [
+        'nama_instansi' => 'Nama instansi mitra',
+        'nama_pic' => 'Nama penanggung jawab',
+        'jabatan_pic' => 'Jabatan penanggung jawab',
+        'alamat' => 'Alamat instansi',
+        'tanggal' => 'Tanggal hari ini',
+        'bidang' => 'Label bidang kerja sama',
+    ];
+
     public static function path(): string
     {
         return storage_path('app/template_mou.json');
@@ -32,49 +49,154 @@ final class TemplateMou
     /**
      * Seluruh template, dikunci dengan kode bidang.
      *
-     * @return array<string, array{kode: string, judul: string, catatan: string, isi: string}>
+     * @return array<string, array{kode: string, judul: string, catatan: string, isi: string, versi: int, diperbarui_oleh: string, diperbarui_pada: string|null}>
      */
     public static function semua(): array
     {
-        $data = is_file(self::path())
-            ? json_decode((string) file_get_contents(self::path()), true)
-            : null;
-
-        if (! is_array($data) || $data === []) {
-            $data = self::seed();
-            self::simpan($data);
-        }
-
         $hasil = [];
 
-        foreach ($data as $baris) {
-            if (! is_array($baris)) {
-                continue;
+        foreach (self::mentah() as $baris) {
+            $row = self::normalisasi($baris);
+
+            if ($row !== null) {
+                $hasil[$row['kode']] = $row;
             }
-
-            $kode = $baris['kode'] ?? null;
-            $judul = $baris['judul'] ?? null;
-            $isi = $baris['isi'] ?? null;
-
-            if (! is_string($kode) || $kode === '' || ! is_string($judul) || ! is_string($isi) || trim($isi) === '') {
-                continue;
-            }
-
-            $hasil[$kode] = [
-                'kode' => $kode,
-                'judul' => $judul,
-                'catatan' => is_string($baris['catatan'] ?? null) ? $baris['catatan'] : '',
-                'isi' => $isi,
-            ];
         }
 
         return $hasil;
     }
 
-    /** @return array{kode: string, judul: string, catatan: string, isi: string}|null */
+    /** @return array{kode: string, judul: string, catatan: string, isi: string, versi: int, diperbarui_oleh: string, diperbarui_pada: string|null}|null */
     public static function untuk(string $kode): ?array
     {
         return self::semua()[$kode] ?? null;
+    }
+
+    /**
+     * Simpan perubahan dari panel Superadmin. Versi naik satu setiap simpan
+     * sehingga riwayat di log aktivitas bisa dirujuk kembali.
+     *
+     * @return array{kode: string, judul: string, catatan: string, isi: string, versi: int, diperbarui_oleh: string, diperbarui_pada: string|null}
+     */
+    public static function simpanPerubahan(string $kode, string $judul, string $catatan, string $isi, string $oleh): array
+    {
+        $baris = self::mentah();
+        $sekarang = now(config('app.timezone', 'UTC'))->toDateTimeString();
+        $hasil = null;
+
+        foreach ($baris as $i => $lama) {
+            if (($lama['kode'] ?? null) !== $kode) {
+                continue;
+            }
+
+            $baris[$i] = array_merge($lama, [
+                'kode' => $kode,
+                'judul' => $judul,
+                'catatan' => $catatan,
+                'isi' => $isi,
+                'versi' => max(1, (int) ($lama['versi'] ?? 1)) + 1,
+                'diperbarui_oleh' => $oleh,
+                'diperbarui_pada' => $sekarang,
+            ]);
+            $hasil = $baris[$i];
+            break;
+        }
+
+        if ($hasil === null) {
+            $hasil = [
+                'kode' => $kode,
+                'judul' => $judul,
+                'catatan' => $catatan,
+                'isi' => $isi,
+                'versi' => 1,
+                'diperbarui_oleh' => $oleh,
+                'diperbarui_pada' => $sekarang,
+            ];
+            $baris[] = $hasil;
+        }
+
+        self::tulis($baris);
+
+        $normal = self::normalisasi($hasil);
+
+        if ($normal === null) {
+            throw new RuntimeException('Template MoU tidak dapat dinormalisasi.');
+        }
+
+        return $normal;
+    }
+
+    /**
+     * Kembalikan satu template ke isi bawaan. Null bila bidang itu tidak
+     * punya template bawaan (mis. bidang baru yang belum ditentukan mentor).
+     *
+     * @return array{kode: string, judul: string, catatan: string, isi: string, versi: int, diperbarui_oleh: string, diperbarui_pada: string|null}|null
+     */
+    public static function kembalikan(string $kode, string $oleh): ?array
+    {
+        $bawaan = self::bawaan($kode);
+
+        if ($bawaan === null) {
+            return null;
+        }
+
+        return self::simpanPerubahan($kode, $bawaan['judul'], $bawaan['catatan'], $bawaan['isi'], $oleh);
+    }
+
+    /**
+     * Isi bawaan sebuah bidang (dari seed), atau null bila tidak ada.
+     *
+     * @return array{kode: string, judul: string, catatan: string, isi: string, versi: int, diperbarui_oleh: string, diperbarui_pada: string|null}|null
+     */
+    public static function bawaan(string $kode): ?array
+    {
+        foreach (self::seed() as $baris) {
+            if ($baris['kode'] === $kode) {
+                return self::normalisasi($baris);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Placeholder yang dipakai tetapi tidak ada di daftar dikenal. Bentuk
+     * longgar (mis. `{{ token }}` atau `{{token-rahasia}}`) ikut diperiksa
+     * agar tidak ada token yang lolos validasi tetapi tidak pernah diganti.
+     *
+     * @return list<string>
+     */
+    public static function placeholderTidakDikenal(string $teks): array
+    {
+        preg_match_all('/\{\{\s*([^{}]*?)\s*\}\}/u', $teks, $cocok);
+
+        $asing = array_filter(
+            $cocok[1],
+            static fn (string $nama): bool => ! array_key_exists($nama, self::PLACEHOLDER),
+        );
+
+        return array_values(array_unique($asing));
+    }
+
+    /** Teks memuat tag HTML (akan ditolak, bukan disimpan sebagai HTML). */
+    public static function mengandungHtml(string $teks): bool
+    {
+        return preg_match('/<\s*\/?\s*[a-zA-Z][^>]*>/', $teks) === 1;
+    }
+
+    /**
+     * Ilustrasi pratinjau di panel Superadmin. Bukan data mitra sungguhan.
+     *
+     * @return array<string, string>
+     */
+    public static function contohData(string $labelBidang): array
+    {
+        return self::data([
+            'instansi' => 'Universitas Contoh Nusantara',
+            'pic' => 'Nama Penanggung Jawab',
+            'jabatan_pic' => 'Jabatan Penanggung Jawab',
+            'alamat' => 'Jl. Contoh No. 1, Kota Medan',
+        ], $labelBidang);
     }
 
     /**
@@ -82,7 +204,7 @@ final class TemplateMou
      * Placeholder yang tidak punya nilai dibiarkan tampak agar jelas belum
      * lengkap; pemanggil selalu mengirim keenam kunci di bawah.
      *
-     * @param  array{kode: string, judul: string, catatan: string, isi: string}  $template
+     * @param  array{isi: string}  $template
      * @param  array<string, string>  $data
      */
     public static function render(array $template, array $data): string
@@ -90,10 +212,15 @@ final class TemplateMou
         $ganti = [];
 
         foreach ($data as $kunci => $nilai) {
-            $ganti['{{'.$kunci.'}}'] = self::bersihkan($nilai);
+            $ganti[$kunci] = self::bersihkan($nilai);
         }
 
-        return strtr($template['isi'], $ganti);
+        // Spasi di dalam kurung kurawal diterima, sama seperti validasi panel.
+        return preg_replace_callback(
+            '/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/u',
+            static fn (array $cocok): string => $ganti[$cocok[1]] ?? $cocok[0],
+            $template['isi'],
+        ) ?? $template['isi'];
     }
 
     /**
@@ -142,11 +269,19 @@ final class TemplateMou
      */
     public static function bersihkanDraf(string $teks): string
     {
+        return Str::limit(strip_tags(self::rapikanTeks($teks)), self::MAKS_ISI, '');
+    }
+
+    /**
+     * Rapikan teks biasa tanpa membuang tag: baris dipertahankan, karakter
+     * kendali dibuang. Validasi panel menolak tag HTML sebelum tahap ini.
+     */
+    public static function rapikanTeks(string $teks): string
+    {
         $teks = str_replace(["\r\n", "\r"], "\n", $teks);
-        $teks = strip_tags($teks);
         $teks = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $teks) ?? '';
 
-        return Str::limit(trim($teks), self::MAKS_ISI, '');
+        return trim($teks);
     }
 
     /**
@@ -293,8 +428,62 @@ TXT,
         ];
     }
 
+    /**
+     * Baris mentah di berkas; seed ditulis bila berkas belum ada/kosong.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private static function mentah(): array
+    {
+        $data = is_file(self::path())
+            ? json_decode((string) file_get_contents(self::path()), true)
+            : null;
+
+        if (! is_array($data) || $data === []) {
+            $data = self::seed();
+            self::tulis($data);
+        }
+
+        /** @var array<int, array<string, mixed>> $hasil */
+        $hasil = array_values(array_filter($data, 'is_array'));
+
+        return $hasil;
+    }
+
+    /**
+     * Bentuk baku satu baris; null bila bukan template yang sah.
+     *
+     * @return array{kode: string, judul: string, catatan: string, isi: string, versi: int, diperbarui_oleh: string, diperbarui_pada: string|null}|null
+     */
+    private static function normalisasi(mixed $baris): ?array
+    {
+        if (! is_array($baris)) {
+            return null;
+        }
+
+        $kode = $baris['kode'] ?? null;
+        $judul = $baris['judul'] ?? null;
+        $isi = $baris['isi'] ?? null;
+
+        if (! is_string($kode) || $kode === '' || ! is_string($judul) || ! is_string($isi) || trim($isi) === '') {
+            return null;
+        }
+
+        $pada = $baris['diperbarui_pada'] ?? null;
+
+        return [
+            'kode' => $kode,
+            'judul' => $judul,
+            'catatan' => is_string($baris['catatan'] ?? null) ? $baris['catatan'] : '',
+            'isi' => $isi,
+            'versi' => max(1, (int) ($baris['versi'] ?? 1)),
+            'diperbarui_oleh' => is_string($baris['diperbarui_oleh'] ?? null) ? $baris['diperbarui_oleh'] : '',
+            'diperbarui_pada' => is_string($pada) && $pada !== '' ? $pada : null,
+        ];
+    }
+
     /** @param array<int, array<string, mixed>> $data */
-    private static function simpan(array $data): void
+    private static function tulis(array $data): void
     {
         $dir = dirname(self::path());
 
@@ -304,7 +493,8 @@ TXT,
 
         file_put_contents(
             self::path(),
-            json_encode(array_values($data), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+            json_encode(array_values($data), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
+            LOCK_EX
         );
     }
 }

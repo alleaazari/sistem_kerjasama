@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminSuperadminController;
 use App\Support\AdminAkses;
+use App\Support\BidangKerjasama;
 use App\Support\LandingCms;
 use App\Support\PengajuanMasuk;
 use App\Support\PermohonanPerpanjangan;
@@ -274,6 +275,20 @@ Route::middleware($hanya('galeri'))->group(function () {
 
         return back()->with('ok', 'Foto galeri berhasil diperbarui.');
     })->name('galeri.edit');
+});
+
+// ---------------- TEMPLATE MOU PER BIDANG ----------------
+Route::middleware($hanya('template_mou'))->group(function () {
+    Route::get('/template-mou', [AdminSuperadminController::class, 'templateMou'])->name('template_mou');
+
+    // Kode bidang dibatasi config; kode lain menjadi 404 sebelum controller.
+    Route::put('/template-mou/{kode}', [AdminSuperadminController::class, 'simpanTemplateMou'])
+        ->whereIn('kode', BidangKerjasama::kode())
+        ->name('template_mou.update');
+
+    Route::post('/template-mou/{kode}/reset', [AdminSuperadminController::class, 'resetTemplateMou'])
+        ->whereIn('kode', BidangKerjasama::kode())
+        ->name('template_mou.reset');
 });
 
 // ---------------- AKTIVITAS ADMIN KERJA SAMA (baca-saja) ----------------
