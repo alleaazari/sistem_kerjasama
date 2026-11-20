@@ -156,7 +156,9 @@ test('R3 tanpa navbar navigasi atas, tautan portal & keluar ada di sidebar', fun
 });
 
 test('R3 route lama generator/draf dialihkan ke status', function () {
-    $this->get('/mitra/draf')->assertRedirect(route('mitra.status'));
+    $this->withSession(['mitra_data' => ['username' => 'user1']])
+        ->get('/mitra/draf')
+        ->assertRedirect(route('mitra.status'));
 });
 
 test('R3 mitra tidak dapat mengakses halaman admin', function () {

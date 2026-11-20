@@ -610,9 +610,80 @@ Akun demo hanya hidup di luar production. Sebelum deploy: set
 `ADMIN_ALLOWED_IPS` bila panel perlu dibatasi per IP.
 
 ### Masih terbuka (belum dikerjakan, butuh keputusan)
-- Area mitra (`/mitra/*`) masih tanpa autentikasi nyata — lihat audit keamanan.
-- Password demo `123456` sengaja lemah karena data dummy; jangan dipakai di
-  server yang dapat diakses publik.
+- Area mitra (`/mitra/*`) belum memakai guard/tabel mitra sungguhan. Pembatas
+  `mitra.only` hanya memeriksa sesi; lihat "Catatan untuk backend" di fase E.
+- Kata sandi demo (`123456`, `superadmin123`, dst.) sengaja lemah karena data
+  dummy; jangan dipakai di server yang dapat diakses publik.
+
+## 14. Fase E — Tiga Pintu Masuk Benar-Benar Terpisah (SELESAI)
+
+### Masalah yang dilaporkan
+Halaman Superadmin dan Admin Kerja Sama terasa "langsung masuk" tanpa login,
+padahal sebelumnya ada halaman login. Setelah ditelusuri, ada dua sebab berbeda:
+
+1. **Area mitra memang tanpa pembatas.** Route `/mitra*` tidak punya middleware
+   apa pun, sehingga `/mitra` menjawab `200` untuk siapa pun. Ini yang paling
+   terasa sebagai "langsung masuk", karena `MitraController` mengisi data dari
+   `DataDemo` sehingga halaman tampak berisi padahal belum login.
+2. **Pintu login mitra tidak memeriksa apa pun.** `POST /login` hanya
+   `redirect()->route('mitra.status')` — siapa pun bisa "masuk" tanpa kredensial.
+
+Panel admin sendiri **sudah** terlindungi (`admin.only` → 302 ke login). Yang
+belum adalah mitra, dan pintu mitra yang tidak memverifikasi kredensial.
+
+### Keputusan
+Tiga pintu masuk dipisah tegas: `/login` (mitra), `/admin-kerjasama/login`,
+`/superadmin/login`. Tiap area hanya terbuka setelah login di pintunya sendiri.
+
+- `POST /login` kini memverifikasi `mitra.demo_user` / `mitra.demo_password`,
+  memakai `hash_equals`, regenerasi sesi, dan mengisi `mitra_data.username`.
+- Route `/mitra*` dibungkus middleware baru `mitra.only` (alias di
+  `bootstrap/app.php`). Belum masuk → redirect ke `/login` dengan `intended`.
+- Sesi admin tidak dihitung sebagai sesi mitra, dan sebaliknya.
+- Kata sandi demo admin **dibedakan per peran** (`superadmin123`,
+  `kerjasama123`, `developer123`). Sebelumnya ketiganya `123456`, sehingga
+  akun Superadmin bisa dipakai masuk ke pintu Admin Kerja Sama.
+- `POST /logout` mitra kini menginvalidasi sesi dan meregenerasi token CSRF.
+
+### Kredensial demo (berlaku di luar production)
+| Peran | URL login | Username | Password |
+|---|---|---|---|
+| Mitra | `/login` | `user1` | `123456` |
+| Superadmin | `/superadmin/login` | `superadmin` | `superadmin123` |
+| Admin Kerja Sama | `/admin-kerjasama/login` | `kerjasama` | `kerjasama123` |
+| Developer | `/superadmin/login` | `developer` | `developer123` |
+
+### File
+DIBUAT
+- `app/Http/Middleware/MitraOnly.php` — penjaga area mitra.
+- `tests/Feature/Auth/PintuMasukTest.php` — 20 test: area mitra terkunci,
+  aksi tulis terkunci, `intended`, sandi salah, silang pintu, logout, dan
+  sesi admin tidak membuka area mitra.
+
+DIUBAH
+- `routes/web.php` — `POST /login` memverifikasi kredensial; grup `mitra.only`
+  membungkus seluruh route mitra; logout menginvalidasi sesi.
+- `bootstrap/app.php` — alias middleware `mitra.only`.
+- `config/admin_akses.php` — kata sandi demo per peran dibedakan.
+- `resources/views/login.blade.php` — menampilkan `login_error` (satu alert).
+- `tests/Feature/Auth/AdminLoginDemoTest.php` — mengikuti kata sandi baru;
+  tambah test kata sandi tiap peran berbeda dan silang pintu.
+- `tests/Feature/AreaMitraTest.php` — route `/mitra/draf` diuji dengan sesi.
+- `tests/Feature/PerpanjanganTest.php` — sesi admin di-flush sebelum membuka
+  halaman mitra (sesi tidak boleh tercampur dalam satu test).
+
+### Pengecekan
+- `php artisan test` → **192 test, 192 lolos** (663 assertion).
+- `pint --test` → passed; `phpstan` → 0 error; `npm run build` → berhasil.
+- Verifikasi HTTP nyata: tanpa login keempat area → 302 ke login masing-masing;
+  login benar → beranda peran; keempat kombinasi silang pintu → ditolak.
+
+### Catatan untuk backend
+`mitra.only` hanya memeriksa `mitra_data.username` di sesi. Ini **bukan** guard
+sungguhan: belum ada tabel mitra, hash kata sandi, atau Policy kepemilikan.
+Saat backend dibangun: ganti sumber identitas di middleware ini dengan guard
+`mitra`, pindahkan kredensial ke tabel `mitra` (kolom `password` + `must_change_password`),
+dan tambahkan Policy agar mitra hanya membaca datanya sendiri.
 
 ## 15. Template MoU per Bidang (SELESAI)
 

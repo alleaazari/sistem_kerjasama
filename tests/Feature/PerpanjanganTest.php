@@ -91,6 +91,9 @@ test('admin menolak: alasan wajib dan tampil di halaman Status mitra', function 
         ->post(route('superadmin.dashboard.tolak', $id), ['alasan' => 'Berkas pendukung belum lengkap.'])
         ->assertSessionHasNoErrors();
 
+    // Mitra membuka halamannya di sesi terpisah dari sesi admin.
+    $this->flushSession();
+
     $html = $this->withSession(['mitra_data' => ['username' => 'user1']])
         ->get(route('mitra.status'))->getContent();
 

@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AdminOnly;
 use App\Http\Middleware\HideAdmin;
+use App\Http\Middleware\MitraOnly;
 use App\Http\Middleware\SecurityHeaders;
 use App\Support\AdminAkses;
 use Illuminate\Foundation\Application;
@@ -47,6 +48,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'admin.only' => AdminOnly::class,
+            'mitra.only' => MitraOnly::class,
         ]);
 
         // Header keamanan dasar untuk seluruh request web.

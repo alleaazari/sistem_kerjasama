@@ -231,7 +231,11 @@ return [
     | production. Nilainya ikut ter-commit supaya proyek bisa langsung dicoba
     | di mesin mana pun tanpa menyetel .env lebih dulu.
     |
-    | Nama pengguna tiap peran WAJIB berbeda agar pemisahan peran tetap utuh.
+    | Kata sandi tiap peran SENGAJA berbeda. Sebelumnya ketiganya memakai
+    | password yang sama, sehingga akun Superadmin bisa dipakai masuk ke
+    | panel Admin Kerja Sama. Dengan kata sandi berbeda, tiap halaman login
+    | benar-benar memisahkan peran.
+    |
     | Di produksi (APP_ENV=production) akun demo ini tidak pernah aktif.
     */
     'demo' => [
@@ -239,19 +243,19 @@ return [
             'name' => 'Super Administrator',
             'username' => 'superadmin',
             'email' => 'superadmin@komdigi.go.id',
-            'password' => '123456',
+            'password' => 'superadmin123',
         ],
         'admin_kerjasama' => [
             'name' => 'Admin Kerja Sama',
             'username' => 'kerjasama',
             'email' => 'kerjasama@komdigi.go.id',
-            'password' => '123456',
+            'password' => 'kerjasama123',
         ],
         'developer' => [
             'name' => 'Developer',
             'username' => 'developer',
             'email' => 'developer@komdigi.go.id',
-            'password' => '123456',
+            'password' => 'developer123',
         ],
     ],
 
@@ -290,6 +294,7 @@ return [
         'tentang' => 'tentang',
         'artikel' => 'artikel',
         'galeri' => 'galeri',
+        'template-mou' => 'template_mou',
         'login' => 'login',
         'test-email' => 'test_email',
     ],

@@ -10,10 +10,8 @@
         <div class="auth-notice" role="status">{{ session('info') }}</div>
     @endif
 
-    @if ($errors->any())
-        <div class="auth-alert" role="alert" id="galat-masuk">
-            {{ $errors->first() }}
-        </div>
+    @if (session('login_error') || $errors->any())
+        <div class="auth-alert" role="alert" id="galat-masuk">{{ session('login_error') ?? $errors->first() }}</div>
     @endif
 
     <form method="POST" action="{{ route('login.post') }}" data-form-login>
