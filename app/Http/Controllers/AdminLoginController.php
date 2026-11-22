@@ -56,6 +56,8 @@ class AdminLoginController extends Controller
             return redirect()->route(AdminAkses::beranda((string) AdminAkses::peranSesi()));
         }
 
+        $this->tolakSesiPeranLain($peran);
+
         return view('admin.login', [
             'peran' => $peran,
             'labelPeran' => AdminAkses::label($peran),
@@ -67,6 +69,9 @@ class AdminLoginController extends Controller
     public function masuk(Request $request): RedirectResponse
     {
         $peran = $this->peran($request);
+
+        // Sesi peran lain tidak boleh berpindah peran lewat pintu ini.
+        $this->tolakSesiPeranLain($peran);
 
         $data = $request->validate([
             'username' => ['required', 'string', 'max:255'],
@@ -132,6 +137,18 @@ class AdminLoginController extends Controller
         }
 
         return in_array($sesi, AdminAkses::peranLoginDi($peran), true);
+    }
+
+    /**
+     * Sesi yang sudah masuk sebagai peran lain tidak boleh memakai pintu ini.
+     * Halaman panel lain pun disamarkan 404 untuk peran yang salah; login
+     * mengikuti aturan yang sama agar sesi tidak berpindah peran tanpa keluar.
+     */
+    private function tolakSesiPeranLain(string $peran): void
+    {
+        if (AdminAkses::peranSesi() !== null && ! $this->sesiCocok($peran)) {
+            abort(404);
+        }
     }
 
     /**

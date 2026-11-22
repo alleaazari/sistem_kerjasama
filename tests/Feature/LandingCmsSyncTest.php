@@ -58,6 +58,10 @@ test('LandingCms::all mengembalikan default config saat storage kosong', functio
 });
 
 test('sesi admin tidak lagi dipakai untuk konten landing', function () {
+    // Storage kosong: landing wajib memakai default config, bukan isi berkas
+    // CMS yang mungkin sudah disunting di mesin pengembang.
+    $temp = setupCmsStorage();
+
     // Landing seharusnya tidak lagi bergantung session('admin_visi') dsb.
     $response = $this->get(route('landing'));
     $body = $response->getContent();
@@ -68,6 +72,8 @@ test('sesi admin tidak lagi dipakai untuk konten landing', function () {
     expect($body)->toContain('Penandatanganan Nota Kesepahaman');
 
     $response->assertOk();
+
+    File::deleteDirectory($temp);
 });
 
 test('posting tentang admin menulis petinggi ke CMS persisten', function () {

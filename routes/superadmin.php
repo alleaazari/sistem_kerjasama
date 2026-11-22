@@ -3,7 +3,6 @@
 use App\Http\Controllers\AdminSuperadminController;
 use App\Support\AdminAkses;
 use App\Support\BidangKerjasama;
-use App\Support\LandingCms;
 use App\Support\PengajuanMasuk;
 use App\Support\PermohonanPerpanjangan;
 use App\Support\StatusKerjasama;
@@ -106,175 +105,33 @@ Route::middleware($hanya('dashboard'))->group(function () {
 // ---------------- PROFIL & VISI MISI ----------------
 Route::middleware($hanya('tentang'))->group(function () {
 
-    Route::get('/tentang', function () {
-        $cms = app(LandingCms::class);
-        $data = $cms->all();
+    Route::get('/tentang', [AdminSuperadminController::class, 'tentang'])->name('tentang');
 
-        return view('admin.tentang', [
-            'petinggi' => $data['petinggi'],
-            'visi' => $data['visi'],
-        ]);
-    })->name('tentang');
-
-    Route::post('/tentang', function (Request $request) {
-        $request->validate([
-            'p_nama.*' => 'required|string|max:255',
-            'p_jabatan.*' => 'required|string|max:255',
-            'p_badge.*' => 'required|string|max:255',
-            'p_foto.*' => 'nullable|image|max:2048',
-            'p_foto_url.*' => 'nullable|string|max:1000',
-            'p_desc.*' => 'required|string',
-            'visi' => 'required|string',
-        ]);
-
-        $cms = app(LandingCms::class);
-        $current = $cms->all()['petinggi'];
-        $petinggi = [];
-        $count = count($request->input('p_nama', []));
-
-        for ($i = 0; $i < $count; $i++) {
-            $foto = $request->input('p_foto_url')[$i] ?? ($current[$i]['foto'] ?? '');
-            if ($request->hasFile('p_foto') && isset($request->file('p_foto')[$i]) && $request->file('p_foto')[$i]->isValid()) {
-                $file = $request->file('p_foto')[$i];
-                $foto = 'data:'.$file->getMimeType().';base64,'.base64_encode((string) file_get_contents($file->getRealPath()));
-            }
-
-            $petinggi[] = [
-                'nama' => $request->input('p_nama')[$i],
-                'jabatan' => $request->input('p_jabatan')[$i],
-                'badge' => $request->input('p_badge')[$i],
-                'foto' => $foto,
-                'desc' => $request->input('p_desc')[$i],
-            ];
-        }
-
-        $cms->save('petinggi', $petinggi);
-        $cms->save('visi', $request->input('visi'));
-
-        return back()->with('ok', 'Profil Petinggi & Visi Misi Komdigi berhasil diperbarui.');
-    })->name('tentang.update');
+    Route::post('/tentang', [AdminSuperadminController::class, 'tentangUpdate'])->name('tentang.update');
 });
 
 // ---------------- ARTIKEL ----------------
 Route::middleware($hanya('artikel'))->group(function () {
 
-    Route::get('/artikel', function () {
-        $rows = app(LandingCms::class)->all()['artikel'];
+    Route::get('/artikel', [AdminSuperadminController::class, 'artikel'])->name('artikel');
 
-        return view('admin.artikel', ['rows' => $rows]);
-    })->name('artikel');
+    Route::post('/artikel', [AdminSuperadminController::class, 'artikelStore'])->name('artikel.store');
 
-    Route::post('/artikel', function (Request $request) {
-        $request->validate(['judul' => 'required|string|max:255']);
-        $cms = app(LandingCms::class);
-        $rows = $cms->all()['artikel'];
-        $rows[] = [
-            'id' => time().rand(10, 99),
-            'judul' => $request->input('judul'),
-            'konten' => $request->input('konten', ''),
-            'tanggal' => now()->translatedFormat('d F Y'),
-            'gambar' => $request->input('gambar', ''),
-        ];
-        $cms->save('artikel', array_values($rows));
+    Route::post('/artikel/{id}/delete', [AdminSuperadminController::class, 'artikelDelete'])->name('artikel.delete');
 
-        return back()->with('ok', 'Artikel "'.$request->judul.'" berhasil dipublikasikan.');
-    })->name('artikel.store');
-
-    Route::post('/artikel/{id}/delete', function ($id) {
-        $cms = app(LandingCms::class);
-        $rows = $cms->all()['artikel'];
-        $rows = array_values(array_filter($rows, fn ($r) => (string) $r['id'] !== (string) $id));
-        $cms->save('artikel', $rows);
-
-        return back()->with('ok', 'Artikel berhasil dihapus.');
-    })->name('artikel.delete');
-
-    Route::post('/artikel/{id}/edit', function (Request $request, $id) {
-        $request->validate(['judul' => 'required|string|max:255']);
-        $cms = app(LandingCms::class);
-        $rows = $cms->all()['artikel'];
-        foreach ($rows as &$r) {
-            if ((string) $r['id'] === (string) $id) {
-                $r['judul'] = $request->input('judul');
-                $r['konten'] = $request->input('konten', $r['konten'] ?? '');
-                break;
-            }
-        }
-        unset($r);
-        $cms->save('artikel', $rows);
-
-        return back()->with('ok', 'Artikel berhasil diperbarui.');
-    })->name('artikel.edit');
+    Route::post('/artikel/{id}/edit', [AdminSuperadminController::class, 'artikelEdit'])->name('artikel.edit');
 });
 
 // ---------------- GALERI ----------------
 Route::middleware($hanya('galeri'))->group(function () {
 
-    Route::get('/galeri', function () {
-        $rows = app(LandingCms::class)->all()['galeri'];
+    Route::get('/galeri', [AdminSuperadminController::class, 'galeri'])->name('galeri');
 
-        return view('admin.galeri', ['rows' => $rows]);
-    })->name('galeri');
+    Route::post('/galeri', [AdminSuperadminController::class, 'galeriStore'])->name('galeri.store');
 
-    Route::post('/galeri', function (Request $request) {
-        $request->validate([
-            'judul' => 'required|string|max:255',
-            'gambar' => 'nullable|image|max:2048',
-        ]);
-        $cms = app(LandingCms::class);
-        $rows = $cms->all()['galeri'];
+    Route::post('/galeri/{id}/delete', [AdminSuperadminController::class, 'galeriDelete'])->name('galeri.delete');
 
-        $gambar = $request->input('gambar_url');
-        if ($request->hasFile('gambar') && $request->file('gambar')->isValid()) {
-            $file = $request->file('gambar');
-            $gambar = 'data:'.$file->getMimeType().';base64,'.base64_encode((string) file_get_contents($file->getRealPath()));
-        }
-
-        $rows[] = [
-            'id' => time().rand(10, 99),
-            'judul' => $request->input('judul'),
-            'konten' => $request->input('konten', ''),
-            'tanggal' => now()->translatedFormat('d F Y'),
-            'gambar' => $gambar,
-        ];
-
-        $cms->save('galeri', array_values($rows));
-
-        return back()->with('ok', 'Foto "'.$request->judul.'" berhasil dipublikasikan.');
-    })->name('galeri.store');
-
-    Route::post('/galeri/{id}/delete', function ($id) {
-        $cms = app(LandingCms::class);
-        $rows = $cms->all()['galeri'];
-        $rows = array_values(array_filter($rows, fn ($r) => (string) $r['id'] !== (string) $id));
-        $cms->save('galeri', $rows);
-
-        return back()->with('ok', 'Foto galeri berhasil dihapus.');
-    })->name('galeri.delete');
-
-    Route::post('/galeri/{id}/edit', function (Request $request, $id) {
-        $request->validate([
-            'judul' => 'required|string|max:255',
-            'gambar' => 'nullable|image|max:2048',
-        ]);
-        $cms = app(LandingCms::class);
-        $rows = $cms->all()['galeri'];
-        foreach ($rows as &$r) {
-            if ((string) $r['id'] === (string) $id) {
-                $r['judul'] = $request->input('judul');
-                $r['konten'] = $request->input('konten', $r['konten'] ?? '');
-                if ($request->hasFile('gambar') && $request->file('gambar')->isValid()) {
-                    $file = $request->file('gambar');
-                    $r['gambar'] = 'data:'.$file->getMimeType().';base64,'.base64_encode((string) file_get_contents($file->getRealPath()));
-                }
-                break;
-            }
-        }
-        unset($r);
-        $cms->save('galeri', $rows);
-
-        return back()->with('ok', 'Foto galeri berhasil diperbarui.');
-    })->name('galeri.edit');
+    Route::post('/galeri/{id}/edit', [AdminSuperadminController::class, 'galeriEdit'])->name('galeri.edit');
 });
 
 // ---------------- TEMPLATE MOU PER BIDANG ----------------
