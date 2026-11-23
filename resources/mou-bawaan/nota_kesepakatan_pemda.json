@@ -1,0 +1,219 @@
+{
+    "kode": "nota_kesepakatan_pemda",
+    "nama": "Nota Kesepakatan dengan Pemerintah Daerah",
+    "status": "final",
+    "versi": 2,
+    "blok": [
+        {
+            "tipe": "sampul",
+            "isi": "NOTA KESEPAKATAN\nANTARA\n{{pihak_kesatu_nama_unit}}\nDAN\n{{nama_instansi}}\nTENTANG\n{{judul}}\nNomor {{nomor_dokumen}}\nNomor {{nomor_dokumen_mitra}}"
+        },
+        {
+            "tipe": "pembukaan",
+            "isi": "Pada hari ini {{tanggal}} bertempat di {{tempat}}, yang bertanda tangan di bawah ini:\n1. {{pihak_kesatu_penandatangan}}, {{pihak_kesatu_jabatan}}, dalam hal ini bertindak untuk dan atas nama {{pihak_kesatu_nama_unit}}, berkedudukan di {{pihak_kesatu_alamat}}, yang selanjutnya disebut PIHAK KESATU.\n2. {{pihak_kedua_penandatangan}}, {{pihak_kedua_jabatan}}, dalam hal ini bertindak untuk dan atas nama {{nama_instansi}}, berkedudukan di {{pihak_kedua_alamat}}, yang diangkat berdasarkan {{pihak_kedua_dasar_pengangkatan}}, untuk selanjutnya disebut PIHAK KEDUA.\nPIHAK KESATU dan PIHAK KEDUA selanjutnya secara bersama-sama dalam Nota Kesepakatan ini disebut PARA PIHAK; dan masing-masing disebut PIHAK."
+        },
+        {
+            "tipe": "menimbang",
+            "isi": "PARA PIHAK terlebih dahulu menerangkan hal-hal sebagai berikut:\na. bahwa PIHAK KESATU adalah unit kerja di bawah Kementerian Komunikasi dan Digital Republik Indonesia yang mempunyai tugas menyelenggarakan pengembangan sumber daya manusia di bidang komunikasi, informasi, dan digital;\nb. bahwa PIHAK KEDUA adalah penyelenggara urusan pemerintahan daerah menurut asas otonomi dan tugas pembantuan dengan prinsip otonomi seluas-luasnya dalam sistem dan prinsip Negara Kesatuan Republik Indonesia."
+        },
+        {
+            "tipe": "mengingat",
+            "isi": "PARA PIHAK dalam melaksanakan Nota Kesepakatan ini memperhatikan ketentuan peraturan perundang-undangan sebagai berikut:\n{{dasar_hukum}}\n{{dasar_hukum_daerah}}"
+        },
+        {
+            "tipe": "pasal",
+            "pasal": [
+                {
+                    "nomor": 1,
+                    "judul": "MAKSUD DAN TUJUAN",
+                    "ayat": [
+                        "Maksud Nota Kesepakatan ini adalah sebagai landasan bagi PARA PIHAK untuk melaksanakan kerja sama dalam peningkatan kapasitas sumber daya manusia bidang komunikasi, informasi, dan digital di lingkungan {{nama_instansi}}.",
+                        "Tujuan dari Nota Kesepakatan ini adalah terciptanya kapasitas sumber daya manusia bidang komunikasi, informasi, dan digital yang unggul dan berdaya saing dengan melibatkan sumber daya yang dimiliki oleh PARA PIHAK."
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 2,
+                    "judul": "OBJEK",
+                    "ayat": [
+                        "Objek pelaksanaan Nota Kesepakatan ini adalah beragam program peningkatan kapasitas sumber daya manusia untuk aparatur pemerintahan, mahasiswa, dan masyarakat umum di lingkungan {{nama_instansi}}."
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 3,
+                    "judul": "LOKASI",
+                    "ayat": [
+                        "Lokasi pelaksanaan Nota Kesepakatan ini terbatas pada wilayah kerja {{nama_instansi}}."
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 4,
+                    "judul": "RUANG LINGKUP",
+                    "ayat": [
+                        "Ruang Lingkup Nota Kesepakatan ini meliputi:\na. peningkatan kapasitas sumber daya manusia bidang komunikasi, informasi, dan digital melalui penyediaan pemimpin digital, talenta digital, dan literasi digital;\nb. pertukaran data dan informasi yang beretika, aman, dan bertanggungjawab sesuai dan tidak bertentangan dengan ketentuan perundang-undangan; dan",
+                        {
+                            "teks": "c. kegiatan lain yang disepakati oleh PARA PIHAK.",
+                            "opsional": true,
+                            "aktif_bawaan": true
+                        }
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 5,
+                    "judul": "TUGAS DAN TANGGUNG JAWAB",
+                    "ayat": [
+                        "Tugas dan tanggung jawab PIHAK KESATU adalah:\na. menyediakan instruktur pelatihan;\nb. menyelenggarakan pelatihan dan pemberian sertifikat kompetensi di bidang komunikasi, informasi, dan digital; dan\nc. memfasilitasi penyediaan sarana dan prasarana dengan berkoordinasi dengan PIHAK KEDUA.",
+                        "Tugas dan tanggung jawab PIHAK KEDUA adalah:\na. mendiseminasikan informasi tentang program pelatihan;\nb. menyediakan sumber daya manusia sebagai calon peserta pelatihan; dan\nc. memfasilitasi penyediaan sarana dan prasarana dengan berkoordinasi dengan PIHAK KESATU."
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 6,
+                    "judul": "PELAKSANAAN",
+                    "ayat": [
+                        "Dalam melaksanakan Nota Kesepakatan ini, PARA PIHAK berkomitmen dan bertanggungjawab dalam melaksanakan rencana kerja yang disusun paling lambat 3 (tiga) bulan setelah ditandatanganinya Nota Kesepakatan ini dan merupakan bagian yang tidak terpisahkan dalam Nota Kesepakatan ini.",
+                        "Pelaksanaan Nota Kesepakatan sebagaimana dimaksud pada ayat (1), PARA PIHAK sepakat untuk menunjuk pejabat pelaksana sebagai berikut:\na. PIHAK KESATU menunjuk {{pihak_kesatu_pejabat_pelaksana}}; dan\nb. PIHAK KEDUA menunjuk {{pihak_kedua_penandatangan}}.",
+                        "Target awal peserta pelatihan ditetapkan dalam rencana kerja sebagaimana dimaksud dalam Lampiran Nota Kesepakatan ini.",
+                        "Realisasi target kuota peserta pelatihan sebagaimana dimaksud pada ayat (3) di tahun berjalan dapat berubah sesuai dengan kebijakan yang disepakati oleh PARA PIHAK.",
+                        "Ketentuan kepesertaan pelatihan sesuai dengan skema pelatihan yang ditentukan oleh PIHAK KESATU."
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 7,
+                    "judul": "KERAHASIAAN",
+                    "ayat": [
+                        "PARA PIHAK wajib menjaga keamanan dan kerahasiaan setiap data, informasi, dan/atau dokumen, termasuk namun tidak terbatas pada Data Pribadi, data kedinasan, data teknis, dan informasi strategis, yang diperoleh sehubungan dengan pelaksanaan Nota Kesepakatan ini, sesuai dengan ketentuan peraturan perundang-undangan.",
+                        "PARA PIHAK dilarang mengungkapkan, menyerahkan, atau memberikan akses atas data dan/atau informasi sebagaimana dimaksud pada ayat (1) kepada pihak lain, baik sebagian maupun seluruhnya, tanpa persetujuan tertulis terlebih dahulu dari PIHAK lainnya, kecuali ditentukan lain oleh ketentuan peraturan perundang-undangan.",
+                        "PARA PIHAK menjamin bahwa setiap pejabat, pegawai, dan/atau pihak lain yang berada di bawah penguasaan atau penugasan masing-masing PIHAK yang memperoleh akses terhadap data dan/atau informasi sebagaimana dimaksud pada ayat (1), terikat kewajiban kerahasiaan dan hanya menggunakan data tersebut untuk tujuan pelaksanaan Nota Kesepakatan ini.",
+                        "Kewajiban kerahasiaan sebagaimana dimaksud pada ayat (1) dikecualikan dalam hal:\na. data dan/atau informasi tersebut telah atau menjadi informasi yang tersedia untuk umum bukan karena pelanggaran Nota Kesepakatan ini; dan/atau\nb. pengungkapan data dan/atau informasi diperintahkan oleh pengadilan atau lembaga yang berwenang sesuai dengan ketentuan peraturan perundang-undangan.",
+                        "Ketentuan kerahasiaan ini tetap berlaku dan mengikat PARA PIHAK sejak Nota Kesepakatan ini ditandatangani, selama Nota Kesepakatan ini berlaku, dan setelah Nota Kesepakatan ini berakhir, sepanjang data dan/atau informasi tersebut masih disimpan atau diproses oleh PARA PIHAK."
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 8,
+                    "judul": "TRANSFER DATA, INFORMASI, DAN PELINDUNGAN DATA PRIBADI",
+                    "ayat": [
+                        "PARA PIHAK sepakat bahwa dalam pelaksanaan Nota Kesepakatan ini:\na. PIHAK KESATU bertindak sebagai Pengendali Data Pribadi; dan\nb. PIHAK KEDUA bertindak sebagai Prosesor Data Pribadi, sepanjang memproses Data Pribadi untuk dan atas nama PIHAK KESATU.",
+                        "Pemrosesan Data Pribadi dilakukan berdasarkan persetujuan yang sah dari Subjek Data Pribadi dan/atau dasar pemrosesan lain yang sah sesuai dengan ketentuan Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi, termasuk pelaksanaan tugas pemerintahan, kewajiban hukum, dan kepentingan publik.",
+                        "PIHAK KESATU berwenang menentukan tujuan, ruang lingkup, jenis Data Pribadi, jangka waktu pemrosesan, serta instruksi pemrosesan Data Pribadi yang dilakukan oleh PIHAK KEDUA.",
+                        "PIHAK KEDUA wajib:\na. memproses Data Pribadi hanya sejauh diperlukan untuk pelaksanaan Nota Kesepakatan ini;\nb. tidak mengungkapkan Data Pribadi kepada pihak ketiga, kecuali kepada personel atau subkontraktor yang telah mendapat persetujuan tertulis dari PIHAK KESATU atau diwajibkan oleh ketentuan peraturan perundang-undangan;\nc. memastikan bahwa setiap personel dan/atau subkontraktor yang terlibat dalam pemrosesan Data Pribadi memiliki kewajiban kerahasiaan, kompetensi, dan pelatihan pelindungan data yang memadai; dan\nd. menghapus atau memusnahkan Data Pribadi yang diproses untuk dan atas nama PIHAK KESATU setelah tujuan pemrosesan tercapai atau atas permintaan PIHAK KESATU, sepanjang tidak bertentangan dengan ketentuan peraturan perundang-undangan mengenai arsip dan retensi data.",
+                        "PIHAK KEDUA wajib menerapkan langkah-langkah pengamanan administratif, teknis, dan organisasi untuk menjaga kerahasiaan, integritas, ketersediaan, dan keamanan Data Pribadi, serta mencegah terjadinya pemrosesan tidak sah, kehilangan, perubahan, atau pengungkapan yang tidak berwenang, sesuai dengan ketentuan peraturan perundang-undangan dan standar keamanan informasi yang berlaku.",
+                        "Dalam hal terjadi kegagalan pelindungan Data Pribadi, pelanggaran keamanan data, atau permintaan pengungkapan Data Pribadi oleh pihak berwenang, PIHAK KEDUA wajib memberitahukan secara tertulis kepada PIHAK KESATU paling lambat 3 x 24 (tiga kali dua puluh empat) jam sejak diketahui atau diterimanya permintaan tersebut, serta membantu PIHAK KESATU dalam:\na. pemberitahuan kepada Subjek Data Pribadi dan/atau otoritas berwenang;\nb. penilaian dampak pelindungan Data Pribadi; dan\nc. langkah mitigasi yang diperlukan.",
+                        "Dalam hal terjadi kegagalan pelindungan data atau permintaan akses oleh otoritas, pihak yang mengetahui wajib memberitahukan kepada pihak lainnya secara tertulis maksimal 3 x 24 jam sejak diketahui, serta berkolaborasi dalam langkah mitigasi dan penilaian dampak.",
+                        "Ketentuan dalam Pasal ini tetap berlaku dan mengikat PARA PIHAK selama Data Pribadi masih disimpan atau diproses, meskipun Nota Kesepakatan ini telah berakhir."
+                    ],
+                    "opsional": true,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 9,
+                    "judul": "PEMBIAYAAN",
+                    "ayat": [
+                        "{{pembiayaan}}"
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 10,
+                    "judul": "JANGKA WAKTU",
+                    "ayat": [
+                        "Nota Kesepakatan ini berlaku selama 3 (tiga) tahun terhitung sejak ditandatangani oleh PARA PIHAK.",
+                        "Jangka waktu sebagaimana dimaksud pada ayat (1) dapat diperpanjang atau diakhiri sebelum berakhirnya Nota Kesepakatan atau berdasarkan kesepakatan PARA PIHAK, dengan ketentuan PIHAK yang ingin mengakhiri atau memperpanjang Nota Kesepakatan ini harus memberitahukan secara tertulis pada PIHAK lainnya dan disetujui secara tertulis oleh PIHAK lainnya, paling lambat 1 (satu) bulan sebelumnya."
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 11,
+                    "judul": "KEADAAN KAHAR",
+                    "ayat": [
+                        "Keadaan kahar sebagaimana dimaksud dalam Nota Kesepakatan ini adalah terjadinya sesuatu peristiwa di luar kemampuan PARA PIHAK yang mengakibatkan tidak dapat dilaksanakannya Nota Kesepakatan ini, seperti terjadinya bencana alam, huru-hara, banjir, perang, kebakaran, wabah penyakit, dan peristiwa sejenis, yang dibuktikan melalui pernyataan tertulis pihak berwenang.",
+                        "Dalam hal salah satu PIHAK terkena peristiwa dalam kategori keadaan kahar, maka pihak tersebut berkewajiban memberitahukan peristiwa yang menimpanya kepada PIHAK lain paling lambat 14 (empat belas) hari terhitung mulai terjadinya peristiwa tersebut.",
+                        "Apabila peristiwa keadaan kahar tersebut berlangsung terus-menerus hingga melebihi jangka waktu 30 (tiga puluh) hari, maka PARA PIHAK sepakat untuk meninjau kembali Nota Kesepakatan ini."
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 12,
+                    "judul": "PENYELESAIAN PERSELISIHAN",
+                    "ayat": [
+                        "Apabila terdapat ketidaksesuaian pendapat atau perselisihan antara PARA PIHAK dalam pelaksanaan Nota Kesepakatan ini, maka PARA PIHAK sepakat untuk menyelesaikannya melalui musyawarah untuk mufakat."
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 13,
+                    "judul": "KORESPONDENSI DAN KOMUNIKASI",
+                    "ayat": [
+                        "Setiap dokumen dan/atau pemberitahuan, persetujuan, izin, permintaan, atau komunikasi lainnya dalam pelaksanaan Nota Kesepakatan ini harus dibuat secara tertulis dan/atau dapat disampaikan secara langsung oleh PARA PIHAK.",
+                        "PARA PIHAK menunjuk pejabat penghubung dan alamat korespondensi sebagaimana dimaksud pada ayat (1) sebagai berikut:\na. PIHAK KESATU: {{pihak_kesatu_nama_unit}}, {{pihak_kesatu_alamat}}, Telepon {{pihak_kesatu_telepon}}, Email {{pihak_kesatu_email}};\nb. PIHAK KEDUA: {{nama_instansi}}, {{alamat_instansi}}, Telepon {{telepon_instansi}}, Email {{email_instansi}}.",
+                        "PARA PIHAK setiap waktu dapat mengubah alamat korespondensi sebagaimana dimaksud pada ayat (2) dan wajib memberitahukan perubahan alamat korespondensi kepada PIHAK lainnya paling lambat 7 (tujuh) hari kalender sebelum terjadinya perubahan alamat korespondensi tersebut."
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 14,
+                    "judul": "PERUBAHAN",
+                    "ayat": [
+                        "Perubahan dan/atau hal-hal yang belum diatur dalam Nota Kesepakatan ini akan diatur kemudian dalam bentuk Perubahan dan merupakan bagian tidak terpisahkan dari Nota Kesepakatan ini."
+                    ],
+                    "opsional": true,
+                    "aktif_bawaan": false
+                },
+                {
+                    "nomor": 15,
+                    "judul": "PENUTUP",
+                    "ayat": [
+                        "Demikian Nota Kesepakatan ini ditandatangani oleh PARA PIHAK dan dibuat dalam rangkap 2 (dua) di antaranya bermeterai cukup, masing-masing untuk PARA PIHAK dan mempunyai kekuatan hukum yang sama."
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                }
+            ]
+        },
+        {
+            "tipe": "penutup",
+            "isi": "Demikian Nota Kesepakatan ini ditandatangani oleh PARA PIHAK dan dibuat dalam rangkap 2 (dua) di antaranya bermeterai cukup, masing-masing untuk PARA PIHAK dan mempunyai kekuatan hukum yang sama."
+        },
+        {
+            "tipe": "tanda_tangan",
+            "isi": "PIHAK KESATU\n{{pihak_kesatu_nama_unit}}\n\n{{pihak_kesatu_penandatangan}}\n{{pihak_kesatu_jabatan}}\n\n\nPIHAK KEDUA\n{{nama_instansi}}\n\n{{pihak_kedua_penandatangan}}\n{{pihak_kedua_jabatan}}"
+        },
+        {
+            "tipe": "lampiran",
+            "lampiran": {
+                "judul": "RENCANA KERJA DAN TARGET PESERTA PELATIHAN",
+                "tabel": "rencana_kerja",
+                "kolom": [
+                    "No",
+                    "Kegiatan",
+                    "Ruang Lingkup",
+                    "Peran PIHAK KESATU",
+                    "Peran PIHAK KEDUA",
+                    "Sumber Pembiayaan",
+                    "Lokasi",
+                    "Outcome",
+                    "Target Peserta",
+                    "Waktu"
+                ],
+                "baris": []
+            }
+        }
+    ]
+}

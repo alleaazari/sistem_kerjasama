@@ -1001,3 +1001,87 @@ DIUBAH
 
 ### Langkah berikutnya
 - Editor template berbasis blok untuk Superadmin. Menunggu perintah "Lanjut".
+
+---
+
+## 19. Editor Template MoU Superadmin Sesuai Referensi (SELESAI)
+
+Halaman `/{SUPERADMIN_PATH}/template-mou` dialihkan dari editor teks datar
+(`TemplateMou`) ke **editor berbasis blok** yang menyunting
+`storage/app/mou/*.json` — struktur yang sama dipakai generator mitra.
+
+### Keputusan
+- **Halaman ini menyunting template blok.** `TemplateMou` (teks datar) tetap ada
+  dan tetap dipakai jalur draf mitra lama `/mitra/mou/draf`; tidak dihapus.
+  `SimpanTemplateMouRequest` (tidak lagi terpakai) dihapus.
+- **Operasi tulis ditambahkan ke `StrukturTemplateMou`** (layer yang sama dengan
+  pembaca): `simpan`, `kembalikan`, `hapus`, `bawaan`, `pemetaan`, `simpanPemetaan`,
+  `pengaturan`, `simpanPengaturan`. Berkas JSON tetap sumbernya; `config/mou.php`
+  menjadi nilai awal.
+- **"Kembalikan ke bawaan"** memakai aset `resources/mou-bawaan/{kode}.json`
+  (snapshot isi template, di-commit) — bukan DB/seed kode.
+- **Pemetaan bidang→template** disimpan sebagai overlay
+  `storage/app/mou/_pemetaan.json` (menimpa `config('mou.pemetaan')`). Dropdown di
+  halaman ini menyimpan pemetaan; kode template tak dikenal ditolak.
+- **Pengaturan Pihak Kesatu + dasar hukum nasional** disimpan sebagai overlay
+  `storage/app/mou/_pengaturan.json` (menimpa `config('mou.pihak_kesatu')` dan
+  `config('mou.dasar_hukum_nasional')`). `RendererDokumen::data()` membaca
+  `StrukturTemplateMou::pengaturan()`, dan kini mengisi `{{dasar_hukum}}`
+  (sebelumnya tidak pernah terisi → selalu `[ISI dasar_hukum]`).
+- **Editor mengirim struktur blok sebagai satu medan JSON (`blok`)**; server
+  memvalidasi ULANG tiap blok (tipe, bentuk pasal/ayat, jumlah, panjang, tag HTML,
+  placeholder asing). Client tidak dipercaya untuk urutan/tipe/isi.
+- **Pratinjau memakai `RendererDokumen::render()`** + data contoh — renderer yang
+  sama dengan generator mitra, tidak ada jalur `innerHTML`.
+
+### File
+DIBUAT
+- `resources/mou-bawaan/{nota_kesepakatan_pemda,pks_beasiswa_talenta_digital,kerangka_umum}.json` — isi bawaan ("kembalikan ke bawaan").
+- `app/Http/Requests/SimpanTemplateBlokRequest.php` — validasi struktur blok + placeholder + HTML + batas.
+- `app/Http/Requests/SimpanPengaturanMouRequest.php` — validasi Pihak Kesatu + dasar hukum nasional.
+- `app/Http/Requests/SimpanPemetaanMouRequest.php` — validasi pemetaan bidang→template.
+DIUBAH
+- `app/Support/Mou/StrukturTemplateMou.php` — operasi tulis, overlay pemetaan/pengaturan, `bawaan`.
+- `app/Support/Mou/RendererDokumen.php` — baca `pengaturan()`; isi `{{dasar_hukum}}`.
+- `app/Http/Controllers/AdminSuperadminController.php` — `templateMou` (blok), `simpanTemplateMou`, `resetTemplateMou`, `simpanPengaturanMou`, `simpanPemetaanMou`.
+- `routes/superadmin.php` — `whereIn` kode template, rute `template_mou.pengaturan`/`template_mou.pemetaan`, throttle.
+- `app/Providers/AppServiceProvider.php` — limiter `admin-template-mou` (20/menit per akun+IP).
+- `config/admin_akses.php` — label aksi `template_mou.pengaturan`/`template_mou.pemetaan`.
+- `resources/views/admin/template_mou.blade.php` — ditulis ulang menjadi editor blok + pratinjau + pengaturan + pemetaan.
+- `tests/Feature/TemplateMouAdminTest.php` — 21 test (editor blok, pasal opsional, validasi, otorisasi, finalisasi bidang 3, draf lama).
+DIHAPUS
+- `app/Http/Requests/SimpanTemplateMouRequest.php` — tidak terpakai setelah halaman dialihkan ke editor blok.
+
+### Keamanan
+- [x] Role lain ditolak (404) untuk GET + PUT + POST: test "role lain ditolak untuk GET dan seluruh aksi tulis" (superadmin-only via middleware `admin.only:superadmin`).
+- [x] Placeholder tak dikenal ditolak: test "placeholder tidak dikenal ditolak dan template tidak berubah".
+- [x] HTML berbahaya ditolak: test "tag HTML berbahaya ditolak".
+- [x] Struktur blok/JSON tak sah ditolak: test "struktur blok tidak sah ditolak", "blok bukan JSON sah ditolak".
+- [x] Status di luar final/draf ditolak: test "status di luar final/draf ditolak".
+- [x] Panjang & jumlah dibatasi: `SimpanTemplateBlokRequest` (MAKS_PASAL/MAKS_AYAT/MAKS_TEKS).
+- [x] CSRF: semua form `@csrf` + `@method`.
+- [x] Rate limit: limiter `admin-template-mou` pada seluruh rute tulis.
+- [x] Hanya final dapat dipakai mitra: test "finalisasi bidang 3 ... menjadi dapat dipakai mitra", "template draf tidak dapat dipakai mitra".
+- [x] Perubahan tidak mengubah draf lama: test "perubahan template berlaku untuk draf mitra berikutnya, draf lama tidak berubah".
+- [x] Versi + log tercatat: test "superadmin menyimpan blok template dan versi dicatat di log", "kembalikan ke bawaan memulihkan isi dan mencatat log", "pengaturan ... tersimpan", "pemetaan ... tersimpan".
+
+### Pengecekan
+- `php artisan test` → 325 test, 324 lolos (1917 assertion). 1 gagal
+  `LandingCmsSyncTest.php:68` (**pra-eksisting**).
+- `pint --test` → passed. `phpstan analyse app --memory-limit=1G` → 0 error.
+- `npm run build` → berhasil.
+
+### Catatan untuk backend
+- Pindahkan template, pemetaan, dan pengaturan ke tabel (`mou_template`,
+  `mou_pemetaan`, `mou_pengaturan`) dengan riwayat versi + kolom `diperbarui_oleh`.
+- `resources/mou-bawaan/*.json` menjadi basis data seed bawaan saat migrasi.
+
+### Menunggu konfirmasi user
+- Isi bawaan (`resources/mou-bawaan/*.json`) adalah salinan isi saat ini; perlu
+  ditinjau mentor bila redaksi template berubah lagi.
+- `pihak_kesatu.penandatangan`/`jabatan` masih `[ISI ...]` sampai diisi lewat
+  halaman Pengaturan.
+- Kolom Lampiran Template A (10) & `bidang_3` masih menunggu (dari §17).
+
+### Langkah berikutnya
+- Menunggu perintah pengguna.

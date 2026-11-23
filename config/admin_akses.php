@@ -147,6 +147,8 @@ return [
         'masa_aktif.atur' => 'Mengubah masa aktif',
         'template_mou.update' => 'Menyimpan template MoU',
         'template_mou.reset' => 'Mengembalikan template MoU ke bawaan',
+        'template_mou.pengaturan' => 'Menyimpan pengaturan template MoU',
+        'template_mou.pemetaan' => 'Menyimpan pemetaan bidang template MoU',
     ],
 
     /* Grup menu sidebar (urutan tampil). */

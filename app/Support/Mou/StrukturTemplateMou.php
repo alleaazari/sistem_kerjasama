@@ -43,9 +43,42 @@ final class StrukturTemplateMou
         return storage_path('app/mou');
     }
 
+    /** Direktori isi bawaan (aset paket, di-commit) untuk "kembalikan ke bawaan". */
+    public static function direktoriBawaan(): string
+    {
+        return resource_path('mou-bawaan');
+    }
+
     public static function path(string $kode): string
     {
         return self::direktori().'/'.$kode.'.json';
+    }
+
+    /** Berkas bawaan sebuah template; null bila tidak ada. */
+    public static function pathBawaan(string $kode): ?string
+    {
+        $path = self::direktoriBawaan().'/'.$kode.'.json';
+
+        return is_file($path) ? $path : null;
+    }
+
+    /**
+     * Isi bawaan sebuah template (dari aset resources/mou-bawaan), dinormalkan
+     * agar bentuknya sama dengan template tersimpan.
+     *
+     * @return array<string, mixed>|null
+     */
+    public static function bawaan(string $kode): ?array
+    {
+        $path = self::pathBawaan($kode);
+
+        if ($path === null) {
+            return null;
+        }
+
+        $data = json_decode((string) file_get_contents($path), true);
+
+        return is_array($data) ? $data : null;
     }
 
     /**
@@ -83,20 +116,209 @@ final class StrukturTemplateMou
     }
 
     /**
-     * Template untuk sebuah kode bidang, memakai config('mou.pemetaan').
-     * Bidang yang tidak dipetakan memakai 'kerangka_umum'; bila itu pun tidak
-     * ada, kembalikan null.
+     * Template untuk sebuah kode bidang, memakai config('mou.pemetaan') yang
+     * dapat ditimpa overlay storage/app/mou/_pemetaan.json. Bidang yang tidak
+     * dipetakan memakai 'kerangka_umum'; bila itu pun tidak ada, kembalikan null.
      *
      * @return array<string, mixed>|null
      */
     public static function untukBidang(string $kodeBidang): ?array
     {
-        $peta = config('mou.pemetaan', []);
-        $kodeTemplate = is_array($peta) && isset($peta[$kodeBidang]) && is_string($peta[$kodeBidang])
-            ? $peta[$kodeBidang]
-            : 'kerangka_umum';
+        $kodeTemplate = self::pemetaan()[$kodeBidang] ?? 'kerangka_umum';
 
         return self::untuk($kodeTemplate);
+    }
+
+    /**
+     * Pemetaan bidang -> kode template: config sebagai nilai awal, ditimpa
+     * overlay storage/app/mou/_pemetaan.json (hasil suntingan Superadmin).
+     *
+     * @return array<string, string>
+     */
+    public static function pemetaan(): array
+    {
+        $awal = config('mou.pemetaan', []);
+        $awal = is_array($awal) ? $awal : [];
+
+        $overlay = self::bacaJson(self::pathPemetaan());
+
+        return array_merge($awal, $overlay);
+    }
+
+    public static function pathPemetaan(): string
+    {
+        return self::direktori().'/_pemetaan.json';
+    }
+
+    public static function pathPengaturan(): string
+    {
+        return self::direktori().'/_pengaturan.json';
+    }
+
+    /**
+     * Pengaturan global (Pihak Kesatu + dasar hukum nasional): config sebagai
+     * nilai awal, ditimpa overlay storage/app/mou/_pengaturan.json.
+     *
+     * @return array<string, mixed>
+     */
+    public static function pengaturan(): array
+    {
+        $overlay = self::bacaJson(self::pathPengaturan());
+
+        return [
+            'pihak_kesatu' => array_merge(
+                (array) config('mou.pihak_kesatu', []),
+                (array) ($overlay['pihak_kesatu'] ?? []),
+            ),
+            'dasar_hukum_nasional' => is_array($overlay['dasar_hukum_nasional'] ?? null)
+                ? array_values($overlay['dasar_hukum_nasional'])
+                : (array) config('mou.dasar_hukum_nasional', []),
+        ];
+    }
+
+    /**
+     * Simpan pemetaan bidang -> kode template (overlay). Hanya bidang dan kode
+     * template yang sah yang diterima; nilai lain diabaikan.
+     *
+     * @param  array<array-key, mixed>  $peta
+     */
+    public static function simpanPemetaan(array $peta): void
+    {
+        $bersih = [];
+
+        foreach ($peta as $bidang => $kode) {
+            if (! is_string($bidang) || ! is_string($kode) || $kode === '') {
+                continue;
+            }
+
+            if ($kode !== 'kerangka_umum' && ! array_key_exists($kode, self::semua())) {
+                continue;
+            }
+
+            $bersih[$bidang] = $kode;
+        }
+
+        self::tulisJson(self::pathPemetaan(), $bersih);
+    }
+
+    /**
+     * Simpan pengaturan global (Pihak Kesatu + dasar hukum nasional) sebagai
+     * overlay, tanpa menyentuh config.
+     *
+     * @param  array<string, mixed>  $pengaturan
+     */
+    public static function simpanPengaturan(array $pengaturan): void
+    {
+        $pihakKesatu = [];
+
+        foreach (['nama_unit', 'alamat', 'telepon', 'email', 'penandatangan', 'jabatan', 'pejabat_pelaksana'] as $kunci) {
+            if (isset($pengaturan['pihak_kesatu'][$kunci]) && is_string($pengaturan['pihak_kesatu'][$kunci])) {
+                $pihakKesatu[$kunci] = $pengaturan['pihak_kesatu'][$kunci];
+            }
+        }
+
+        $dasar = [];
+
+        foreach ((array) ($pengaturan['dasar_hukum_nasional'] ?? []) as $butir) {
+            if (is_string($butir) && trim($butir) !== '') {
+                $dasar[] = trim($butir);
+            }
+        }
+
+        self::tulisJson(self::pathPengaturan(), [
+            'pihak_kesatu' => $pihakKesatu,
+            'dasar_hukum_nasional' => $dasar,
+        ]);
+    }
+
+    /**
+     * Simpan template lengkap. Versi naik satu tiap simpan, `diperbarui_oleh`
+     * dan `diperbarui_pada` diperbarui. Struktur TIDAK divalidasi di sini —
+     * validasi bentuk dilakukan Form Request sebelum dipanggil.
+     *
+     * @param  array<string, mixed>  $template
+     * @return array<string, mixed> template tersimpan
+     */
+    public static function simpan(string $kode, array $template, string $oleh): array
+    {
+        $lama = self::untuk($kode);
+        $versi = max(1, (int) ($lama['versi'] ?? 1)) + 1;
+
+        if ($lama === null) {
+            $versi = max(1, (int) ($template['versi'] ?? 1));
+        }
+
+        $baru = array_merge($lama ?? [], $template, [
+            'kode' => $kode,
+            'versi' => $versi,
+            'diperbarui_oleh' => $oleh,
+            'diperbarui_pada' => now(config('app.timezone', 'UTC'))->toDateTimeString(),
+        ]);
+
+        self::tulisJson(self::path($kode), $baru);
+
+        return $baru;
+    }
+
+    /**
+     * Kembalikan template ke isi bawaan (aset resources/mou-bawaan), naikkan
+     * versi, dan catat siapa yang melakukannya. Null bila tidak ada bawaan.
+     *
+     * @return array<string, mixed>|null
+     */
+    public static function kembalikan(string $kode, string $oleh): ?array
+    {
+        $bawaan = self::bawaan($kode);
+
+        if ($bawaan === null) {
+            return null;
+        }
+
+        return self::simpan($kode, $bawaan, $oleh);
+    }
+
+    /**
+     * Hapus berkas template dari penyimpanan runtime (kembali ke "belum ada").
+     *
+     * @return bool true bila ada berkas yang terhapus
+     */
+    public static function hapus(string $kode): bool
+    {
+        $path = self::path($kode);
+
+        if (! is_file($path)) {
+            return false;
+        }
+
+        return @unlink($path);
+    }
+
+    /** @return array<string, mixed> */
+    private static function bacaJson(string $path): array
+    {
+        if (! is_file($path)) {
+            return [];
+        }
+
+        $data = json_decode((string) file_get_contents($path), true);
+
+        return is_array($data) ? $data : [];
+    }
+
+    /** @param array<string, mixed> $data */
+    private static function tulisJson(string $path, array $data): void
+    {
+        $dir = dirname($path);
+
+        if (! is_dir($dir)) {
+            @mkdir($dir, 0755, true);
+        }
+
+        file_put_contents(
+            $path,
+            json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            LOCK_EX,
+        );
     }
 
     /**

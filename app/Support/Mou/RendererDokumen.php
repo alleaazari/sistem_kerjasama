@@ -39,7 +39,12 @@ final class RendererDokumen
      */
     public static function data(array $template, array $form): array
     {
-        $pihakKesatu = (array) config('mou.pihak_kesatu', []);
+        $pengaturan = StrukturTemplateMou::pengaturan();
+        $pihakKesatu = (array) ($pengaturan['pihak_kesatu'] ?? []);
+        $dasarHukum = array_values(array_filter(
+            (array) ($pengaturan['dasar_hukum_nasional'] ?? []),
+            static fn ($b) => is_string($b) && trim($b) !== '',
+        ));
 
         $data = [
             'pihak_kesatu_nama_unit' => (string) ($pihakKesatu['nama_unit'] ?? ''),
@@ -49,6 +54,7 @@ final class RendererDokumen
             'pihak_kesatu_penandatangan' => (string) ($pihakKesatu['penandatangan'] ?? ''),
             'pihak_kesatu_jabatan' => (string) ($pihakKesatu['jabatan'] ?? ''),
             'pihak_kesatu_pejabat_pelaksana' => (string) ($pihakKesatu['pejabat_pelaksana'] ?? ''),
+            'dasar_hukum' => implode("\n", $dasarHukum),
             'pembiayaan' => StrukturTemplateMou::klausulPembiayaan($form['pembiayaan'] ?? null),
         ];
 

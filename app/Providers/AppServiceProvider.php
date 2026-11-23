@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Support\AdminAkses;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -54,6 +55,11 @@ class AppServiceProvider extends ServiceProvider
         // ditebak berulang dan satu IP tidak menyapu banyak akun sekaligus.
         RateLimiter::for('admin-login', fn (Request $request) => Limit::perMinute(5)
             ->by(Str::lower((string) $request->input('username')).'|'.$request->ip()));
+
+        // Simpan template MoU (Superadmin): batasi per akun + IP agar penulisan
+        // berkas template tidak dibanjiri.
+        RateLimiter::for('admin-template-mou', fn (Request $request) => Limit::perMinute(20)
+            ->by(Str::lower((string) data_get($request->session()->get(AdminAkses::KUNCI_SESI), 'name')).'|'.$request->ip()));
     }
 
     /**

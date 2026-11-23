@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\SimpanTemplateMouRequest;
+use App\Http\Requests\SimpanPemetaanMouRequest;
+use App\Http\Requests\SimpanPengaturanMouRequest;
+use App\Http\Requests\SimpanTemplateBlokRequest;
 use App\Support\AdminAkses;
 use App\Support\BidangKerjasama;
 use App\Support\LogAktivitas;
-use App\Support\TemplateMou;
+use App\Support\Mou\PendaftaranPlaceholder;
+use App\Support\Mou\RendererDokumen;
+use App\Support\Mou\StrukturTemplateMou;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -27,14 +31,16 @@ use Illuminate\View\View;
 class AdminSuperadminController extends Controller
 {
     /**
-     * Editor template MoU per bidang. Hanya Superadmin (middleware rute).
-     * Daftar bidang dibaca dari config; template yang belum ada tetap tampil
-     * supaya slot bidang baru bisa diisi tanpa mengubah kode.
+     * Editor template MoU berbasis blok. Hanya Superadmin (middleware rute).
+     * Daftar template dibaca dari storage/app/mou/*.json; pemetaan bidang dan
+     * pengaturan global memakai overlay di storage yang sama.
      */
     public function templateMou(Request $request): View
     {
-        $kodeDaftar = BidangKerjasama::kode();
-        $semua = TemplateMou::semua();
+        $semua = StrukturTemplateMou::semua();
+
+        $kodeDaftar = array_keys($semua);
+        sort($kodeDaftar);
 
         $dipilih = (string) $request->query('kode', '');
         if (! in_array($dipilih, $kodeDaftar, true)) {
@@ -44,51 +50,52 @@ class AdminSuperadminController extends Controller
         abort_if($dipilih === '', 404);
 
         $template = $semua[$dipilih] ?? null;
-        $label = BidangKerjasama::label($dipilih);
-        $judul = $this->teksLama('judul', (string) ($template['judul'] ?? ''));
-        $catatan = $this->teksLama('catatan', (string) ($template['catatan'] ?? ''));
-        $isi = $this->teksLama('isi', (string) ($template['isi'] ?? ''));
 
         $daftar = array_map(static fn (string $kode): array => [
             'kode' => $kode,
-            'label' => BidangKerjasama::label($kode),
-            'judul' => $semua[$kode]['judul'] ?? '',
-            'versi' => $semua[$kode]['versi'] ?? 0,
-            'ada' => isset($semua[$kode]),
+            'nama' => $semua[$kode]['nama'] ?? '',
+            'status' => (string) ($semua[$kode]['status'] ?? ''),
+            'versi' => (int) ($semua[$kode]['versi'] ?? 0),
+            'bidang' => self::bidangUntukTemplate($kode),
+            'diperbarui_pada' => $semua[$kode]['diperbarui_pada'] ?? null,
+            'diperbarui_oleh' => (string) ($semua[$kode]['diperbarui_oleh'] ?? ''),
         ], $kodeDaftar);
 
-        $contoh = TemplateMou::contohData($label);
+        $statusTerpakai = $template === null ? [] : self::bidangPakaiTemplate($dipilih);
 
         return view('admin.template_mou', [
             'daftar' => $daftar,
             'dipilih' => $dipilih,
-            'labelBidang' => $label,
             'template' => $template,
-            'judul' => $judul,
-            'catatan' => $catatan,
-            'isi' => $isi,
-            'versi' => $template['versi'] ?? 0,
-            'diperbaruiOleh' => $template['diperbarui_oleh'] ?? '',
+            'blokJson' => json_encode($template['blok'] ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'nama' => $this->teksLama('nama', (string) ($template['nama'] ?? '')),
+            'catatan' => $this->teksLama('catatan', (string) ($template['catatan'] ?? '')),
+            'status' => $this->teksLama('status', (string) ($template['status'] ?? 'draf')),
+            'versi' => (int) ($template['versi'] ?? 0),
+            'diperbaruiOleh' => (string) ($template['diperbarui_oleh'] ?? ''),
             'diperbaruiPada' => $template['diperbarui_pada'] ?? null,
-            'bawaanTersedia' => TemplateMou::bawaan($dipilih) !== null,
-            'placeholders' => TemplateMou::PLACEHOLDER,
-            'contoh' => $contoh,
-            'pratinjau' => TemplateMou::render(['isi' => $isi], $contoh),
+            'bawaanTersedia' => StrukturTemplateMou::bawaan($dipilih) !== null,
+            'placeholder' => PendaftaranPlaceholder::daftar(),
+            'contoh' => $this->dataContoh(),
+            'pratinjau' => $template === null ? null : RendererDokumen::render($template, $this->dataContoh()),
             'riwayat' => $this->riwayatTemplate($dipilih),
+
+            // Pengaturan global + pemetaan (overlay).
+            'pengaturan' => StrukturTemplateMou::pengaturan(),
+            'pemetaan' => StrukturTemplateMou::pemetaan(),
+            'daftarBidang' => BidangKerjasama::daftar(),
+            'statusTerpakai' => $statusTerpakai,
         ]);
     }
 
-    /** Simpan versi baru template yang dipilih. */
-    public function simpanTemplateMou(SimpanTemplateMouRequest $request, string $kode): RedirectResponse
+    /** Simpan versi baru satu template blok. */
+    public function simpanTemplateMou(SimpanTemplateBlokRequest $request, string $kode): RedirectResponse
     {
-        $this->pastikanBidang($kode);
-        $validated = $request->validated();
+        $this->pastikanTemplate($kode);
 
-        $template = TemplateMou::simpanPerubahan(
+        $template = StrukturTemplateMou::simpan(
             $kode,
-            trim((string) $validated['judul']),
-            trim((string) ($validated['catatan'] ?? '')),
-            TemplateMou::rapikanTeks((string) $validated['isi']),
+            $request->template(),
             AdminAkses::namaSesi(),
         );
 
@@ -96,18 +103,18 @@ class AdminSuperadminController extends Controller
 
         return redirect()
             ->route('superadmin.template_mou', ['kode' => $kode])
-            ->with('ok', 'Template '.$kode.' versi '.$template['versi'].' disimpan. Generator mitra memakai versi ini untuk draf berikutnya.');
+            ->with('ok', 'Template '.$kode.' versi '.$template['versi'].' disimpan. Generator mitra memakai versi ini untuk draf berikutnya; draf lama tidak berubah.');
     }
 
     /** Kembalikan template ke isi bawaan; versi tetap naik dan dicatat. */
     public function resetTemplateMou(string $kode): RedirectResponse
     {
-        $this->pastikanBidang($kode);
+        $this->pastikanTemplate($kode);
 
-        $template = TemplateMou::kembalikan($kode, AdminAkses::namaSesi());
+        $template = StrukturTemplateMou::kembalikan($kode, AdminAkses::namaSesi());
 
         if ($template === null) {
-            return back()->with('error', 'Bidang '.$kode.' tidak memiliki template bawaan untuk dikembalikan.');
+            return back()->with('error', 'Template '.$kode.' tidak memiliki isi bawaan untuk dikembalikan.');
         }
 
         LogAktivitas::catat('template_mou.reset', $kode.' (versi '.$template['versi'].')');
@@ -117,10 +124,34 @@ class AdminSuperadminController extends Controller
             ->with('ok', 'Template '.$kode.' dikembalikan ke isi bawaan (versi '.$template['versi'].').');
     }
 
-    /** Kode bidang harus ada di config, bukan nilai bebas dari URL. */
-    private function pastikanBidang(string $kode): void
+    /** Simpan pengaturan global: Pihak Kesatu + dasar hukum nasional. */
+    public function simpanPengaturanMou(SimpanPengaturanMouRequest $request): RedirectResponse
     {
-        abort_unless(in_array($kode, BidangKerjasama::kode(), true), 404);
+        StrukturTemplateMou::simpanPengaturan($request->nilaiBersih());
+
+        LogAktivitas::catat('template_mou.pengaturan', 'pengaturan global');
+
+        return redirect()
+            ->route('superadmin.template_mou')
+            ->with('ok', 'Pengaturan Pihak Kesatu dan dasar hukum nasional disimpan.');
+    }
+
+    /** Simpan pemetaan bidang -> template. */
+    public function simpanPemetaanMou(SimpanPemetaanMouRequest $request): RedirectResponse
+    {
+        StrukturTemplateMou::simpanPemetaan($request->pemetaanBersih());
+
+        LogAktivitas::catat('template_mou.pemetaan', 'pemetaan bidang');
+
+        return redirect()
+            ->route('superadmin.template_mou')
+            ->with('ok', 'Pemetaan bidang ke template disimpan.');
+    }
+
+    /** Kode template harus ada, bukan nilai bebas dari URL. */
+    private function pastikanTemplate(string $kode): void
+    {
+        abort_unless(StrukturTemplateMou::untuk($kode) !== null, 404);
     }
 
     /** Nilai old() yang aman untuk field teks; array dari klien diabaikan. */
@@ -129,6 +160,70 @@ class AdminSuperadminController extends Controller
         $nilai = old($kunci);
 
         return is_string($nilai) ? $nilai : $bawaan;
+    }
+
+    /**
+     * Daftar bidang yang memakai sebuah template (dari pemetaan efektif).
+     *
+     * @return list<string>
+     */
+    private function bidangPakaiTemplate(string $kodeTemplate): array
+    {
+        $hasil = [];
+
+        foreach (StrukturTemplateMou::pemetaan() as $bidang => $kode) {
+            if ($kode === $kodeTemplate) {
+                $hasil[] = (string) $bidang;
+            }
+        }
+
+        return $hasil;
+    }
+
+    /** Label bidang untuk satu template (kode bidang pertama yang memakainya). */
+    private static function bidangUntukTemplate(string $kodeTemplate): string
+    {
+        foreach (StrukturTemplateMou::pemetaan() as $bidang => $kode) {
+            if ($kode === $kodeTemplate) {
+                return (string) $bidang;
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Data contoh untuk pratinjau editor: nilai placeholder yang masuk akal.
+     * Bukan data mitra sungguhan.
+     *
+     * @return array<string, string>
+     */
+    private function dataContoh(): array
+    {
+        return [
+            'nama_instansi' => 'Universitas Contoh Nusantara',
+            'nama_pic' => 'Nama Penanggung Jawab',
+            'jabatan_pic' => 'Jabatan Penanggung Jawab',
+            'alamat_instansi' => 'Jl. Contoh No. 1, Kota Medan',
+            'telepon_instansi' => '061-000000',
+            'email_instansi' => 'contoh@instansi.ac.id',
+            'pihak_kedua_penandatangan' => 'Nama Penandatangan',
+            'pihak_kedua_jabatan' => 'Jabatan Penandatangan',
+            'pihak_kedua_dasar_pengangkatan' => 'Keputusan Nomor 1 Tahun 2026',
+            'pihak_kedua_alamat' => 'Jl. Contoh No. 1, Kota Medan',
+            'nomor_surat' => '001/KS/2026',
+            'nomor_dokumen' => '001/KS/2026',
+            'nomor_dokumen_mitra' => '002/KS/2026',
+            'tempat' => 'Medan',
+            'bidang' => 'Kerja Sama Bidang Digital',
+            'judul' => 'Nota Kesepakatan Kerja Sama',
+            'tanggal' => '1 Januari 2026',
+            'tanggal_resmi' => 'Kamis, tanggal satu, bulan Januari, tahun dua ribu dua puluh enam',
+            'tahun_mulai' => '2026',
+            'tahun_akhir' => '2029',
+            'masa_aktif_tahun' => '3',
+            'dasar_hukum_daerah' => '',
+        ];
     }
 
     /**
