@@ -1,0 +1,148 @@
+{
+    "kode": "kerangka_umum",
+    "nama": "Kerangka Umum Kerja Sama",
+    "status": "draf",
+    "versi": 1,
+    "blok": [
+        {
+            "tipe": "sampul",
+            "isi": "NOTA KESEPAHAMAN\nANTARA\n{{pihak_kesatu_nama_unit}}\nDAN\n{{nama_instansi}}\nTENTANG\n{{judul}}\nNomor {{nomor_dokumen}}\nNomor {{nomor_dokumen_mitra}}"
+        },
+        {
+            "tipe": "pembukaan",
+            "isi": "Pada hari ini {{tanggal}} bertempat di {{tempat}}, yang bertanda tangan di bawah ini:\n1. {{pihak_kesatu_penandatangan}}, {{pihak_kesatu_jabatan}}, berkedudukan di {{pihak_kesatu_alamat}}, dalam hal ini bertindak untuk dan atas nama {{pihak_kesatu_nama_unit}}, yang selanjutnya disebut PIHAK KESATU.\n2. {{nama_pic}}, {{jabatan_pic}}, berkedudukan di {{alamat_instansi}}, dalam hal ini bertindak untuk dan atas nama {{nama_instansi}}, yang selanjutnya disebut PIHAK KEDUA.\nPIHAK KESATU dan PIHAK KEDUA selanjutnya secara bersama-sama disebut PARA PIHAK."
+        },
+        {
+            "tipe": "menimbang",
+            "isi": "PARA PIHAK terlebih dahulu menerangkan hal-hal sebagai berikut:\na. bahwa PIHAK KESATU adalah unit kerja di bawah Kementerian Komunikasi dan Digital Republik Indonesia yang mempunyai tugas menyelenggarakan pengembangan sumber daya manusia di bidang komunikasi, informasi, dan digital;\nb. bahwa PIHAK KEDUA adalah mitra yang memiliki kapasitas untuk melaksanakan kerja sama dalam bidang {{bidang}};\nc. bahwa PARA PIHAK sepakat untuk melakukan kerja sama dalam bidang {{bidang}}."
+        },
+        {
+            "tipe": "mengingat",
+            "isi": "PARA PIHAK dalam melaksanakan Nota Kesepahaman ini memperhatikan ketentuan peraturan perundang-undangan sebagai berikut:\n{{dasar_hukum}}"
+        },
+        {
+            "tipe": "pasal",
+            "pasal": [
+                {
+                    "nomor": 1,
+                    "judul": "MAKSUD DAN TUJUAN",
+                    "ayat": [
+                        "Maksud Nota Kesepahaman ini adalah sebagai landasan bagi PARA PIHAK untuk melaksanakan kerja sama dalam bidang {{bidang}}.",
+                        "Tujuan dari Nota Kesepahaman ini adalah terciptanya kerja sama yang saling menguntungkan dengan melibatkan sumber daya yang dimiliki oleh PARA PIHAK."
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 2,
+                    "judul": "RUANG LINGKUP",
+                    "ayat": [
+                        "Ruang lingkup Nota Kesepahaman ini meliputi: a. kegiatan yang disepakati PARA PIHAK dalam bidang {{bidang}}; b. pertukaran data dan informasi yang beretika, aman, dan bertanggung jawab sesuai ketentuan peraturan perundang-undangan; c. kegiatan lain yang disepakati oleh PARA PIHAK."
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 3,
+                    "judul": "PELAKSANAAN",
+                    "ayat": [
+                        "Dalam melaksanakan Nota Kesepahaman ini, PARA PIHAK berkomitmen menyusun rencana kerja paling lambat 3 (tiga) bulan setelah ditandatanganinya Nota Kesepahaman ini.",
+                        "PARA PIHAK sepakat untuk menunjuk pejabat pelaksana sebagai berikut: a. PIHAK KESATU menunjuk {{pihak_kesatu_pejabat_pelaksana}}; b. PIHAK KEDUA menunjuk {{nama_pic}}."
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 4,
+                    "judul": "KERAHASIAAN",
+                    "ayat": [
+                        "PARA PIHAK wajib menjaga keamanan dan kerahasiaan setiap data, informasi, dan/atau dokumen yang diperoleh sehubungan dengan pelaksanaan Nota Kesepahaman ini sesuai dengan ketentuan peraturan perundang-undangan.",
+                        "Ketentuan kerahasiaan ini tetap berlaku dan mengikat PARA PIHAK setelah Nota Kesepahaman ini berakhir, sepanjang data dan/atau informasi tersebut masih disimpan atau diproses oleh PARA PIHAK."
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 5,
+                    "judul": "PEMBIAYAAN",
+                    "ayat": [
+                        "{{pembiayaan}}"
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 6,
+                    "judul": "JANGKA WAKTU",
+                    "ayat": [
+                        "Nota Kesepahaman ini berlaku selama {{masa_aktif_tahun}} terhitung sejak ditandatangani oleh PARA PIHAK.",
+                        "Jangka waktu ini dapat diperpanjang atau diakhiri berdasarkan kesepakatan tertulis PARA PIHAK."
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 7,
+                    "judul": "KEADAAN KAHAR",
+                    "ayat": [
+                        "Keadaan kahar adalah terjadinya sesuatu peristiwa di luar kemampuan PARA PIHAK yang mengakibatkan tidak dapat dilaksanakannya Nota Kesepahaman ini, yang dibuktikan melalui pernyataan tertulis pihak berwenang.",
+                        "Pihak yang terkena keadaan kahar berkewajiban memberitahukan peristiwa tersebut kepada pihak lain paling lambat 14 (empat belas) hari terhitung sejak terjadinya peristiwa."
+                    ],
+                    "opsional": true,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 8,
+                    "judul": "PENYELESAIAN PERSELISIHAN",
+                    "ayat": [
+                        "Apabila terdapat ketidaksesuaian pendapat atau perselisihan antara PARA PIHAK dalam pelaksanaan Nota Kesepahaman ini, PARA PIHAK sepakat untuk menyelesaikannya melalui musyawarah untuk mufakat."
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 9,
+                    "judul": "KORESPONDENSI",
+                    "ayat": [
+                        "Setiap pemberitahuan, persetujuan, izin, permintaan, atau komunikasi lainnya dalam pelaksanaan Nota Kesepahaman ini dibuat secara tertulis, yaitu: PIHAK KESATU dengan alamat {{pihak_kesatu_alamat}}, telepon {{pihak_kesatu_telepon}}, surel {{pihak_kesatu_email}}; PIHAK KEDUA dengan alamat {{alamat_instansi}}, telepon {{telepon_instansi}}, surel {{email_instansi}}."
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                },
+                {
+                    "nomor": 10,
+                    "judul": "LAIN-LAIN",
+                    "ayat": [
+                        "Hal-hal yang belum diatur dalam Nota Kesepahaman ini akan diatur kemudian berdasarkan kesepakatan tertulis PARA PIHAK dan dituangkan dalam bentuk adendum yang merupakan bagian yang tidak terpisahkan dari Nota Kesepahaman ini."
+                    ],
+                    "opsional": false,
+                    "aktif_bawaan": true
+                }
+            ]
+        },
+        {
+            "tipe": "penutup",
+            "isi": "Demikian Nota Kesepahaman ini ditandatangani oleh PARA PIHAK dan dibuat dalam rangkap 2 (dua) di antaranya bermeterai cukup, masing-masing untuk PARA PIHAK dan mempunyai kekuatan hukum yang sama."
+        },
+        {
+            "tipe": "tanda_tangan",
+            "isi": "PIHAK KESATU\n{{pihak_kesatu_nama_unit}}\n\n{{pihak_kesatu_penandatangan}}\n{{pihak_kesatu_jabatan}}\n\n\nPIHAK KEDUA\n{{nama_instansi}}\n\n{{nama_pic}}\n{{jabatan_pic}}"
+        },
+        {
+            "tipe": "lampiran",
+            "lampiran": {
+                "judul": "RENCANA KERJA",
+                "tabel": "rencana_kerja",
+                "kolom": [
+                    "No",
+                    "Kegiatan",
+                    "Peran PIHAK KESATU",
+                    "Peran PIHAK KEDUA",
+                    "Sumber Pembiayaan",
+                    "Waktu"
+                ],
+                "baris": []
+            }
+        }
+    ]
+}

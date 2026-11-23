@@ -740,3 +740,76 @@ Belum ada tabel `template_mou` maupun tabel riwayat versi; riwayat penuh hanya
 tersimpan di `log_aktivitas.json` dan halaman menampilkan 8 perubahan terakhir.
 Saat backend dibangun: tabel template (per bidang) + tabel versi (isi tiap
 versi), Policy/gerbang khusus Superadmin, dan audit trail SQL.
+
+## 16. Fondasi Template MoU Berbasis Blok (SELESAI)
+
+### Ringkasan
+Fondasi baru untuk generator MoU: config nilai tetap, struktur template berblok
+(sampul → pembukaan → menimbang → mengingat → pasal[] → penutup → tanda_tangan
+→ lampiran), dan daftar placeholder terpusat. Terpisah dari `TemplateMou` lama
+(flat text) — fondasi ini belum dipakai view/controller mana pun.
+
+### Sumber referensi
+`docs/referensi-mou/REFERENSI_STRUKTUR_MOU.md` **tidak ada** di repo (folder
+kosong). Referensi nyata = 3 PDF scan di `routes/MOU/` (tanpa text layer),
+di-OCR (easyocr, ini alat luar repo) untuk mengekstrak struktur:
+- `MoU Dengan Tanjungbalai.pdf` → Nota Kesepakatan Pemda (Pasal 1–15).
+- `Kota Jambi MoU.pdf` → variasi Nota Kesepakatan Pemda.
+- `Politeknik Caltex Riau (PKS).pdf` → PKS Beasiswa Talenta Digital (DTS), 15 pasal + lampiran rencana aksi.
+
+### Keputusan
+- Nilai tetap di `config/mou.php`: `pemetaan` (bidang → template, tanda
+  `// KONFIRMASI MENTOR`), `pihak_kesatu` (nama unit, alamat, telepon, email
+  dari bagian korespondensi contoh; penandatangan/jabatan default
+  `[ISI penandatangan Pihak Kesatu]`; pejabat pelaksana Kepala Balai Besar
+  Pelatihan SDM Komdigi Medan), `dasar_hukum_nasional` (7 peraturan, tanda
+  `// VERIFIKASI nomor peraturan`), `pembiayaan_varian` (APBN/APBD/Cost Sharing,
+  tanda `// VERIFIKASI MENTOR`).
+- Struktur template disimpan sebagai **JSON di `storage/app/mou/*.json`**
+  (sesuai permintaan) dan **di-commit**: pola proyek umumnya men-*generate*
+  storage, tetapi template ini aset konten yang harus ada sejak clone pertama.
+  `storage/app/.gitignore` dikecualikan khusus untuk `mou/*.json`.
+- Daftar placeholder tunggal di `app/Support/Mou/PendaftaranPlaceholder.php`
+  (nama, sumber: form|lengkapi_mitra|config|turunan, keterangan, wajib) dipakai
+  renderer, form lengkapi data, dan editor.
+- Loader/validator `app/Support/Mou/StrukturTemplateMou.php`: pemetaan bidang,
+  validasi blok, deteksi placeholder yatim. TODO-BACKEND: pindah ke tabel
+  `mou_template`.
+
+### File
+DIBUAT
+- `config/mou.php` — pemetaan, pihak_kesatu, dasar_hukum_nasional, pembiayaan_varian.
+- `app/Support/Mou/PendaftaranPlaceholder.php` — daftar placeholder terpusat.
+- `app/Support/Mou/StrukturTemplateMou.php` — loader, validasi blok, pemetaan bidang, cek yatim.
+- `storage/app/mou/nota_kesepakatan_pemda.json` — template GTA (Nota Kesepakatan Pemda, 14 pasal).
+- `storage/app/mou/pks_beasiswa_talenta_digital.json` — template VSGA (PKS Beasiswa Talenta Digital, 15 pasal).
+- `storage/app/mou/kerangka_umum.json` — template bidang_3 (kerangka netral, 10 pasal, status draf).
+- `tests/Feature/Mou/FondasiTemplateMouTest.php` — 19 test.
+DIUBAH
+- `storage/app/.gitignore` — kecualikan `mou/*.json` agar template ter-commit.
+
+### Keamanan
+- [x] Placeholder asing (yatim) terdeteksi: `StrukturTemplateMou::placeholderYatim`
+      + test "tidak ada placeholder yatim di seluruh template".
+- [x] Placeholder terpusat satu sumber: test "setiap placeholder yang dipakai
+      template terdaftar".
+- [x] Tidak ada teks MoU di controller/view; semua dari config + template.
+
+### Pengecekan
+- `php artisan test` → 278 test, 277 lolos (1599 assertion). 1 gagal
+  `LandingCmsSyncTest.php:68` (**pra-eksisting**, bukan dari perubahan ini;
+  terbukti gagal juga saat perubahan ini tidak diterapkan).
+- `pint --test` (file baru) → passed; `phpstan` (file baru) → 0 error.
+- `npm run build` → berhasil. `npm run types:check` tidak dijalankan (tanpa
+  perubahan TypeScript).
+
+### Menunggu konfirmasi user
+- `config/mou.php` `pemetaan`: `bidang_3` masih placeholder (kode bidang ketiga
+  belum ditentukan mentor; belum ada di `config/kerjasama.php`).
+- Nomor peraturan `dasar_hukum_nasional` (7 butir) perlu verifikasi mentor.
+- Teks `pembiayaan_varian` perlu verifikasi mentor.
+- `pihak_kesatu.penandatangan`/`jabatan` default masih `[ISI ...]`.
+
+### Langkah berikutnya
+- Fase berikut: renderer blok → HTML/dokumen, form "lengkapi data mitra", dan
+  editor template berbasis blok. Menunggu perintah "Lanjut".
