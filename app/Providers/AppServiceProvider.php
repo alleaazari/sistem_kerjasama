@@ -41,9 +41,13 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('pddikti', fn (Request $request) => Limit::perMinute(30)->by($request->ip()));
         RateLimiter::for('mitra-profile', fn (Request $request) => Limit::perMinute(10)->by($request->ip()));
 
-        // Generate draf MoU: batasi per akun mitra + IP agar template tidak
-        // dipanggil berulang (spam kiriman ke admin).
+        // Generate/simpan draf MoU: batasi per akun mitra + IP agar template
+        // tidak dipanggil berulang (spam kiriman ke admin).
         RateLimiter::for('mou-draf', fn (Request $request) => Limit::perMinute(10)
+            ->by(Str::lower((string) data_get($request->session()->get('mitra_data'), 'username')).'|'.$request->ip()));
+
+        // Generator MoU berbasis blok: generate dokumen + simpan/kirim.
+        RateLimiter::for('mou-generate', fn (Request $request) => Limit::perMinute(10)
             ->by(Str::lower((string) data_get($request->session()->get('mitra_data'), 'username')).'|'.$request->ip()));
 
         // Login panel admin: per IP + username, supaya satu akun tidak bisa

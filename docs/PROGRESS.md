@@ -895,3 +895,109 @@ DIBUAT
 ### Langkah berikutnya
 - Fase berikut: renderer blok → HTML/dokumen, form "lengkapi data mitra", dan
   editor template berbasis blok. Menunggu perintah "Lanjut".
+
+---
+
+## 18. Generator MoU Mitra + Pratinjau Dokumen (SELESAI)
+
+Alur `Buat MoU` di area mitra. Bidang & template dipilih otomatis dari pengajuan
+(tidak ada pemilihan bidang dari URL), data pengajuan terisi otomatis, mitra
+melengkapi placeholder, dokumen dirender sebagai pratinjau resmi, tiap bagian
+bisa disunting, disimpan sebagai draf milik mitra, lalu dikirim ke admin.
+
+### Keputusan
+- **Jalur lama dipertahankan, diturunkan peran.** `/mitra/mou/draf` (satu textarea
+  `TemplateMou`) tetap ada sebagai tautan sekunder ("draf teks bebas"); generator
+  berbasis blok jadi jalur utama dari tombol "Buat MoU".
+- **Placeholder pihak kedua ditambahkan** dan dipakai template:
+  `{{pihak_kedua_penandatangan}}`, `{{pihak_kedua_jabatan}}`,
+  `{{pihak_kedua_dasar_pengangkatan}}`, `{{pihak_kedua_alamat}}` — menggantikan
+  `{{nama_pic}}`/`{{jabatan_pic}}`/`{{alamat_instansi}}` di blok pembukaan ketiga
+  template. `nama_pic` tetap dipakai sebagai nilai turunan (diisi dari
+  `pihak_kedua_penandatangan`) agar `PendaftaranPlaceholder` tetap konsisten.
+- **Renderer menghasilkan teks biasa, bukan HTML.** Escaping dilakukan Blade
+  (`{{ }}`) dan `PenandaIsi::sorot()`. `PenandaIsi` adalah SATU-SATUNYA jalur yang
+  menghasilkan markup (`<mark class="mou-isi-kosong">`), dan ia meng-escape dulu
+  seluruh teks sebelum menyorot penanda `[ISI ...]`.
+- **Placeholder kosong → `[ISI nama_field]`** (disorot), dihasilkan renderer.
+- **DOCX**: tombol nonaktif + tooltip + `// TODO-BACKEND: ekspor DOCX`
+  (`composer.json` tidak memuat `phpoffice/phpword`; tidak menambah dependency).
+- **Kepemilikan**: draf disimpan per `username` mitra di
+  `storage/app/draf_mou_mitra.json`, id UUID; akses mitra lain → 404.
+- **Data pengajuan tidak dapat ditimpa klien**: form hanya menerima field
+  whitelist (`config('mou.form_lengkapi')`); `nama_instansi`, `alamat_instansi`,
+  `pembiayaan`, `bidang` selalu diambil server dari pengajuan/profil.
+
+### File
+DIBUAT
+- `app/Support/Mou/Penomoran.php` — `terbilang`, `hari`, `bulan`, `tanggalResmi`, `tanggalRingkas`, `prefiksWilayah`, `namaWilayah`, `parse`.
+- `app/Support/Mou/RendererDokumen.php` — `data`, `turunan`, `render`, `gantiPlaceholder` (blok → dokumen terstruktur).
+- `app/Support/Mou/DrafMouMitra.php` — `buat`/`perbarui`/`milik`/`untukPemilik`/`hapus`/`bersihkanBagian`, riwayat versi.
+- `app/Support/Mou/PenandaIsi.php` — `sorot()` (escape dulu, lalu bungkus `[ISI ...]`).
+- `app/Http/Requests/LengkapiDataMouRequest.php` — validasi form lengkapi (rules dibangun dari config), `nilaiBersih()`.
+- `app/Http/Requests/SimpanDrafMouMitraRequest.php` — validasi simpan/kirim edit per bagian, `bagianBersih()`.
+- `resources/views/user/mou-buat.blade.php` — form lengkapi data + pratinjau.
+- `resources/views/user/mou-buat-lihat.blade.php` — sunting per bagian + riwayat versi.
+- `resources/views/user/mou-cetak.blade.php` — halaman cetak mandiri.
+- `resources/views/user/partials/mou-dokumen.blade.php` — partial dokumen resmi.
+- `public/assets/user/css/mou-dokumen.css` — gaya dokumen + `@media print`.
+- `public/assets/user/js/mou-generator.js` — toggle pratinjau (tanpa `innerHTML`).
+- `tests/Feature/Mou/GeneratorMouMitraTest.php` — 25 test.
+DIUBAH
+- `app/Http/Controllers/MitraController.php` — `buatMou`, `simpanMouBaru`, `lihatMou`, `simpanMou`, `pratinjauMouMitra` + helper (`templateMitra`, `dataAwalForm`, `gabungNilai`, `daftarDasarHukumDaerah`, `terapkanBagian`).
+- `routes/web.php` — `mitra.mou.buat`, `.buat.simpan`, `.buat.lihat`, `.buat.update`, `.buat.cetak` (throttle `mou-generate`).
+- `app/Providers/AppServiceProvider.php` — limiter `mou-generate` (10/menit per akun+IP).
+- `app/Support/Mou/StrukturTemplateMou.php` — `pasalAktif` menyertakan `catatan`.
+- `app/Support/Mou/PendaftaranPlaceholder.php` — placeholder pihak kedua + `nomor_surat`.
+- `config/mou.php` — `form_lengkapi` (satu sumber view + validasi).
+- `resources/views/layouts/user.blade.php` — tambah `@stack('styles')`.
+- `resources/views/user/mou.blade.php` — tombol "Buat MoU" (jalur utama) + tautan sekunder draf lama.
+- `storage/app/mou/{nota_kesepakatan_pemda,pks_beasiswa_talenta_digital,kerangka_umum}.json` — placeholder pihak kedua + alamat/dasar pengangkatan di pembukaan.
+
+### Keamanan
+- [x] Tiap bidang → template benar: test "setiap bidang menghasilkan template yang benar"
+  (GTA→nota_kesepakatan_pemda, VSGA→pks_beasiswa_talenta_digital, tak dikenal→kerangka_umum).
+- [x] Placeholder terisi: test "renderer mengisi placeholder dari data".
+- [x] `[ISI]` untuk data kosong: test "placeholder tanpa nilai tampil sebagai [ISI nama_field]".
+- [x] Payload `<script>` tidak tereksekusi: test "payload script pada isian tidak tereksekusi
+  (ter-escape)" + "penanda [ISI] disorot tanpa membocorkan tag pengguna".
+- [x] Mitra lain ditolak (404): test "mitra lain ditolak 404 saat membuka draf bukan miliknya"
+  (termasuk halaman cetak).
+- [x] Terbilang benar: test "terbilang bilangan benar untuk contoh tanggal/tahun" (5, 21, 2026,
+  11, 100, 1500) + "tanggal resmi dan prefiks wilayah benar".
+- [x] Validasi panjang: test "input form panjang berlebih ditolak validasi".
+- [x] Data pengajuan tidak dapat ditimpa klien: test "data pengajuan tidak dapat ditimpa lewat
+  input klien".
+- [x] Suntingan mitra tanpa HTML: test "suntingan mitra tidak menyimpan tag HTML".
+- [x] Riwayat versi: test "riwayat versi bertambah pada setiap simpanan".
+- [x] Tanpa `innerHTML` dari input pengguna: `PenandaIsi` escape dulu;
+  `mou-generator.js` hanya menyembunyikan/menampilkan elemen.
+- [x] Rate limit generate/simpan: limiter `mou-generate` di `AppServiceProvider` + middleware
+  route.
+
+### Pengecekan
+- `php artisan test` → 319 test, 318 lolos (1889 assertion). 1 gagal
+  `LandingCmsSyncTest.php:68` (**pra-eksisting**, terbukti tidak terkait perubahan ini).
+- `pint --test` → passed. `phpstan analyse app --memory-limit=1G` → 0 error.
+- `npm run build` → berhasil.
+- `npm run types:check` tidak dijalankan (tanpa perubahan TypeScript).
+
+### Catatan untuk backend
+- Pindahkan template dari `storage/app/mou/*.json` ke tabel `mou_template`.
+- Pindahkan draf mitra dari `storage/app/draf_mou_mitra.json` ke tabel `draf_mou`
+  (+ `draf_mou_versi`), UUID route key, kepemilikan lewat Policy (saat ini cek
+  manual di `DrafMouMitra::milik`).
+- **Ekspor DOCX** belum dibangun (`// TODO-BACKEND: ekspor DOCX`) — perlu library
+  DOCX yang disetujui.
+- Identitas mitra masih dari session `mitra_data` (mode demo), bukan guard auth.
+
+### Menunggu konfirmasi user
+- Placeholder pihak kedua baru (`pihak_kedua_dasar_pengangkatan`) mengubah redaksi
+  pembukaan ketiga template; perlu verifikasi mentor apakah sesuai format resmi.
+- Redaksi `{{pihak_kedua_alamat}}` vs `{{alamat_instansi}}` sudah disatukan ke
+  placeholder baru.
+- `pihak_kesatu.penandatangan`/`jabatan` default masih `[ISI ...]`.
+- Kolom Lampiran Template A (10) & `bidang_3` masih menunggu (dari §17).
+
+### Langkah berikutnya
+- Editor template berbasis blok untuk Superadmin. Menunggu perintah "Lanjut".

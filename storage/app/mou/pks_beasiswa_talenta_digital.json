@@ -10,7 +10,7 @@
         },
         {
             "tipe": "pembukaan",
-            "isi": "Pada hari ini {{tanggal}} bertempat di {{tempat}}, kami yang bertanda tangan di bawah ini:\n1. {{pihak_kesatu_penandatangan}}, {{pihak_kesatu_jabatan}}, berkedudukan di {{pihak_kesatu_alamat}}, dalam hal ini bertindak untuk dan atas nama {{pihak_kesatu_nama_unit}}, untuk selanjutnya disebut PIHAK KESATU.\n2. {{nama_pic}}, {{jabatan_pic}}, berkedudukan di {{alamat_instansi}}, dalam hal ini bertindak untuk dan atas nama {{nama_instansi}}, untuk selanjutnya disebut PIHAK KEDUA.\nPIHAK KESATU dan PIHAK KEDUA secara bersama-sama disebut sebagai PARA PIHAK dan masing-masing disebut sebagai PIHAK."
+            "isi": "Pada hari ini {{tanggal}} bertempat di {{tempat}}, kami yang bertanda tangan di bawah ini:\n1. {{pihak_kesatu_penandatangan}}, {{pihak_kesatu_jabatan}}, berkedudukan di {{pihak_kesatu_alamat}}, dalam hal ini bertindak untuk dan atas nama {{pihak_kesatu_nama_unit}}, untuk selanjutnya disebut PIHAK KESATU.\n2. {{pihak_kedua_penandatangan}}, {{pihak_kedua_jabatan}}, berkedudukan di {{pihak_kedua_alamat}}, yang diangkat berdasarkan {{pihak_kedua_dasar_pengangkatan}}, dalam hal ini bertindak untuk dan atas nama {{nama_instansi}}, untuk selanjutnya disebut PIHAK KEDUA.\nPIHAK KESATU dan PIHAK KEDUA secara bersama-sama disebut sebagai PARA PIHAK dan masing-masing disebut sebagai PIHAK."
         },
         {
             "tipe": "menimbang",
@@ -203,7 +203,7 @@
         },
         {
             "tipe": "tanda_tangan",
-            "isi": "PIHAK KESATU\n{{pihak_kesatu_nama_unit}}\n\n{{pihak_kesatu_penandatangan}}\n{{pihak_kesatu_jabatan}}\n\n\nPIHAK KEDUA\n{{nama_instansi}}\n\n{{nama_pic}}\n{{jabatan_pic}}"
+            "isi": "PIHAK KESATU\n{{pihak_kesatu_nama_unit}}\n\n{{pihak_kesatu_penandatangan}}\n{{pihak_kesatu_jabatan}}\n\n\nPIHAK KEDUA\n{{nama_instansi}}\n\n{{pihak_kedua_penandatangan}}\n{{pihak_kedua_jabatan}}"
         },
         {
             "tipe": "lampiran",

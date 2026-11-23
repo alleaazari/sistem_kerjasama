@@ -106,7 +106,7 @@ final class StrukturTemplateMou
      *
      * @param  array<string, mixed>  $template
      * @param  list<string>  $pasalNonaktif  judul pasal opsional yang dimatikan (mis. ['PERUBAHAN'])
-     * @return list<array{nomor: int, judul: string, ayat: list<string>, opsional: bool, aktif_bawaan: bool}>
+     * @return list<array{nomor: int, judul: string, ayat: list<string>, catatan: string, opsional: bool, aktif_bawaan: bool}>
      */
     public static function pasalAktif(array $template, array $pasalNonaktif = []): array
     {
@@ -132,6 +132,7 @@ final class StrukturTemplateMou
                     'nomor' => $nomor,
                     'judul' => (string) $pasal['judul'],
                     'ayat' => self::ayatAktif($pasal['ayat'] ?? []),
+                    'catatan' => (string) ($pasal['catatan'] ?? ''),
                     'opsional' => $opsional,
                     'aktif_bawaan' => $bawaan,
                 ];

@@ -102,4 +102,30 @@ return [
     */
     'pembiayaan_bawaan' => 'Segala pembiayaan untuk pelaksanaan kerja sama ini bersumber dari anggaran PARA PIHAK sesuai dengan peraturan perundang-undangan yang berlaku.',
 
+    /*
+    |----------------------------------------------------------------------
+    | Field form "Lengkapi Data MoU" (area mitra)
+    |----------------------------------------------------------------------
+    | Kunci = nama field pada form DAN nama placeholder yang diisi dari field
+    | itu. Nilai = label, maksimal panjang, dan wajib/tidak.
+    |
+    | Data dari pengajuan (instansi, kota, provinsi, alamat, PIC, bidang,
+    | metode pelatihan, pembiayaan) TIDAK ada di sini: itu terisi otomatis dan
+    | hanya-baca di form.
+    */
+    'form_lengkapi' => [
+        'nomor_surat' => ['label' => 'Nomor surat permohonan', 'maks' => 100, 'wajib' => false],
+        'pihak_kedua_penandatangan' => ['label' => 'Nama penandatangan pihak kedua', 'maks' => 150, 'wajib' => true],
+        'pihak_kedua_jabatan' => ['label' => 'Jabatan penandatangan pihak kedua', 'maks' => 150, 'wajib' => true],
+        'pihak_kedua_dasar_pengangkatan' => ['label' => 'Dasar pengangkatan penandatangan pihak kedua', 'maks' => 255, 'wajib' => false],
+        'pihak_kedua_alamat' => ['label' => 'Alamat kedudukan pihak kedua', 'maks' => 255, 'wajib' => false],
+        'telepon_instansi' => ['label' => 'Telepon korespondensi', 'maks' => 40, 'wajib' => false],
+        'email_instansi' => ['label' => 'Surel korespondensi', 'maks' => 150, 'wajib' => false],
+        'tempat' => ['label' => 'Tempat penandatanganan', 'maks' => 100, 'wajib' => true],
+        'tanggal_penandatanganan' => ['label' => 'Tanggal penandatanganan', 'maks' => 10, 'wajib' => true, 'tipe' => 'date'],
+        'pihak_kesatu_pejabat_pelaksana' => ['label' => 'Pejabat pelaksana pihak kesatu', 'maks' => 200, 'wajib' => false],
+        'dasar_hukum_daerah' => ['label' => 'Dasar hukum daerah (pisahkan dengan baris baru)', 'maks' => 1500, 'wajib' => false, 'tipe' => 'teks'],
+        'masa_aktif_tahun' => ['label' => 'Masa aktif (tahun)', 'maks' => 60, 'wajib' => false],
+    ],
+
 ];

@@ -87,7 +87,8 @@
         @endif
 
         <p class="field-help">
-            Belum punya dokumen? <a href="{{ route('mitra.mou.draf') }}">Buat draf MoU dari template bidang Anda</a>.
+            Belum punya dokumen? <a href="{{ route('mitra.mou.buat') }}" class="mitra-btn mitra-btn-primary">Buat MoU</a>
+            sesuai bidang pengajuan Anda. Cara lama: <a href="{{ route('mitra.mou.draf') }}">draf teks bebas</a>.
         </p>
     </section>
 

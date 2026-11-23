@@ -157,6 +157,15 @@ Route::middleware('mitra.only')->group(function () {
     Route::get('/mitra/mou/draf', [MitraController::class, 'drafMou'])->name('mitra.mou.draf');
     Route::post('/mitra/mou/draf', [MitraController::class, 'simpanDrafMou'])
         ->middleware('throttle:mou-draf')->name('mitra.mou.draf.simpan');
+
+    // Generator MoU berbasis blok: "Buat MoU" -> lengkapi data -> sunting/kirim.
+    Route::get('/mitra/mou/buat', [MitraController::class, 'buatMou'])->name('mitra.mou.buat');
+    Route::post('/mitra/mou/buat', [MitraController::class, 'simpanMouBaru'])
+        ->middleware('throttle:mou-generate')->name('mitra.mou.buat.simpan');
+    Route::get('/mitra/mou/buat/{id}', [MitraController::class, 'lihatMou'])->name('mitra.mou.buat.lihat');
+    Route::post('/mitra/mou/buat/{id}', [MitraController::class, 'simpanMou'])
+        ->middleware('throttle:mou-generate')->name('mitra.mou.buat.update');
+    Route::get('/mitra/mou/buat/{id}/cetak', [MitraController::class, 'pratinjauMouMitra'])->name('mitra.mou.buat.cetak');
     Route::get('/mitra/mou/{id}', [MitraController::class, 'detailMou'])->name('mitra.mou.detail');
     Route::get('/mitra/mou/{id}/berkas', [MitraController::class, 'pratinjauMou'])->name('mitra.mou.berkas');
     Route::get('/mitra/mou/{id}/unduh', [MitraController::class, 'unduhMou'])->name('mitra.mou.unduh');
