@@ -2,7 +2,7 @@
     "kode": "pks_beasiswa_talenta_digital",
     "nama": "Perjanjian Kerja Sama Beasiswa Talenta Digital",
     "status": "final",
-    "versi": 1,
+    "versi": 2,
     "blok": [
         {
             "tipe": "sampul",
@@ -10,15 +10,15 @@
         },
         {
             "tipe": "pembukaan",
-            "isi": "Pada hari ini {{tanggal}} bertempat di {{tempat}}, kami yang bertanda tangan di bawah ini:\n1. {{pihak_kesatu_penandatangan}}, {{pihak_kesatu_jabatan}}, berkedudukan di {{pihak_kesatu_alamat}}, dalam hal ini bertindak untuk dan atas nama {{pihak_kesatu_nama_unit}}, yang selanjutnya disebut PIHAK KESATU.\n2. {{nama_pic}}, {{jabatan_pic}}, berkedudukan di {{alamat_instansi}}, dalam hal ini bertindak untuk dan atas nama {{nama_instansi}}, yang selanjutnya disebut PIHAK KEDUA.\nPIHAK KESATU dan PIHAK KEDUA secara bersama-sama disebut PARA PIHAK dan masing-masing disebut PIHAK."
+            "isi": "Pada hari ini {{tanggal}} bertempat di {{tempat}}, kami yang bertanda tangan di bawah ini:\n1. {{pihak_kesatu_penandatangan}}, {{pihak_kesatu_jabatan}}, berkedudukan di {{pihak_kesatu_alamat}}, dalam hal ini bertindak untuk dan atas nama {{pihak_kesatu_nama_unit}}, untuk selanjutnya disebut PIHAK KESATU.\n2. {{nama_pic}}, {{jabatan_pic}}, berkedudukan di {{alamat_instansi}}, dalam hal ini bertindak untuk dan atas nama {{nama_instansi}}, untuk selanjutnya disebut PIHAK KEDUA.\nPIHAK KESATU dan PIHAK KEDUA secara bersama-sama disebut sebagai PARA PIHAK dan masing-masing disebut sebagai PIHAK."
         },
         {
             "tipe": "menimbang",
-            "isi": "Dalam menjalankan kedudukannya sebagaimana tersebut di atas, terlebih dahulu menerangkan hal-hal sebagai berikut:\na. bahwa PIHAK KESATU adalah unit kerja di bawah Kementerian Komunikasi dan Digital Republik Indonesia yang memiliki tugas dan fungsi pengembangan sumber daya manusia bidang komunikasi, informatika, dan digital;\nb. bahwa PIHAK KEDUA adalah lembaga penyelenggara pendidikan dan pelatihan yang bergerak dalam bidang pendidikan, penelitian, dan pengabdian kepada masyarakat;\nc. bahwa PARA PIHAK sepakat untuk melakukan kerja sama dalam bidang {{bidang}}."
+            "isi": "Dalam menjalankan kedudukannya sebagaimana disebut di atas, terlebih dahulu menerangkan hal-hal sebagai berikut:\na. bahwa PIHAK KESATU adalah unit kerja di bawah Kementerian Komunikasi dan Digital yang memiliki tugas dan fungsi pengembangan sumber daya manusia bidang komunikasi, informatika, dan digital;\nb. bahwa PIHAK KEDUA adalah {{nama_instansi}} yang menyelenggarakan pendidikan tinggi dan bergerak dalam bidang pendidikan, penelitian, dan pengabdian kepada masyarakat; dan\nc. bahwa PARA PIHAK sepakat untuk melakukan kerja sama dalam bidang {{bidang}}.\nBerdasarkan hal-hal tersebut di atas, PARA PIHAK sepakat untuk menandatangani Perjanjian Kerja Sama tentang Penyelenggaraan Program Beasiswa Talenta Digital yang selanjutnya disebut sebagai \"Perjanjian\", dengan syarat dan ketentuan sebagai berikut:"
         },
         {
             "tipe": "mengingat",
-            "isi": "PARA PIHAK dalam melaksanakan Perjanjian Kerja Sama ini memperhatikan ketentuan peraturan perundang-undangan sebagai berikut:\n{{dasar_hukum}}"
+            "isi": "PARA PIHAK dalam melaksanakan Perjanjian ini memperhatikan ketentuan peraturan perundang-undangan sebagai berikut:\n{{dasar_hukum}}"
         },
         {
             "tipe": "pasal",
@@ -28,7 +28,7 @@
                     "judul": "MAKSUD DAN TUJUAN",
                     "ayat": [
                         "Perjanjian ini dimaksudkan sebagai landasan pelaksanaan kegiatan bersama yang disepakati dan dilaksanakan PARA PIHAK.",
-                        "Perjanjian ini bertujuan untuk meningkatkan keahlian sumber daya manusia dalam pemenuhan kebutuhan industri dan kewirausahaan di bidang teknologi informasi dan komunikasi guna mendukung pertumbuhan ekonomi digital serta transformasi digital di Indonesia."
+                        "Perjanjian ini bertujuan untuk meningkatkan keahlian sumber daya manusia dalam pemenuhan kebutuhan industri dan kewirausahaan di bidang Teknologi Informasi dan Komunikasi (TIK) guna mendukung pertumbuhan ekonomi digital serta transformasi digital di Indonesia menuju industri 5.0."
                     ],
                     "opsional": false,
                     "aktif_bawaan": true
@@ -37,8 +37,7 @@
                     "nomor": 2,
                     "judul": "DEFINISI",
                     "ayat": [
-                        "Kecuali secara tegas dinyatakan lain, semua istilah dalam Perjanjian ini mempunyai pengertian sebagai berikut:",
-                        "a. Program Beasiswa Talenta Digital atau Digital Talent Scholarship yang selanjutnya disebut Program DTS adalah program beasiswa pelatihan intensif di bidang teknologi informasi dan komunikasi yang diselenggarakan melalui beragam akademi dan tema pelatihan untuk beragam target peserta;\nb. Peserta adalah penerima beasiswa pelatihan yang memenuhi syarat dan kriteria serta dinyatakan lulus seleksi penerimaan Program DTS yang ditetapkan oleh PIHAK KESATU;\nc. Data Pribadi adalah data tentang orang perseorangan yang teridentifikasi atau dapat diidentifikasi secara tersendiri atau dikombinasi dengan informasi lainnya, baik secara langsung maupun tidak langsung, melalui sistem elektronik atau non-elektronik;\nd. Hari Kalender adalah setiap hari Senin sampai dengan Minggu pada kalender Masehi;\ne. Hari Kerja adalah hari kerja mulai dari Senin sampai dengan Jumat, tidak termasuk Sabtu, Minggu, dan hari libur yang ditetapkan oleh Pemerintah Republik Indonesia;\nf. Pengendali Data adalah pihak yang menentukan maksud dan tujuan pemrosesan Data Pribadi;\ng. Prosesor Data adalah pihak yang memproses Data Pribadi atas nama dan berdasarkan instruksi dari Pengendali Data."
+                        "Kecuali secara tegas dinyatakan lain, semua istilah yang didefinisikan dalam Perjanjian ini mempunyai pengertian sebagai berikut:\na. Program Beasiswa Talenta Digital atau Digital Talent Scholarship yang selanjutnya disebut Program DTS adalah program beasiswa pelatihan intensif di bidang Teknologi Informasi dan Komunikasi (TIK) yang diselenggarakan oleh PIHAK KEDUA melalui beragam akademi dan tema pelatihan untuk beragam target peserta;\nb. Peserta adalah penerima beasiswa pelatihan yang memenuhi syarat dan kriteria dan dinyatakan lulus seleksi daring dan/atau luring penerimaan Program DTS yang diselenggarakan dan ditetapkan oleh PIHAK KESATU;\nc. Data Pribadi adalah data tentang orang perseorangan yang teridentifikasi atau dapat diidentifikasi secara tersendiri atau dikombinasi dengan informasi lainnya baik secara langsung maupun tidak langsung melalui sistem elektronik atau non-elektronik;\nd. Hari Kalender adalah setiap hari Senin sampai Minggu pada kalender Masehi, tidak mempertimbangkan hari libur yang sudah ditetapkan oleh Pemerintah Republik Indonesia;\ne. Hari Kerja adalah hari kerja mulai dari Senin sampai Jumat, tidak termasuk Sabtu dan Minggu dan hari libur yang ditetapkan oleh Pemerintah Republik Indonesia sebagai hari libur;\nf. Pengendali Data adalah perseorangan, badan usaha, korporasi, perkumpulan atau badan hukum yang baik secara sendiri-sendiri atau bersama dengan yang lainnya menentukan maksud dan tujuan pemrosesan Data Pribadi;\ng. Prosesor Data adalah perseorangan, badan usaha, korporasi, perkumpulan atau badan hukum yang memproses Data Pribadi atas nama dan berdasarkan instruksi dari Pengendali Data."
                     ],
                     "opsional": false,
                     "aktif_bawaan": true
@@ -47,8 +46,7 @@
                     "nomor": 3,
                     "judul": "RUANG LINGKUP",
                     "ayat": [
-                        "PARA PIHAK sepakat dan bersedia menetapkan ruang lingkup Perjanjian ini pada pelaksanaan Program DTS atas dasar kesetaraan, saling membantu, bersinergi, transparansi, dan saling menguntungkan PARA PIHAK, meliputi:",
-                        "a. pengembangan sumber daya manusia di bidang komunikasi dan informatika;\nb. pertukaran data dan informasi termasuk Data Pribadi yang beretika, aman, dan bertanggung jawab sesuai dengan ketentuan peraturan perundang-undangan;\nc. kegiatan lain yang akan disepakati kemudian oleh PARA PIHAK."
+                        "PARA PIHAK sepakat dan bersedia menetapkan ruang lingkup Perjanjian ini pada pelaksanaan Program DTS atas dasar kesetaraan, saling membantu, bersinergi, transparansi, dan saling menguntungkan PARA PIHAK meliputi:\na. pengembangan sumber daya manusia di bidang komunikasi dan informatika;\nb. pertukaran data dan informasi termasuk Data Pribadi yang beretika, aman, dan bertanggungjawab sesuai dan tidak bertentangan dengan ketentuan perundang-undangan; dan\nc. kegiatan lain yang akan disepakati kemudian oleh PARA PIHAK."
                     ],
                     "opsional": false,
                     "aktif_bawaan": true
@@ -57,7 +55,7 @@
                     "nomor": 4,
                     "judul": "PELAKSANAAN PROGRAM",
                     "ayat": [
-                        "Pelaksanaan Perjanjian ini akan ditindaklanjuti dan diatur lebih lanjut dalam dokumen lanjutan tersendiri yang dibuat dan disepakati oleh PARA PIHAK, yang mengatur secara rinci pekerjaan, pelaksanaan, mekanisme pelaksanaan, dan hal-hal teknis lainnya yang dianggap perlu dan merupakan bagian yang tidak terpisahkan dari Perjanjian ini."
+                        "Pelaksanaan Perjanjian ini akan ditindaklanjuti dan diatur lebih lanjut dalam dokumen lanjutan tersendiri yang dibuat dan disepakati oleh PARA PIHAK yang mengatur secara rinci pekerjaan, pelaksanaan, mekanisme pelaksanaan, dan hal-hal teknis lainnya yang dianggap perlu dan merupakan bagian yang tidak terpisahkan dari Perjanjian ini."
                     ],
                     "opsional": false,
                     "aktif_bawaan": true
@@ -66,9 +64,11 @@
                     "nomor": 5,
                     "judul": "JANGKA WAKTU",
                     "ayat": [
-                        "Perjanjian ini berlaku untuk jangka waktu {{masa_aktif_tahun}} terhitung mulai tanggal ditandatangani oleh PARA PIHAK.",
-                        "Apabila salah satu PIHAK menghendaki perpanjangan sebelum jangka waktu Perjanjian berakhir, pihak yang menginginkan perpanjangan menyampaikan secara tertulis kepada pihak lainnya paling lambat 30 (tiga puluh) Hari Kalender sebelum Perjanjian berakhir. Perpanjangan dituangkan secara tertulis dan ditandatangani oleh PARA PIHAK.",
-                        "Perjanjian ini dapat berakhir atau batal dengan sendirinya apabila ada ketentuan perundang-undangan atau kebijakan Pemerintah yang tidak memungkinkan berlangsungnya Perjanjian ini."
+                        "Perjanjian ini berlaku untuk jangka waktu {{masa_aktif_tahun}}, terhitung mulai tanggal ditandatangani oleh PARA PIHAK.",
+                        "Apabila salah satu PIHAK menghendaki perpanjangan atas Perjanjian ini sebelum jangka waktu Perjanjian berakhir, maka PIHAK yang menginginkan perpanjangan dimaksud terlebih dahulu menyampaikan secara tertulis kepada PIHAK lainnya dalam waktu selambat-lambatnya 30 (tiga puluh) Hari Kalender sebelum waktu Perjanjian ini berakhir. Jika PARA PIHAK sepakat untuk memperpanjang jangka waktu Perjanjian ini, maka perpanjangan tersebut dituangkan secara tertulis di dalam dokumen yang dibuat dan ditandatangani oleh PARA PIHAK. Namun, apabila permintaan perpanjangan waktu Perjanjian tidak disepakati, maka Perjanjian akan berakhir pada akhir jangka waktu Perjanjian ini.",
+                        "Perjanjian ini dapat berakhir atau batal dengan sendirinya apabila ada ketentuan perundang-undangan atau kebijakan Pemerintah yang tidak memungkinkan berlangsungnya Perjanjian ini.",
+                        "PARA PIHAK berhak untuk sewaktu-waktu mengakhiri Perjanjian ini apabila terjadi salah satu dari hal-hal sebagai berikut:\na. salah satu PIHAK melanggar salah satu ketentuan di Perjanjian ini, dan pelanggaran tersebut tidak dapat diperbaiki;\nb. salah satu PIHAK melanggar salah satu ketentuan di Perjanjian ini, dan pelanggaran tersebut dapat diperbaiki, namun PIHAK yang melanggar tidak mampu memperbaiki pelanggaran tersebut dalam jangka waktu 30 (tiga puluh) Hari Kalender sejak tanggal terjadinya pelanggaran tersebut; atau\nc. salah satu PIHAK pailit, menghentikan layanan serta kegiatan operasionalnya dan izin usahanya dicabut baik sebagian atau secara keseluruhan; memenuhi ketentuan Keadaan Kahar sebagaimana diatur dalam Perjanjian ini, dan oleh karena itu tidak mampu melanjutkan kegiatan usahanya.",
+                        "Dalam hal Perjanjian ini diakhiri baik karena permintaan salah satu PIHAK ataupun karena sebab lain, pengakhiran Perjanjian tidak mempengaruhi hak dan kewajiban PARA PIHAK yang harus diselesaikan terlebih dahulu sebagai akibat dari pelaksanaan sebelum diakhirinya Perjanjian ini."
                     ],
                     "opsional": false,
                     "aktif_bawaan": true
@@ -77,10 +77,11 @@
                     "nomor": 6,
                     "judul": "KEWAJIBAN DAN HAK",
                     "ayat": [
-                        "PIHAK KESATU wajib: a. menyediakan kurikulum, modul, dan materi yang sesuai dengan standar SKKNI untuk digunakan pada proses pembelajaran di PIHAK KEDUA; b. memfasilitasi kegiatan sertifikasi sebagai salah satu luaran pembelajaran dari PIHAK KEDUA.",
-                        "PIHAK KEDUA wajib: a. menyediakan tenaga pengajar untuk memberikan materi yang telah diselaraskan dengan silabus dari PIHAK KESATU; b. menyelenggarakan pelatihan Program DTS bagi para Peserta sesuai tema Program DTS; c. menyiapkan bahan ajar sesuai silabus dan kurikulum yang ditetapkan PIHAK KESATU; d. membuat dan mengirimkan laporan pelaksanaan Program DTS kepada PIHAK KESATU; e. mempublikasikan Program DTS pada media promosi milik PIHAK KEDUA.",
-                        "PIHAK KESATU berhak: a. mendapatkan laporan pelaksanaan pelatihan; b. melakukan monitoring dan evaluasi terhadap pelaksanaan pelatihan Program DTS; c. menggunakan fasilitas yang disediakan PIHAK KEDUA selama program berlangsung sesuai kesepakatan.",
-                        "PIHAK KEDUA berhak: a. mendapatkan dukungan teknis dan materi pelatihan dari PIHAK KESATU; b. mengirimkan mahasiswa yang telah diseleksi untuk mengikuti akademi tertentu pada Program DTS; c. mendapatkan pembiayaan atas pelaksanaan pelatihan Peserta pada Program DTS sesuai Perjanjian ini."
+                        "PIHAK KESATU wajib:\na. menyediakan kurikulum, modul, dan materi yang sesuai dengan standar SKKNI untuk digunakan pada proses pembelajaran di PIHAK KEDUA; dan\nb. memfasilitasi kegiatan sertifikasi sebagai salah satu luaran pembelajaran dari PIHAK KEDUA dan menjamin bahwa Data Pribadi yang dibagikan kepada PIHAK KEDUA sudah mendapatkan persetujuan dari Subjek Data Pribadi.",
+                        "PIHAK KEDUA wajib:\na. menyediakan tenaga pengajar untuk memberikan materi mata kuliah yang telah diselaraskan dengan silabus yang disediakan oleh PIHAK KESATU;\nb. menyelenggarakan pelatihan Program DTS bagi para Peserta, terhitung sejak program dimulai sesuai dengan tema Program DTS;\nc. menyiapkan bahan ajar sesuai dengan silabus dan kurikulum yang ditetapkan oleh PIHAK KESATU;\nd. mensinergikan kurikulum DTS dalam proses pembelajaran dan pengembangan Microcredential kampus;\ne. membuat dan mengirimkan laporan dan dokumentasi tentang pelaksanaan Program DTS kepada PIHAK KESATU yang mencakup evaluasi di tengah masa Program DTS dan laporan akhir pelaksanaan pelatihan Program DTS yang tercakup dalam Perjanjian ini;\nf. mempublikasikan Program DTS di seluruh media promosi dan/atau publikasi yang dimiliki oleh PIHAK KEDUA; dan\ng. menjamin bahwa Data Pribadi yang dibagikan kepada PIHAK KESATU sudah mendapatkan persetujuan dari Subjek Data Pribadi.",
+                        "PIHAK KESATU berhak:\na. mendapatkan laporan pelaksanaan pelatihan;\nb. menggunakan fasilitas yang disediakan oleh PIHAK KEDUA selama program berlangsung sesuai dengan kesepakatan; dan\nc. melakukan monitoring dan evaluasi terhadap pelaksanaan pelatihan Program DTS yang tercakup dalam Perjanjian ini.",
+                        "PIHAK KEDUA berhak:\na. mendapatkan dukungan teknis dan materi pelatihan dari PIHAK KESATU sesuai dengan Perjanjian ini;\nb. mengirimkan mahasiswa yang telah diseleksi untuk mengikuti akademi tertentu pada Program DTS; dan\nc. mendapatkan pembiayaan atas pelaksanaan pelatihan Peserta pada Program DTS yang dicakup dalam Perjanjian ini.",
+                        "Hak dan kewajiban sebagaimana dimaksud dalam Pasal ini tidak mengesampingkan ketentuan hak dan kewajiban PARA PIHAK yang diatur dalam pasal lainnya dalam Perjanjian ini."
                     ],
                     "opsional": false,
                     "aktif_bawaan": true
@@ -91,23 +92,36 @@
                     "ayat": [
                         "PARA PIHAK wajib menjaga keamanan dan kerahasiaan data dan/atau informasi yang diperoleh sehubungan dengan pelaksanaan Perjanjian ini sesuai dengan ketentuan peraturan perundang-undangan.",
                         "Dalam hal salah satu PIHAK akan memberikan informasi yang diperoleh sehubungan dengan pelaksanaan Perjanjian kepada pihak lain, terlebih dahulu harus mendapat persetujuan dari PIHAK lainnya.",
-                        "Kewajiban menyimpan informasi menjadi tidak berlaku apabila informasi tersebut telah tersedia untuk masyarakat umum atau diperintahkan untuk dibuka melalui perintah pengadilan atau badan pemerintah yang berwenang.",
-                        "Ketentuan Pasal ini tetap berlaku dan mengikat PARA PIHAK selama 2 (dua) tahun sejak tanggal berakhirnya Perjanjian ini."
+                        "PARA PIHAK menjamin akan menjaga setiap data dan/atau informasi lain yang berkaitan dengan bisnis, produk dan pelayanan yang diketahui atau timbul berdasarkan Perjanjian, sebagai rahasia dan tidak akan diberitahukan kepada pihak lain yang tidak berkepentingan dengan alasan apapun juga selama dan sesudah berakhirnya Perjanjian.",
+                        "Kewajiban untuk menyimpan informasi sebagaimana dimaksud pada ayat (1) menjadi tidak berlaku apabila:\na. informasi tersebut saat ini atau sewaktu-waktu di kemudian hari dapat menjadi atau tersedia untuk masyarakat umum; dan/atau\nb. informasi tersebut diperintahkan untuk dibuka melalui perintah Pengadilan atau Badan Pemerintah lain yang berwenang berdasarkan peraturan perundang-undangan.",
+                        "Ketentuan Pasal ini tetap berlaku dan mengikat PARA PIHAK selama 2 (dua) tahun sejak tanggal efektif berakhirnya Perjanjian ini."
                     ],
                     "opsional": false,
-                    "aktif_bawaan": true
+                    "aktif_bawaan": true,
+                    "// VERIFIKASI": "Disusun dari dokumen sumber PKS Politeknik Caltex Riau hlm. 4-7 (Pasal 7 KERAHASIAAN, ayat 1-5)."
                 },
                 {
                     "nomor": 8,
                     "judul": "TRANSFER DATA, INFORMASI, DAN PELINDUNGAN DATA PRIBADI",
                     "ayat": [
-                        "Masing-masing PIHAK menyanggupi untuk mematuhi semua ketentuan terkait dalam Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi beserta peraturan pelaksanaannya.",
+                        "Masing-masing PIHAK mengakui bahwa pihaknya akan memproses Data Pribadi berdasarkan Perjanjian ini. Dengan demikian, masing-masing PIHAK menyanggupi untuk mematuhi semua ketentuan terkait dalam Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi, peraturan perundang-undangan pelaksanaannya, dan semua peraturan perundang-undangan lainnya yang sekarang atau di masa mendatang akan diundangkan terkait terhadap pelindungan data pribadi, yang berhubungan dengan pemrosesan data pribadi yang akan dilakukannya dan sesuai dengan peran yang diambilnya berdasarkan Perjanjian ini.",
                         "PARA PIHAK sepakat bahwa dalam pelaksanaan Perjanjian ini PIHAK KESATU berperan sebagai Pengendali Data Pribadi dan PIHAK KEDUA berperan sebagai Prosesor Data Pribadi.",
                         "Subjek Data Pribadi yang dimaksud pada Pasal ini adalah Peserta dan/atau Alumni Pelatihan Program DTS.",
-                        "Transfer Data Pribadi Peserta dan/atau Alumni oleh PIHAK KESATU kepada PIHAK KEDUA untuk kebutuhan registrasi meliputi nama, NIK, nomor telepon, dan alamat surel, sepanjang diizinkan oleh hukum dan peraturan perundang-undangan yang berlaku."
+                        "PARA PIHAK pada syarat dan ketentuan platform masing-masing bertanggung jawab dan menjamin untuk mendapatkan persetujuan secara tertulis atau persetujuan secara digital terlebih dahulu dari Subjek Data Pribadi.",
+                        "PIHAK KESATU adalah pihak yang berhak untuk menentukan ruang lingkup, tata cara, dan tujuan untuk dan caranya Data Pribadi tersebut diproses oleh PIHAK KEDUA berdasarkan Perjanjian ini. Data Pribadi yang bukan merupakan bagian dari Data PIHAK KESATU menjadi tanggung jawab PIHAK KEDUA sebagai Pengendali Data Pribadi tersebut.",
+                        "Transfer Data Pribadi Peserta dan/atau Alumni Program Pelatihan oleh PIHAK KESATU kepada PIHAK KEDUA untuk kebutuhan registrasi sebagai Peserta dan/atau Alumni, berupa:\na. nama;\nb. NIK;\nc. nomor handphone;\nd. alamat email; dan\ne. Data Pribadi lainnya yang mungkin diperlukan di waktu yang akan mendatang sebagai dokumen registrasi PIHAK KEDUA sepanjang diizinkan oleh hukum dan peraturan perundang-undangan yang berlaku.",
+                        "Kecuali PIHAK KESATU menentukan lain secara tertulis, PIHAK KEDUA harus memastikan bahwa personelnya dan/atau kontraktornya harus:\na. memproses Data Pribadi sesuai dengan Kebijakan dan Pedoman dari PIHAK KESATU atau secara lain diatur dalam Perjanjian beserta seluruh penambahan atau perubahannya;\nb. memproses Data Pribadi sesuai Undang-Undang Pelindungan Data Pribadi;\nc. hanya memproses Data Pribadi bila dan hanya sejauh diperlukan agar dapat melaksanakan jasa atau kewajiban lainnya berdasarkan Perjanjian; dan\nd. tidak mengungkapkan Data Pribadi kepada pihak ketiga manapun selain personel, pimpinan dari PIHAK KEDUA berdasarkan kebutuhan sejauh diperlukan untuk melaksanakan kewajiban PIHAK KEDUA berdasarkan Perjanjian ini; subkontraktor PIHAK KEDUA yang diizinkan secara tertulis oleh PIHAK KESATU untuk memproses Data Pribadi berdasarkan Perjanjian ini; dan sejauh diperlukan oleh peraturan perundang-undangan yang berlaku, namun tetap memperhatikan dan mematuhi Undang-Undang Pelindungan Data Pribadi.",
+                        "PIHAK KEDUA harus melaksanakan dan mempertahankan tindakan atau langkah administratif, teknis, dan organisasi yang memadai untuk:\na. menjaga keamanan Data Pribadi;\nb. mencegah penghapusan tidak sah atau tidak disengaja, perubahan tidak sah, menyalin, mengakses atau menggunakan, pemalsuan, pencurian, kehilangan atau kesalahan teknis sehubungan dengan Data Pribadi; dan\nc. memastikan kerahasiaan, integritas, ketersediaan serta ketahanan sistem dan layanan pemrosesan.",
+                        "Tindakan tersebut pada ayat (8) harus mempertimbangkan:\na. tujuan pemrosesan data;\nb. sifat dan jangkauan pemrosesan;\nc. penilaian atas kemungkinan risiko kepada Subjek Data Pribadi; dan\nd. praktek yang baik dan teknologi terkini yang setidaknya ditetapkan dalam Kebijakan Keamanan Informasi Pihak Ketiga.",
+                        "PIHAK KESATU dapat meminta:\na. laporan tertulis terperinci yang menjelaskan langkah-langkah teknis yang digunakan oleh PIHAK KEDUA untuk pemrosesan Data Pribadi; dan\nb. salinan tertulis kebijakan dan prosedur pelindungan data dari PIHAK KEDUA.",
+                        "PIHAK KEDUA harus memastikan bahwa sebelum mengungkapkan Data Pribadi apa pun kepada PIHAK KEDUA atau subkontraktor dalam situasi di mana PIHAK KEDUA atau subkontraktor akan memproses Data Pribadi tersebut dengan:\na. mendapatkan persetujuan tertulis sebelumnya dari PIHAK KESATU; dan\nb. menandatangani kontrak yang mencakup ketentuan privasi data dan kerahasiaan yang sama dengan ketentuan dalam Perjanjian ini dengan PIHAK KEDUA atau subkontraktor untuk mematuhi persyaratan yang setara dengan yang ditetapkan dalam Perjanjian ini, sejauh diizinkan oleh Undang-Undang Pelindungan Data Pribadi yang berlaku.",
+                        "PIHAK KEDUA wajib memastikan bahwa personel PIHAK KEDUA dan Subkontraktornya mematuhi semua batasan berdasarkan Undang-Undang Pelindungan Data Pribadi yang berlaku mengenai transfer Data Pribadi.",
+                        "PIHAK KEDUA akan memberikan pemberitahuan tertulis kepada PIHAK KESATU segera setelah mengetahui adanya:\na. kegagalan pelindungan data pribadi;\nb. potensi pelanggaran dari Perjanjian atau Undang-Undang Pelindungan Data Pribadi;\nc. pemberitahuan tentang pelanggaran data apa pun kepada institusi terkait berdasarkan Undang-Undang Pelindungan Data Pribadi; dan/atau\nd. permintaan yang mengikat secara hukum untuk pengungkapan Data Pribadi oleh institusi terkait.",
+                        "PIHAK KEDUA harus memberikan bantuan kepada PIHAK KESATU untuk:\na. menyiapkan pemberitahuan tentang kegagalan pelindungan dan/atau pelanggaran Data Pribadi kepada institusi terkait serta Subjek Data yang terdampak;\nb. melakukan penilaian dampak pelindungan data untuk operasi pemrosesan yang cenderung mengakibatkan risiko tinggi terhadap hak dan kebebasan Subjek Data; dan\nc. persiapan pertemuan konsultasi dengan penilaian dampak pelindungan data yang menunjukkan pemrosesan menghasilkan risiko tinggi bagi Subjek Data."
                     ],
                     "opsional": false,
-                    "aktif_bawaan": true
+                    "aktif_bawaan": true,
+                    "// VERIFIKASI": "Disusun dari dokumen sumber PKS Politeknik Caltex Riau hlm. 4-7 (Pasal 8 TRANSFER DATA, INFORMASI DAN PELINDUNGAN DATA PRIBADI, sebagian ayat diringkas mengikuti pola Template A)."
                 },
                 {
                     "nomor": 9,
@@ -123,7 +137,7 @@
                     "judul": "EVALUASI",
                     "ayat": [
                         "PARA PIHAK sepakat untuk mengadakan evaluasi pelaksanaan Perjanjian setiap 6 (enam) bulan sekali atau sesuai waktu yang akan disepakati bersama oleh PARA PIHAK.",
-                        "Hasil evaluasi wajib disampaikan kepada masing-masing PIHAK untuk dapat dijadikan dasar penyempurnaan pelayanan maupun peninjauan kembali Perjanjian ini."
+                        "Hasil evaluasi sebagaimana diatur pada ayat (1) Pasal ini wajib disampaikan kepada masing-masing PIHAK untuk dapat dijadikan dasar penyempurnaan pelayanan maupun peninjauan kembali Perjanjian ini."
                     ],
                     "opsional": false,
                     "aktif_bawaan": true
@@ -132,8 +146,9 @@
                     "nomor": 11,
                     "judul": "KORESPONDENSI",
                     "ayat": [
-                        "Setiap pemberitahuan, persetujuan, izin, permintaan, atau komunikasi lainnya yang dibuat berdasarkan Perjanjian ini disampaikan secara tertulis melalui alamat atau kontak, yaitu: PIHAK KESATU dengan alamat {{pihak_kesatu_alamat}}, telepon {{pihak_kesatu_telepon}}, surel {{pihak_kesatu_email}}; PIHAK KEDUA dengan alamat {{alamat_instansi}}, telepon {{telepon_instansi}}, surel {{email_instansi}}.",
-                        "Perubahan alamat harus diberitahukan secara tertulis kepada pihak lain paling lambat 5 (lima) Hari Kerja sebelum perubahan alamat dimaksud."
+                        "Setiap pemberitahuan, persetujuan, izin, permintaan atau komunikasi lainnya yang dibuat berdasarkan Perjanjian ini harus disampaikan secara tertulis dan disampaikan melalui alamat atau kontak sebagai berikut:\na. PIHAK KESATU: {{pihak_kesatu_nama_unit}}, {{pihak_kesatu_alamat}}, Telepon {{pihak_kesatu_telepon}}, Email {{pihak_kesatu_email}};\nb. PIHAK KEDUA: {{nama_instansi}}, {{alamat_instansi}}, Telepon {{telepon_instansi}}, Email {{email_instansi}}.",
+                        "Dalam hal terjadi perubahan alamat sebagaimana dimaksud pada ayat (1) atau alamat terakhir yang tercatat pada masing-masing PIHAK, maka perubahan tersebut harus diberitahukan secara tertulis kepada PIHAK lain dalam Perjanjian ini paling lambat 5 (lima) hari kerja sebelum perubahan alamat dimaksud.",
+                        "Jika perubahan alamat tersebut tidak diberitahukan, maka surat menyurat atau pemberitahuan-pemberitahuan dianggap telah diberikan sebagaimana mestinya dengan dikirimkannya surat atau pemberitahuan tersebut ke alamat sebagaimana dimaksud pada ayat (1)."
                     ],
                     "opsional": false,
                     "aktif_bawaan": true
@@ -142,8 +157,8 @@
                     "nomor": 12,
                     "judul": "PENYELESAIAN PERSELISIHAN",
                     "ayat": [
-                        "Apabila dalam pelaksanaan Perjanjian ini terdapat perbedaan interpretasi dan timbul perselisihan di antara PARA PIHAK, PARA PIHAK sepakat untuk menyelesaikannya melalui musyawarah untuk mufakat.",
-                        "Apabila musyawarah tidak mencapai mufakat dalam tenggang waktu 30 (tiga puluh) Hari Kalender sejak perselisihan terjadi, PARA PIHAK sepakat untuk menyerahkan penyelesaian perselisihan tersebut melalui Pengadilan Negeri Jakarta Pusat."
+                        "Apabila dalam pelaksanaan Perjanjian ini terdapat perbedaan interpretasi dan timbul perselisihan di antara PARA PIHAK, maka PARA PIHAK sepakat untuk menyelesaikannya melalui jalan musyawarah untuk mufakat.",
+                        "Apabila penyelesaian perselisihan secara musyawarah sebagaimana dimaksud pada ayat (1) Pasal ini tidak mencapai mufakat dalam tenggang waktu 30 (tiga puluh) Hari Kalender sejak perselisihan terjadi, maka PARA PIHAK sepakat untuk menyerahkan penyelesaian perselisihan tersebut melalui Pengadilan Negeri Jakarta Pusat."
                     ],
                     "opsional": false,
                     "aktif_bawaan": true
@@ -152,27 +167,30 @@
                     "nomor": 13,
                     "judul": "KEADAAN KAHAR",
                     "ayat": [
-                        "Keadaan kahar adalah suatu keadaan atau kejadian di luar kekuasaan dan kehendak PARA PIHAK yang mengakibatkan Perjanjian ini tidak dapat terlaksana.",
-                        "Pihak yang mengalami keadaan kahar berkewajiban memberitahukan secara tertulis kepada pihak lainnya disertai bukti-bukti tertulis dari pejabat atau instansi yang berwenang dalam waktu 7 (tujuh) Hari Kalender sejak saat dimulainya penundaan pelaksanaan kewajiban.",
-                        "Semua kerugian yang timbul atau diderita salah satu PIHAK karena terjadinya keadaan kahar bukan merupakan tanggung jawab pihak lainnya."
+                        "Keadaan kahar adalah suatu keadaan/kejadian di luar kekuasaan dan kehendak PARA PIHAK yang mengakibatkan Perjanjian ini tidak dapat terlaksana.",
+                        "Keadaan yang tergolong dalam keadaan kahar adalah gempa bumi, angin puyuh, tanah longsor, banjir, kebakaran besar, ledakan, bencana alam, perang, kerusuhan, terorisme, perebutan kekuasaan, sabotase, embargo, mogok kerja massal, perubahan drastis politik/ekonomi, demonstrasi, mati listrik, matinya jaringan internet yang bersifat luas, tersambar petir, wabah yang bersifat epidemi atau pandemi, dan perubahan peraturan perundang-undangan.",
+                        "Dalam hal terjadi keadaan kahar sebagaimana dimaksud pada ayat (1) dan (2) Pasal ini, maka PIHAK yang mengalami keadaan kahar berkewajiban memberitahukan secara tertulis kepada PIHAK lainnya disertai bukti-bukti tertulis tentang keadaan kahar dari pejabat/instansi yang berwenang untuk itu dalam waktu 7 (tujuh) Hari Kalender sejak saat dimulainya penundaan pelaksanaan kewajiban dengan melampirkan bukti-bukti yang dapat dipertanggungjawabkan.",
+                        "Perpanjangan jangka waktu pelaksanaan kewajiban akan diberikan untuk jangka waktu yang sama dengan lamanya penundaan pelaksanaan kewajiban tersebut dengan jangka waktu perpanjangan selambat-lambatnya 30 (tiga puluh) Hari Kalender sejak tanggal pemberitahuan sebagaimana dimaksud pada ayat (3) Pasal ini sepanjang alasan-alasannya dapat diterima dan disetujui secara tertulis oleh PARA PIHAK.",
+                        "Semua kerugian yang timbul atau diderita salah satu PIHAK karena terjadinya keadaan kahar bukan merupakan tanggung jawab PIHAK lainnya.",
+                        "Atas akibat keadaan kahar sebagaimana dimaksud ayat (1) dan (2) Pasal ini PARA PIHAK akan melakukan musyawarah dan mengupayakan pertimbangan-pertimbangan lebih lanjut atas pelaksanaan Pekerjaan menurut Perjanjian ini. Apabila setelah jangka waktu sebagaimana dimaksud pada ayat (4) Pasal ini, PIHAK yang mengalami keadaan kahar tidak dapat melaksanakan seluruh atau sebagian Pekerjaan dalam Perjanjian ini, maka PIHAK yang tidak mengalami keadaan kahar berhak memutuskan Perjanjian ini secara sepihak dengan cukup memberitahukan secara tertulis perihal pemutusan Perjanjian tersebut kepada PIHAK yang mengalami keadaan kahar."
                     ],
-                    "opsional": true,
+                    "opsional": false,
                     "aktif_bawaan": true
                 },
                 {
                     "nomor": 14,
                     "judul": "HAK KEKAYAAN INTELEKTUAL",
                     "ayat": [
-                        "PARA PIHAK dilarang menggunakan Hak Kekayaan Intelektual pihak lain dalam Perjanjian ini tanpa persetujuan tertulis terlebih dahulu dari pihak yang bersangkutan."
+                        "PARA PIHAK dilarang untuk menggunakan Hak Kekayaan Intelektual dari PIHAK lain dalam Perjanjian ini, tanpa persetujuan tertulis terlebih dahulu dari PIHAK lainnya dimaksud."
                     ],
-                    "opsional": true,
+                    "opsional": false,
                     "aktif_bawaan": true
                 },
                 {
                     "nomor": 15,
                     "judul": "LAIN-LAIN",
                     "ayat": [
-                        "Hal-hal yang belum diatur atau belum cukup diatur dalam ketentuan Perjanjian ini akan diatur kemudian berdasarkan kesepakatan tertulis PARA PIHAK dan dituangkan dalam bentuk Adendum Perjanjian yang merupakan bagian yang tidak terpisahkan dan mempunyai kekuatan hukum yang sama dengan Perjanjian ini."
+                        "Hal-hal yang belum diatur atau belum cukup diatur dalam ketentuan-ketentuan Perjanjian ini akan diatur kemudian berdasarkan kesepakatan tertulis PARA PIHAK dan akan dituangkan dalam bentuk Adendum Perjanjian yang merupakan bagian yang tidak terpisahkan dan mempunyai kekuatan hukum yang sama dengan Perjanjian ini."
                     ],
                     "opsional": false,
                     "aktif_bawaan": true
@@ -190,7 +208,7 @@
         {
             "tipe": "lampiran",
             "lampiran": {
-                "judul": "RENCANA AKSI PERJANJIAN KERJA SAMA",
+                "judul": "RENCANA AKSI PERJANJIAN KERJA SAMA TAHUN {{tahun_mulai}} SAMPAI DENGAN TAHUN {{tahun_akhir}}",
                 "tabel": "rencana_aksi",
                 "kolom": [
                     "No",

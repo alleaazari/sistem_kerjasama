@@ -17,7 +17,15 @@ use RuntimeException;
  *       { tipe: pasal, pasal: list<{ nomor, judul, ayat[], opsional: bool, aktif_bawaan: bool }> }
  *       { tipe: lampiran, lampiran: { judul, tabel, kolom[], baris[][] } }
  *
+ * Sebuah item `ayat` boleh berupa string (ayat biasa) atau objek
+ * { teks, opsional, aktif_bawaan } untuk ayat/huruf yang dapat dimatikan
+ * (mis. Pasal 4 huruf c "kegiatan lain yang disepakati").
+ *
  * Semua teks blok memuat placeholder {{nama}} sesuai PendaftaranPlaceholder.
+ *
+ * Unduhan/pemakaian template oleh mitra hanya untuk status 'final'
+ * (`dapatDipakaiMitra`); template 'draf' ditolak dengan pesan
+ * `pesanBelumTersedia()`.
  *
  * TODO-BACKEND: pindah ke tabel `mou_template` (kode unik, nama, status,
  * versi) + tabel blok terurut dan riwayat versi. Kontrak method dipertahankan.
@@ -89,6 +97,104 @@ final class StrukturTemplateMou
             : 'kerangka_umum';
 
         return self::untuk($kodeTemplate);
+    }
+
+    /**
+     * Pasal yang AKTIF pada sebuah template, dengan nomor pasal dihitung ULANG
+     * secara berurutan (dinamis). Pasal opsional yang tidak diaktifkan
+     * dilewati tanpa meninggalkan lubang nomor.
+     *
+     * @param  array<string, mixed>  $template
+     * @param  list<string>  $pasalNonaktif  judul pasal opsional yang dimatikan (mis. ['PERUBAHAN'])
+     * @return list<array{nomor: int, judul: string, ayat: list<string>, opsional: bool, aktif_bawaan: bool}>
+     */
+    public static function pasalAktif(array $template, array $pasalNonaktif = []): array
+    {
+        $aktif = [];
+        $nomor = 0;
+
+        foreach ($template['blok'] ?? [] as $blok) {
+            if (! is_array($blok) || ($blok['tipe'] ?? null) !== 'pasal') {
+                continue;
+            }
+
+            foreach ($blok['pasal'] ?? [] as $pasal) {
+                $opsional = (bool) ($pasal['opsional'] ?? false);
+                $bawaan = (bool) ($pasal['aktif_bawaan'] ?? true);
+
+                // Pasal opsional: aktif hanya bila aktif_bawaan dan tidak dimatikan.
+                if ($opsional && (! $bawaan || in_array($pasal['judul'], $pasalNonaktif, true))) {
+                    continue;
+                }
+
+                $nomor++;
+                $aktif[] = [
+                    'nomor' => $nomor,
+                    'judul' => (string) $pasal['judul'],
+                    'ayat' => self::ayatAktif($pasal['ayat'] ?? []),
+                    'opsional' => $opsional,
+                    'aktif_bawaan' => $bawaan,
+                ];
+            }
+        }
+
+        return $aktif;
+    }
+
+    /**
+     * Daftar judul pasal AKTIF berurutan — satu sumber untuk test/editor.
+     *
+     * @param  array<string, mixed>  $template
+     * @param  list<string>  $pasalNonaktif
+     * @return list<string>
+     */
+    public static function judulPasalAktif(array $template, array $pasalNonaktif = []): array
+    {
+        return array_map(
+            static fn (array $pasal): string => $pasal['judul'],
+            self::pasalAktif($template, $pasalNonaktif),
+        );
+    }
+
+    /**
+     * Template berstatus 'final' boleh dipakai mitra untuk generate draf.
+     * Template 'draf' (kerangka yang belum lolos verifikasi) ditolak.
+     *
+     * @param  array<string, mixed>  $template
+     */
+    public static function dapatDipakaiMitra(array $template): bool
+    {
+        return ($template['status'] ?? null) === 'final';
+    }
+
+    /** Kode template yang boleh dipakai mitra untuk generate. */
+    public static function dapatGenerate(string $kodeTemplate): bool
+    {
+        $template = self::untuk($kodeTemplate);
+
+        return $template !== null && self::dapatDipakaiMitra($template);
+    }
+
+    /** Pesan seragam saat template belum bisa dipakai mitra. */
+    public static function pesanBelumTersedia(): string
+    {
+        return 'Template belum tersedia.';
+    }
+
+    /**
+     * Klausul pembiayaan siap pakai: pilih varian config sesuai kode skema;
+     * bila kosong atau tak dikenal, pakai redaksi bawaan dokumen.
+     */
+    public static function klausulPembiayaan(?string $kodeSkema): string
+    {
+        $kode = trim((string) $kodeSkema);
+        $varian = config('mou.pembiayaan_varian', []);
+
+        if ($kode !== '' && is_array($varian) && isset($varian[$kode]) && is_string($varian[$kode])) {
+            return $varian[$kode];
+        }
+
+        return (string) config('mou.pembiayaan_bawaan', '');
     }
 
     /**
@@ -210,6 +316,41 @@ final class StrukturTemplateMou
         }
 
         return $template;
+    }
+
+    /**
+     * Ayat yang aktif dalam sebuah pasal sebagai daftar teks. Item objek
+     * { teks, opsional, aktif_bawaan } yang dimatikan dilewati.
+     *
+     * @param  array<mixed>  $ayat
+     * @return list<string>
+     */
+    private static function ayatAktif(array $ayat): array
+    {
+        $hasil = [];
+
+        foreach ($ayat as $satu) {
+            if (is_string($satu)) {
+                $hasil[] = $satu;
+
+                continue;
+            }
+
+            if (! is_array($satu) || ! isset($satu['teks'])) {
+                continue;
+            }
+
+            $opsional = (bool) ($satu['opsional'] ?? false);
+            $bawaan = (bool) ($satu['aktif_bawaan'] ?? true);
+
+            if ($opsional && ! $bawaan) {
+                continue;
+            }
+
+            $hasil[] = (string) $satu['teks'];
+        }
+
+        return $hasil;
     }
 
     /**

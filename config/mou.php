@@ -93,4 +93,13 @@ return [
         'Cost Sharing' => 'Segala pembiayaan untuk pelaksanaan kerja sama ini dibebankan secara bersama (cost sharing) pada anggaran masing-masing Pihak sesuai tugas, tanggung jawab, dan ketentuan peraturan perundang-undangan yang berlaku.',
     ],
 
+    /*
+    |----------------------------------------------------------------------
+    | Redaksi pembiayaan bawaan (bila {{pembiayaan}} kosong)
+    |----------------------------------------------------------------------
+    | Dipakai saat skema pembiayaan belum dipilih mitra. Teks diambil dari
+    | Pasal Pembiayaan contoh dokumen apa adanya.
+    */
+    'pembiayaan_bawaan' => 'Segala pembiayaan untuk pelaksanaan kerja sama ini bersumber dari anggaran PARA PIHAK sesuai dengan peraturan perundang-undangan yang berlaku.',
+
 ];

@@ -50,8 +50,11 @@ final class PendaftaranPlaceholder
             'pihak_kesatu_jabatan' => ['sumber' => 'config', 'keterangan' => 'Jabatan penandatangan Pihak Kesatu', 'wajib' => true],
             'pihak_kesatu_pejabat_pelaksana' => ['sumber' => 'config', 'keterangan' => 'Pejabat pelaksana Pihak Kesatu', 'wajib' => true],
             'dasar_hukum' => ['sumber' => 'config', 'keterangan' => 'Daftar dasar hukum nasional (Template A)', 'wajib' => true],
+            'dasar_hukum_daerah' => ['sumber' => 'lengkapi_mitra', 'keterangan' => 'Daftar peraturan daerah mitra (Template A)', 'wajib' => false],
             'pembiayaan' => ['sumber' => 'turunan', 'keterangan' => 'Klausul pembiayaan sesuai varian terpilih', 'wajib' => true],
             'masa_aktif_tahun' => ['sumber' => 'turunan', 'keterangan' => 'Masa berlaku kerja sama (tahun)', 'wajib' => false],
+            'tahun_mulai' => ['sumber' => 'turunan', 'keterangan' => 'Tahun mulai kerja sama', 'wajib' => true],
+            'tahun_akhir' => ['sumber' => 'turunan', 'keterangan' => 'Tahun berakhir kerja sama', 'wajib' => true],
         ];
     }
 

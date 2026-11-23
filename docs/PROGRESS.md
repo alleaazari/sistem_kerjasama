@@ -813,3 +813,85 @@ DIUBAH
 ### Langkah berikutnya
 - Fase berikut: renderer blok → HTML/dokumen, form "lengkapi data mitra", dan
   editor template berbasis blok. Menunggu perintah "Lanjut".
+
+## 17. Isi Template MoU A, B, dan Kerangka Bidang 3 (SELESAI)
+
+### Ringkasan
+Tiga template diisi dengan **redaksi referensi apa adanya** (dari OCR PDF di
+`routes/MOU/`), ditambah **penomoran pasal dinamis**, mekanisme varian
+pembiayaan, dan gerbang status `draf`. Template A = Nota Kesepakatan Pemda
+(Tanjungbalai), Template B = PKS Beasiswa Talenta Digital (Politeknik Caltex
+Riau), `kerangka_umum` = kerangka Template A berstatus `draf` dengan penanda
+`[ISI ...]` untuk isi khusus bidang ke-3.
+
+### Keputusan
+- **Penomoran pasal dinamis** via `StrukturTemplateMou::pasalAktif()`: nomor
+  pasal dihitung ulang berurutan dari pasal aktif (pasal opsional yang dimatikan
+  tidak meninggalkan lubang nomor). Judul pasal asal tetap disimpan di field
+  `nomor` untuk jejak, nomor tampil dihitung saat render.
+- **Klausul opsional per-ayat**: item `ayat` boleh berupa objek
+  `{ teks, opsional, aktif_bawaan }` — dipakai untuk Pasal 4 huruf c ("kegiatan
+  lain yang disepakati") pada Template A dan kerangka_umum. `ayatAktif()`
+  menyaringnya.
+- **Template A** 15 pasal: MAKSUD DAN TUJUAN, OBJEK, LOKASI, RUANG LINGKUP,
+  TUGAS DAN TANGGUNG JAWAB, PELAKSANAAN, KERAHASIAAN, TRANSFER DATA…PELINDUNGAN
+  DATA PRIBADI (opsional, aktif bawaan), PEMBIAYAAN, JANGKA WAKTU, KEADAAN
+  KAHAR, PENYELESAIAN PERSELISIHAN, KORESPONDENSI DAN KOMUNIKASI, PERUBAHAN
+  (opsional, aktif bawaan `false`), PENUTUP. Mengingat = `{{dasar_hukum}}`
+  (nasional dari config) + `{{dasar_hukum_daerah}}` (data mitra). Lampiran
+  Rencana Kerja **10 kolom**.
+- **Template B** 15 pasal persis urutan referensi (Maksud dan Tujuan, Definisi,
+  Ruang Lingkup, Pelaksanaan Program, Jangka Waktu, Kewajiban dan Hak,
+  Kerahasiaan, Transfer Data dan Pelindungan Data Pribadi, Pembiayaan, Evaluasi,
+  Korespondensi, Penyelesaian Perselisihan, Keadaan Kahar, HKI, Lain-lain).
+  Pasal 7 dan 8 ditandai `// VERIFIKASI` (dokumen sumber hlm. 4-7). Lampiran
+  Rencana Aksi **9 kolom**, judul memuat `{{tahun_mulai}}` s.d. `{{tahun_akhir}}`.
+- **Pembiayaan**: `StrukturTemplateMou::klausulPembiayaan($kode)` memilih varian
+  `config('mou.pembiayaan_varian')` (APBN/APBD/Cost Sharing); kosong/tak dikenal
+  → `config('mou.pembiayaan_bawaan')` (redaksi bawaan dokumen).
+- **Gerbang draf**: `dapatDipakaiMitra()`/`dapatGenerate()` hanya `true` untuk
+  status `final`; template `draf` ditolak dengan `pesanBelumTersedia()`
+  ("Template belum tersedia."). `kerangka_umum` berstatus `draf` sehingga bidang
+  `bidang_3` belum dapat di-generate mitra.
+- Placeholder baru: `dasar_hukum_daerah` (lengkapi_mitra), `tahun_mulai` dan
+  `tahun_akhir` (turunan).
+- Komentar `// TODO: menunggu referensi bidang ke-3` disimpan di field
+  `catatan` pasal (bukan `ayat`) agar tidak tampil sebagai isi dokumen.
+
+### File
+DIUBAH
+- `storage/app/mou/nota_kesepakatan_pemda.json` — redaksi referensi, 15 pasal, lampiran 10 kolom (versi 2).
+- `storage/app/mou/pks_beasiswa_talenta_digital.json` — redaksi referensi, 15 pasal, VERIFIKASI Pasal 7-8, lampiran 9 kolom (versi 2).
+- `storage/app/mou/kerangka_umum.json` — kerangka Template A, status draf, `[ISI ...]`, catatan TODO (versi 2).
+- `app/Support/Mou/StrukturTemplateMou.php` — `pasalAktif`, `judulPasalAktif`, `ayatAktif`, `dapatDipakaiMitra`, `dapatGenerate`, `pesanBelumTersedia`, `klausulPembiayaan`.
+- `app/Support/Mou/PendaftaranPlaceholder.php` — `dasar_hukum_daerah`, `tahun_mulai`, `tahun_akhir`.
+- `config/mou.php` — `pembiayaan_bawaan`.
+DIBUAT
+- `tests/Feature/Mou/IsiTemplateMouTest.php` — 16 test (daftar pasal, penomoran dinamis, gerbang draf, varian pembiayaan, VERIFIKASI, tanpa kata "AI").
+
+### Keamanan
+- [x] Tidak ada kata "AI" di isi template: test "tidak ada kata AI di isi template".
+- [x] Template draf tidak dapat dipakai mitra: test "template final boleh dipakai
+      mitra, template draf tidak" + "bidang bidang_3 memakai kerangka draf dan
+      ditolak generate".
+- [x] Placeholder tetap terdaftar (tidak yatim): test lama `FondasiTemplateMouTest`
+      masih lolos.
+
+### Pengecekan
+- `php artisan test` → 294 test, 293 lolos (1715 assertion). 1 gagal
+  `LandingCmsSyncTest.php:68` (**pra-eksisting**, tidak terkait perubahan ini).
+- `pint --test` (file baru) → passed; `phpstan` (file baru) → 0 error.
+- `npm run build` → berhasil. `npm run types:check` tidak dijalankan (tanpa
+  perubahan TypeScript).
+
+### Menunggu konfirmasi user
+- Nomor peraturan `dasar_hukum_nasional` (7 butir) perlu verifikasi mentor.
+- Teks `pembiayaan_varian`/`pembiayaan_bawaan` perlu verifikasi mentor.
+- `bidang_3` masih placeholder (kode bidang ketiga belum ditentukan).
+- `pihak_kesatu.penandatangan`/`jabatan` default masih `[ISI ...]`.
+- Kolom Lampiran Template A (10) disusun gabungan (referensi Tanjungbalai hlm. 7-8
+  tidak terbaca), perlu verifikasi mentor.
+
+### Langkah berikutnya
+- Fase berikut: renderer blok → HTML/dokumen, form "lengkapi data mitra", dan
+  editor template berbasis blok. Menunggu perintah "Lanjut".
