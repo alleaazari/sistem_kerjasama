@@ -31,6 +31,7 @@ return [
     |   kode             : disimpan di data & divalidasi server.
     |   label            : nama resmi untuk tampilan.
     |   deskripsi_singkat: ringkasan satu baris untuk kartu pilihan.
+    |   sasaran_mitra    : target mitra + format dokumen (kartu pilihan).
     |   jenis_dokumen    : nama dokumen (mis. "Nota Kesepakatan").
     |   template         : kode template di config/mou.php / storage/app/mou.
     |   aktif            : hanya bidang aktif yang tampil & diterima server.
@@ -38,32 +39,34 @@ return [
     | Menambah bidang cukup menambah satu item; mengubah 'template' di sini
     | otomatis menyelaraskan pemetaan generator MoU.
     */
-    // KONFIRMASI MENTOR: pemetaan VSGA/GTA ke template
+    // KONFIRMASI MENTOR: pemetaan badan kerja sama ke template
     'bidang' => [
         'GTA' => [
             'kode' => 'GTA',
-            'label' => 'Government Transformation Academy (GTA)',
-            'deskripsi_singkat' => 'Peningkatan kapasitas SDM bidang komunikasi dan digital untuk pemerintah daerah',
+            'label' => 'Government Transformation Academy (GTA) — Pemerintah Daerah',
+            'deskripsi_singkat' => 'Peningkatan kapasitas SDM bidang komunikasi dan digital untuk aparatur pemerintahan, mahasiswa, dan masyarakat umum.',
+            'sasaran_mitra' => 'Pemerintah Daerah (provinsi/kabupaten/kota) — format Nota Kesepakatan standar, 14 pasal.',
             'jenis_dokumen' => 'Nota Kesepakatan',
             'template' => 'nota_kesepakatan_pemda',
             'aktif' => true,
         ],
+        'PEMDA_PDP' => [
+            'kode' => 'PEMDA_PDP',
+            'label' => 'Pemerintah Daerah — Format UU PDP',
+            'deskripsi_singkat' => 'Peningkatan kapasitas SDM bidang komunikasi dan digital dengan pertukaran/pemrosesan Data Pribadi terstruktur.',
+            'sasaran_mitra' => 'Pemerintah Daerah (provinsi/kabupaten/kota) yang memerlukan klausul Transfer Data dan Pelindungan Data Pribadi (UU No. 27 Tahun 2022) — format Nota Kesepakatan 15 pasal.',
+            'jenis_dokumen' => 'Nota Kesepakatan',
+            'template' => 'nota_kesepakatan_pemda_pdp',
+            'aktif' => true,
+        ],
         'VSGA' => [
             'kode' => 'VSGA',
-            'label' => 'Vocational School Graduate Academy (VSGA)',
-            'deskripsi_singkat' => 'Penyelenggaraan program beasiswa talenta digital bersama perguruan tinggi',
+            'label' => 'Vocational School Graduate Academy (VSGA) — Perguruan Tinggi',
+            'deskripsi_singkat' => 'Penyelenggaraan program beasiswa talenta digital (Digital Talent Scholarship) bersama perguruan tinggi.',
+            'sasaran_mitra' => 'Perguruan tinggi/institusi pendidikan tinggi (negeri atau swasta) — format Perjanjian Kerja Sama operasional 15 pasal + Lampiran Rencana Aksi.',
             'jenis_dokumen' => 'Perjanjian Kerja Sama',
             'template' => 'pks_beasiswa_talenta_digital',
             'aktif' => true,
-        ],
-        // TODO: bidang ketiga ditentukan mentor
-        'bidang_3' => [
-            'kode' => 'bidang_3',
-            'label' => '',
-            'deskripsi_singkat' => '',
-            'jenis_dokumen' => '',
-            'template' => 'kerangka_umum',
-            'aktif' => false,
         ],
     ],
 ];

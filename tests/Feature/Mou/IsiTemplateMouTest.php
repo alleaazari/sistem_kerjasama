@@ -12,9 +12,32 @@ use App\Support\Mou\StrukturTemplateMou;
 | template berstatus draf tidak boleh dipakai mitra untuk generate.
 */
 
-test('template A memuat daftar pasal sesuai referensi', function () {
+test('template A (Pemda Standar) memuat daftar pasal sesuai referensi', function () {
     $template = StrukturTemplateMou::muat('nota_kesepakatan_pemda');
 
+    // Referensi 1 (Kota Jambi): 14 pasal, tanpa pasal PDP terpisah.
+    expect(StrukturTemplateMou::judulPasalAktif($template))->toBe([
+        'MAKSUD DAN TUJUAN',
+        'OBJEK',
+        'LOKASI',
+        'RUANG LINGKUP',
+        'TUGAS DAN TANGGUNG JAWAB',
+        'PELAKSANAAN',
+        'KERAHASIAAN',
+        'PEMBIAYAAN',
+        'JANGKA WAKTU',
+        'KEADAAN KAHAR',
+        'PENYELESAIAN PERSELISIHAN',
+        'KORESPONDENSI DAN KOMUNIKASI',
+        'PERUBAHAN',
+        'PENUTUP',
+    ]);
+});
+
+test('template A2 (Pemda UU PDP) memuat 15 pasal termasuk PDP', function () {
+    $template = StrukturTemplateMou::muat('nota_kesepakatan_pemda_pdp');
+
+    // Referensi 2 (Tanjungbalai): 15 pasal, dengan pasal PDP.
     expect(StrukturTemplateMou::judulPasalAktif($template))->toBe([
         'MAKSUD DAN TUJUAN',
         'OBJEK',
@@ -29,6 +52,7 @@ test('template A memuat daftar pasal sesuai referensi', function () {
         'KEADAAN KAHAR',
         'PENYELESAIAN PERSELISIHAN',
         'KORESPONDENSI DAN KOMUNIKASI',
+        'PERUBAHAN',
         'PENUTUP',
     ]);
 });
@@ -67,10 +91,10 @@ test('penomoran pasal dinamis tanpa lubang saat pasal opsional dimatikan', funct
         expect($nomor)->toBe(range(1, count($aktif)))
             ->and($judul)->not->toContain($nonaktif);
     }
-})->with(['nota_kesepakatan_pemda', 'kerangka_umum']);
+})->with(['nota_kesepakatan_pemda', 'nota_kesepakatan_pemda_pdp', 'kerangka_umum']);
 
-test('pasal PELINDUNGAN DATA PRIBADI aktif bawaan lalu bisa dimatikan', function () {
-    $template = StrukturTemplateMou::muat('nota_kesepakatan_pemda');
+test('pasal PELINDUNGAN DATA PRIBADI aktif di template UU PDP dan bisa dimatikan', function () {
+    $template = StrukturTemplateMou::muat('nota_kesepakatan_pemda_pdp');
     $judul = 'TRANSFER DATA, INFORMASI, DAN PELINDUNGAN DATA PRIBADI';
 
     $bawaan = StrukturTemplateMou::pasalAktif($template);
@@ -80,6 +104,13 @@ test('pasal PELINDUNGAN DATA PRIBADI aktif bawaan lalu bisa dimatikan', function
     $tanpa = StrukturTemplateMou::pasalAktif($template, [$judul]);
     expect(array_column($tanpa, 'judul'))->not->toContain($judul);
     expect(array_column($tanpa, 'nomor'))->toBe(range(1, count($tanpa)));
+});
+
+test('template Pemda Standar tidak memuat pasal PDP terpisah', function () {
+    $template = StrukturTemplateMou::muat('nota_kesepakatan_pemda');
+
+    expect(StrukturTemplateMou::judulPasalAktif($template))
+        ->not->toContain('TRANSFER DATA, INFORMASI, DAN PELINDUNGAN DATA PRIBADI');
 });
 
 test('huruf c Pasal 4 (RUANG LINGKUP) opsional dan mengikuti ayat lain', function (string $kode) {
@@ -97,10 +128,11 @@ test('huruf c Pasal 4 (RUANG LINGKUP) opsional dan mengikuti ayat lain', functio
     // Ayat string yang berakhir "dan" adalah awalan huruf a-b; huruf c opsional.
     $teksAyat = implode("\n", $pasal['ayat']);
     expect($teksAyat)->toContain('kegiatan lain yang disepakati oleh PARA PIHAK');
-})->with(['nota_kesepakatan_pemda', 'kerangka_umum']);
+})->with(['nota_kesepakatan_pemda', 'nota_kesepakatan_pemda_pdp', 'kerangka_umum']);
 
 test('template final boleh dipakai mitra, template draf tidak', function () {
     expect(StrukturTemplateMou::dapatGenerate('nota_kesepakatan_pemda'))->toBeTrue()
+        ->and(StrukturTemplateMou::dapatGenerate('nota_kesepakatan_pemda_pdp'))->toBeTrue()
         ->and(StrukturTemplateMou::dapatGenerate('pks_beasiswa_talenta_digital'))->toBeTrue()
         ->and(StrukturTemplateMou::dapatGenerate('kerangka_umum'))->toBeFalse();
 
@@ -177,4 +209,4 @@ test('tidak ada kata AI di isi template', function (string $kode) {
     $teks = json_encode($template, JSON_UNESCAPED_UNICODE);
 
     expect(preg_match('/\bAI\b/', $teks))->toBe(0);
-})->with(['nota_kesepakatan_pemda', 'pks_beasiswa_talenta_digital', 'kerangka_umum']);
+})->with(['nota_kesepakatan_pemda', 'nota_kesepakatan_pemda_pdp', 'pks_beasiswa_talenta_digital', 'kerangka_umum']);

@@ -1,6 +1,6 @@
 {
     "kode": "nota_kesepakatan_pemda",
-    "nama": "Nota Kesepakatan dengan Pemerintah Daerah",
+    "nama": "Nota Kesepakatan dengan Pemerintah Daerah (Standar)",
     "status": "final",
     "versi": 2,
     "blok": [
@@ -115,7 +115,7 @@
                         "Ketentuan dalam Pasal ini tetap berlaku dan mengikat PARA PIHAK selama Data Pribadi masih disimpan atau diproses, meskipun Nota Kesepakatan ini telah berakhir."
                     ],
                     "opsional": true,
-                    "aktif_bawaan": true
+                    "aktif_bawaan": false
                 },
                 {
                     "nomor": 9,
@@ -174,7 +174,7 @@
                         "Perubahan dan/atau hal-hal yang belum diatur dalam Nota Kesepakatan ini akan diatur kemudian dalam bentuk Perubahan dan merupakan bagian tidak terpisahkan dari Nota Kesepakatan ini."
                     ],
                     "opsional": true,
-                    "aktif_bawaan": false
+                    "aktif_bawaan": true
                 },
                 {
                     "nomor": 15,

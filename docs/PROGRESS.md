@@ -1209,3 +1209,62 @@ Branch: `feat/template-mou-referensi`. Commit: `feat(form): pilihan bidang sesua
   deskripsi, jenis_dokumen, template, aktif) dan relasi ke pengajuan; validasi
   server cukup cek `aktif=true` + kode ada.
 - Seed bidang dari `config/kerjasama.php`; jangan hardcode label di view.
+
+---
+
+## Tiga Pilihan Bidang Kerja Sama (24 November 2026)
+
+Branch: `feat/template-mou-referensi`. Commit: `feat(form): tiga pilihan bidang kerja sama`.
+
+### Masalah
+Form baru menampilkan 2 pilihan (GTA, VSGA) padahal ada 3 template referensi;
+dua referensi Pemda (Jambi + Tanjungbalai) tergabung jadi satu pilihan
+`nota_kesepakatan_pemda`, dan slot bidang ke-3 dinonaktifkan.
+
+### Perubahan
+Tiga pilihan kini terhubung **1-ke-1** ke tiga template berbeda:
+
+| Kode | Kategori | Dokumen | Template |
+|---|---|---|---|
+| `GTA` | Pemda Standar (ref 1: Kota Jambi) | Nota Kesepakatan | `nota_kesepakatan_pemda` (14 pasal) |
+| `PEMDA_PDP` | Pemda Format UU PDP (ref 2: Tanjungbalai) | Nota Kesepakatan | `nota_kesepakatan_pemda_pdp` (15 pasal, pasal PDP tetap) |
+| `VSGA` | Perguruan Tinggi PKS DTS (ref 3: Politeknik Caltex Riau) | Perjanjian Kerja Sama | `pks_beasiswa_talenta_digital` (15 pasal) |
+
+- `nota_kesepakatan_pemda.json`: pasal "TRANSFER DATA…PELINDUNGAN DATA PRIBADI"
+  `aktif_bawaan` → `false` (14 pasal, tanpa PDP); pasal "PERUBAHAN" → `true`
+  agar jumlah pasal sesuai referensi (14/15). Nama ditambah "(Standar)".
+- **Baru** `nota_kesepakatan_pemda_pdp.json` (storage + resources/mou-bawaan):
+  salinan Pemda dengan pasal PDP aktif (15 pasal). Nama "(Format UU PDP)".
+- `config/kerjasama.php`: slot `bidang_3` dihapus, tambah `PEMDA_PDP`; tiap item
+  dapat field baru `sasaran_mitra` (target mitra + format dokumen); label GTA
+  diberi penanda "Pemerintah Daerah", VSGA "Perguruan Tinggi".
+- `BidangKerjasama::daftar()` menormalisasi `sasaran_mitra`.
+- Form: kartu pilihan kini juga menampilkan baris "Sasaran: …" (CSS
+  `.pjn-bidang-target`); hint, indentation, ikon, dan tanda hubung dirapikan.
+- `config/mou.php` `pemetaan` otomatis ikut (satu sumber) — sudah memetakan
+  `PEMDA_PDP` → `nota_kesepakatan_pemda_pdp`.
+
+### Keamanan / otorisasi
+- Tidak ada perubahan pada validasi server: `StorePengajuanRequest` tetap
+  `Rule::in(BidangKerjasama::kode())`, jadi hanya 3 kode aktif yang diterima;
+  kode lain (mis. `bidang_3` lama, `KODE_ASING`) ditolak 422.
+- Data pengajuan lama `GTA`/`VSGA` tetap dikenali (kode tidak diubah).
+
+### Pengecekan
+- `php artisan test` → **386 test, 386 lolos, 2360 assertion** (sebelumnya 375).
+- `pint --test` → passed; `phpstan` (memory 1G) → 0 error.
+- Verifikasi HTTP: `/pengajuan` → 200, 3 radio `bidang` (GTA, PEMDA_PDP, VSGA),
+  tiap kartu menampilkan nama, badge jenis dokumen, deskripsi, dan sasaran mitra.
+- Verifikasi pemetaan: GTA→nota_kesepakatan_pemda (14), PEMDA_PDP→…_pdp (15),
+  VSGA→pks_beasiswa_talenta_digital (15).
+
+### Menunggu konfirmasi
+- Label final tiap kategori (GTA/VSGA tetap dipakai sebagai kode; sebutan
+  "Pemda Standar / Pemda UU PDP / Perguruan Tinggi DTS" perlu persetujuan mentor).
+- Apakah `kerangka_umum` (draf) tetap diperlukan sebagai slot bidang ke-4 kelak.
+
+### Catatan untuk backend
+- Tiga kode bidang → tiga `template` kini berbeda; saat pindah ke DB, tambah
+  kolom `sasaran_mitra` di tabel `bidang`.
+- `PEMDA_PDP` memakai template terpisah (bukan toggle runtime); bila nanti ada
+  lebih banyak varian, pertimbangkan kolom `pasal_nonaktif` per bidang.

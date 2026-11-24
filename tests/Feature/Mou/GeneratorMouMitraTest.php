@@ -200,6 +200,7 @@ test('jumlah pasal aktif sesuai referensi dan nomor berurutan', function (string
         ->and(array_column($aktif, 'nomor'))->toBe(range(1, $jumlah));
 })->with([
     ['nota_kesepakatan_pemda', 14],
+    ['nota_kesepakatan_pemda_pdp', 15],
     ['pks_beasiswa_talenta_digital', 15],
 ]);
 

@@ -218,11 +218,11 @@
 
             <div class="pjn-field">
                 <span class="pjn-label" id="bidang-label">Bidang Kerja Sama yang Diminati <span class="pjn-required">*</span></span>
-                <p class="pjn-hint">Pilih satu bidang. Jenis dokumen kerja sama mengikuti bidang yang dipilih.</p>
+                <p class="pjn-hint">Pilih satu kategori sesuai instansi Anda. Jenis dokumen dibuat otomatis mengikuti pilihan.</p>
                 <div class="pjn-bidang-group" role="radiogroup" aria-labelledby="bidang-label" aria-required="true">
                     @foreach (\App\Support\BidangKerjasama::aktif() as $kode => $item)
-                    <label class="pjn-bidang-card">
-                        <input type="radio" name="bidang" value="{{ $kode }}" {{ old('bidang') === $kode ? 'checked' : '' }} class="pjn-bidang-radio" required>
+                    <label class="pjn-bidang-card" for="bidang-{{ $kode }}">
+                        <input type="radio" id="bidang-{{ $kode }}" name="bidang" value="{{ $kode }}" {{ old('bidang') === $kode ? 'checked' : '' }} class="pjn-bidang-radio" required>
                         <span class="pjn-bidang-mark" aria-hidden="true"></span>
                         <span class="pjn-bidang-body">
                             <span class="pjn-bidang-head">
@@ -234,6 +234,9 @@
                             @if ($item['deskripsi_singkat'] !== '')
                             <span class="pjn-bidang-desc">{{ $item['deskripsi_singkat'] }}</span>
                             @endif
+                            @if ($item['sasaran_mitra'] !== '')
+                            <span class="pjn-bidang-target">Sasaran: {{ $item['sasaran_mitra'] }}</span>
+                            @endif
                         </span>
                     </label>
                     @endforeach
@@ -241,61 +244,60 @@
                 @error('bidang')<p class="pjn-field-error">{{ $message }}</p>@enderror
             </div>
 
-<div class="pjn-field">
-    <label class="pjn-label" for="metode_pelatihan">Metode Pelatihan <span class="pjn-required">*</span></label>
-    <select id="metode_pelatihan" name="metode_pelatihan" class="pjn-input" required>
-        <option value="">-- Pilih Metode --</option>
-        <option value="offline" {{ old('metode_pelatihan')=='offline'?'selected':'' }}>Tatap Muka / Offline</option>
-        <option value="online" {{ old('metode_pelatihan')=='online'?'selected':'' }}>Daring / Online</option>
-        <option value="hybrid" {{ old('metode_pelatihan')=='hybrid'?'selected':'' }}>Hybrid / Blended</option>
-        <option value="workshop" {{ old('metode_pelatihan')=='workshop'?'selected':'' }}>Workshop</option>
-        <option value="magang" {{ old('metode_pelatihan')=='magang'?'selected':'' }}>Magang / Praktik</option>
-        <option value="seminar" {{ old('metode_pelatihan')=='seminar'?'selected':'' }}>Seminar / Webinar</option>
-    </select>
-</div>
+            <div class="pjn-field">
+                <label class="pjn-label" for="metode_pelatihan">Metode Pelatihan <span class="pjn-required">*</span></label>
+                <select id="metode_pelatihan" name="metode_pelatihan" class="pjn-input" required>
+                    <option value="">-- Pilih Metode --</option>
+                    <option value="offline" {{ old('metode_pelatihan')=='offline'?'selected':'' }}>Tatap Muka / Offline</option>
+                    <option value="online" {{ old('metode_pelatihan')=='online'?'selected':'' }}>Daring / Online</option>
+                    <option value="hybrid" {{ old('metode_pelatihan')=='hybrid'?'selected':'' }}>Hybrid / Blended</option>
+                    <option value="workshop" {{ old('metode_pelatihan')=='workshop'?'selected':'' }}>Workshop</option>
+                    <option value="magang" {{ old('metode_pelatihan')=='magang'?'selected':'' }}>Magang / Praktik</option>
+                    <option value="seminar" {{ old('metode_pelatihan')=='seminar'?'selected':'' }}>Seminar / Webinar</option>
+                </select>
+            </div>
 
-<div class="pjn-field">
-    <label class="pjn-label" for="pembiayaan">Pembiayaan <span class="pjn-required">*</span></label>
-    <div class="pjn-pembiayaan-group">
-        <label class="pjn-checkbox-label pjn-pembiayaan-item">
-            <input type="radio" name="pembiayaan" value="apbd" {{ old('pembiayaan')=='apbd'?'checked':'' }} class="pjn-checkbox" required>
-            <span class="pjn-checkbox-custom"></span>
-            <span>APBD</span>
-        </label>
-        <label class="pjn-checkbox-label pjn-pembiayaan-item">
-            <input type="radio" name="pembiayaan" value="apbn" {{ old('pembiayaan')=='apbn'?'checked':'' }} class="pjn-checkbox" required>
-            <span class="pjn-checkbox-custom"></span>
-            <span>APBN</span>
-        </label>
-        <label class="pjn-checkbox-label pjn-pembiayaan-item">
-            <input type="radio" name="pembiayaan" value="cost_sharing" {{ old('pembiayaan')=='cost_sharing'?'checked':'' }} class="pjn-checkbox" required>
-            <span class="pjn-checkbox-custom"></span>
-            <span>Cost Sharing</span>
-        </label>
-        <span class="pjn-info-trigger" tabindex="0" title="Penjelasan Skema Pembiayaan">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            <span class="pjn-tooltip-box">
-                <span class="pjn-tooltip-header"> Penjelasan Skema Pembiayaan</span>
-                <ul class="pjn-tooltip-list">
-                    <li>
-                        <strong>1. APBD (Anggaran Daerah)</strong>
-                        <span>Seluruh pembiayaan kegiatan bersumber dari APBD Pemerintah Daerah Mitra.</span>
-                    </li>
-                    <li>
-                        <strong>2. APBN (Anggaran Negara)</strong>
-                        <span>Pembiayaan ditanggung oleh APBN Kementerian Komunikasi dan Digital (Kemkomdigi).</span>
-                    </li>
-                    <li>
-                        <strong>3. Cost Sharing (Berbagi Biaya)</strong>
-                        <span>Pembiayaan ditanggung bersama secara proporsional antara Kemkomdigi dan Mitra (misal: Komdigi menyediakan narasumber, Mitra menyediakan tempat & konsumsi).</span>
-                    </li>
-                </ul>
-            </span>
-        </span>
-    </div>
-    <p class="pjn-hint">Arahkan kursor atau klik icon <b>(?)</b> di samping tombol Cost Sharing untuk melihat penjelasan lengkap APBD, APBN, & Cost Sharing.</p>
-</div>
-
+            <div class="pjn-field">
+                <label class="pjn-label" for="pembiayaan">Pembiayaan <span class="pjn-required">*</span></label>
+                <div class="pjn-pembiayaan-group">
+                    <label class="pjn-checkbox-label pjn-pembiayaan-item">
+                        <input type="radio" name="pembiayaan" value="apbd" {{ old('pembiayaan')=='apbd'?'checked':'' }} class="pjn-checkbox" required>
+                        <span class="pjn-checkbox-custom"></span>
+                        <span>APBD</span>
+                    </label>
+                    <label class="pjn-checkbox-label pjn-pembiayaan-item">
+                        <input type="radio" name="pembiayaan" value="apbn" {{ old('pembiayaan')=='apbn'?'checked':'' }} class="pjn-checkbox" required>
+                        <span class="pjn-checkbox-custom"></span>
+                        <span>APBN</span>
+                    </label>
+                    <label class="pjn-checkbox-label pjn-pembiayaan-item">
+                        <input type="radio" name="pembiayaan" value="cost_sharing" {{ old('pembiayaan')=='cost_sharing'?'checked':'' }} class="pjn-checkbox" required>
+                        <span class="pjn-checkbox-custom"></span>
+                        <span>Cost Sharing</span>
+                    </label>
+                    <span class="pjn-info-trigger" tabindex="0" title="Penjelasan Skema Pembiayaan">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        <span class="pjn-tooltip-box">
+                            <span class="pjn-tooltip-header">Penjelasan Skema Pembiayaan</span>
+                            <ul class="pjn-tooltip-list">
+                                <li>
+                                    <strong>1. APBD (Anggaran Daerah)</strong>
+                                    <span>Seluruh pembiayaan kegiatan bersumber dari APBD Pemerintah Daerah Mitra.</span>
+                                </li>
+                                <li>
+                                    <strong>2. APBN (Anggaran Negara)</strong>
+                                    <span>Pembiayaan ditanggung oleh APBN Kementerian Komunikasi dan Digital (Komdigi).</span>
+                                </li>
+                                <li>
+                                    <strong>3. Cost Sharing (Berbagi Biaya)</strong>
+                                    <span>Pembiayaan ditanggung bersama secara proporsional antara Komdigi dan Mitra (misal: Komdigi menyediakan narasumber, Mitra menyediakan tempat & konsumsi).</span>
+                                </li>
+                            </ul>
+                        </span>
+                    </span>
+                </div>
+                <p class="pjn-hint">Arahkan kursor atau klik ikon <b>(?)</b> di samping tombol Cost Sharing untuk melihat penjelasan lengkap APBD, APBN, dan Cost Sharing.</p>
+            </div>
 
         </div>
     </div>
@@ -888,6 +890,14 @@ textarea.pjn-input { resize: vertical; min-height: 90px; }
     font-size: 13px;
     line-height: 1.5;
     color: #475569;
+}
+.pjn-bidang-target {
+    font-size: 12px;
+    line-height: 1.5;
+    color: #64748b;
+    border-top: 1px dashed #e2e8f0;
+    padding-top: 6px;
+    margin-top: 2px;
 }
 
 /* PEMBIAYAAN INFO TOOLTIP */

@@ -37,6 +37,7 @@ final class BidangKerjasama
                 'kode' => $kode,
                 'label' => (string) ($item['label'] ?? ''),
                 'deskripsi_singkat' => (string) ($item['deskripsi_singkat'] ?? ''),
+                'sasaran_mitra' => (string) ($item['sasaran_mitra'] ?? ''),
                 'jenis_dokumen' => (string) ($item['jenis_dokumen'] ?? ''),
                 'template' => (string) ($item['template'] ?? ''),
                 'aktif' => (bool) ($item['aktif'] ?? false),

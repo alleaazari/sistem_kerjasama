@@ -1,6 +1,7 @@
 <?php
 
 use App\Support\BidangKerjasama;
+use App\Support\Mou\StrukturTemplateMou;
 use Illuminate\Support\Facades\File;
 
 /*
@@ -38,10 +39,33 @@ function direktoriBidang(): string
     return $temp;
 }
 
-test('config memuat bidang VSGA dan GTA', function () {
-    expect(BidangKerjasama::kode())->toContain('VSGA', 'GTA')
+test('config memuat tiga bidang aktif sesuai tiga referensi', function () {
+    $aktif = BidangKerjasama::aktif();
+
+    expect($aktif)->toHaveCount(3)
+        ->and(array_keys($aktif))->toBe(['GTA', 'PEMDA_PDP', 'VSGA'])
         ->and(BidangKerjasama::label('VSGA'))->toContain('VSGA')
         ->and(BidangKerjasama::label('GTA'))->toContain('GTA');
+
+    // Tiap bidang aktif memetakan ke template yang benar-benar ada.
+    foreach ($aktif as $item) {
+        expect($item['template'])->not->toBe('')
+            ->and(StrukturTemplateMou::untuk($item['template']))->not->toBeNull();
+    }
+});
+
+test('setiap bidang memetakan 1-ke-1 ke template berbeda', function () {
+    $template = [];
+    foreach (BidangKerjasama::aktif() as $kode => $item) {
+        $template[$kode] = $item['template'];
+    }
+
+    // Tiga bidang, tiga template, tidak ada yang bertabrakan.
+    expect(array_values($template))->toBe([
+        'nota_kesepakatan_pemda',
+        'nota_kesepakatan_pemda_pdp',
+        'pks_beasiswa_talenta_digital',
+    ])->and(count(array_unique($template)))->toBe(3);
 });
 
 test('bidang valid diterima dan disimpan sebagai kode', function () {

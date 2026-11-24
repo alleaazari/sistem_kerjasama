@@ -29,7 +29,7 @@ test('config mou terbaca dengan bagian wajib', function () {
 test('setiap kode bidang punya pemetaan template', function () {
     $pemetaan = config('mou.pemetaan');
 
-    foreach (array_merge(BidangKerjasama::kode(), ['bidang_3']) as $kodeBidang) {
+    foreach (BidangKerjasama::kode() as $kodeBidang) {
         expect($pemetaan)->toHaveKey($kodeBidang)
             ->and($pemetaan[$kodeBidang])->toBeString()->not->toBe('');
     }
@@ -61,6 +61,7 @@ test('setiap template punya struktur blok yang sah', function (string $kodeTempl
         ->and($template['versi'])->toBeInt();
 })->with([
     'nota_kesepakatan_pemda',
+    'nota_kesepakatan_pemda_pdp',
     'pks_beasiswa_talenta_digital',
     'kerangka_umum',
 ]);
@@ -84,6 +85,7 @@ test('setiap pasal punya field wajib', function (string $kodeTemplate) {
     }
 })->with([
     'nota_kesepakatan_pemda',
+    'nota_kesepakatan_pemda_pdp',
     'pks_beasiswa_talenta_digital',
     'kerangka_umum',
 ]);
@@ -102,6 +104,7 @@ test('setiap lampiran punya judul, tabel, kolom, dan baris', function (string $k
     }
 })->with([
     'nota_kesepakatan_pemda',
+    'nota_kesepakatan_pemda_pdp',
     'pks_beasiswa_talenta_digital',
     'kerangka_umum',
 ]);
@@ -122,6 +125,7 @@ test('setiap placeholder yang dipakai template terdaftar', function (string $kod
     }
 })->with([
     'nota_kesepakatan_pemda',
+    'nota_kesepakatan_pemda_pdp',
     'pks_beasiswa_talenta_digital',
     'kerangka_umum',
 ]);
