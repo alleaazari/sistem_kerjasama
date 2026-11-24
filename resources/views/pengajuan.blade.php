@@ -1435,6 +1435,10 @@ function selectPT(id, nama, kota, provinsi, jenis) {
     var info = document.getElementById('pddikti-selected-info');
     info.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#1d4ed8" stroke-width="2"/><path d="M9 12l2 2 4-4" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Terverifikasi: <b>' + escHtml(nama) + '</b>' + (kota ? ' &mdash; ' + escHtml(kota) : '') + '</span>';
     info.style.display = 'flex';
+
+    // Memilih PT dari PDDikti mengubah nilai secara programatik (tidak memicu
+    // input/change), jadi daftar unit kerja harus dimuat eksplisit.
+    muatUnitKerja();
 }
 
 function escHtml(s) {
@@ -2059,17 +2063,24 @@ function muatUnitKerja() {
 
     clearTimeout(unitTimeout);
 
+    // Setiap pemanggilan membatalkan respons lama yang belum tiba.
+    var seq = ++unitSeq;
+
     if (nama.length < 2) {
         resetDropdownUnit();
         unitStatus('Pilih instansi dulu; daftar unit kerja akan dimuat otomatis.');
         return;
     }
 
-    // Kosongkan nilai lama: ganti instansi = ganti daftar unit.
+    // Kosongkan nilai lama segera: ganti instansi = ganti daftar unit, dan
+    // pilihan/isi manual lama tidak boleh tertinggal selama data dimuat.
     var nilaiLama = sel.getAttribute('data-terpilih') || '';
     sel.setAttribute('data-terpilih', '');
+    var customAwal = document.getElementById('organisasi-custom');
+    if (customAwal) customAwal.value = '';
+    resetDropdownUnit();
+    unitModeManual(false);
 
-    var seq = ++unitSeq;
     if (spinner) spinner.style.display = 'flex';
 
     // Debounce singkat agar tidak memanggil API tiap ketikan huruf.
@@ -2109,8 +2120,8 @@ function pasangUnitKerjaBertingkat() {
     var jenis = document.getElementById('jenis_instansi');
     if (!sel || !instansi) return;
 
-    // Keadaan awal: bila ada old()/draft untuk unit, muat daftar lalu pulihkan.
-    var terpilih = sel.getAttribute('data-terpilih') || '';
+    // Keadaan awal: bila ada old()/draft untuk unit, muat daftar lalu pulihkan
+    // (nilai dipulihkan dari atribut data-terpilih di dalam muatUnitKerja).
     if ((instansi.value || '').trim().length >= 2) {
         muatUnitKerja();
     } else {
@@ -2149,11 +2160,6 @@ function pasangUnitKerjaBertingkat() {
         if (custom.value.trim()) clearFieldError(custom, null);
         pjnUpdateSteps();
     });
-
-    // Pulihkan mode manual bila old()/draft bernilai bebas.
-    if (terpilih && terpilih !== UNIT_ISIAN_SENDIRI) {
-        sel.setAttribute('data-terpilih', terpilih);
-    }
 }
 
 // Nilai unit kerja final untuk dikirim: teks dropdown, atau input manual.
