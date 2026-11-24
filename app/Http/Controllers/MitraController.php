@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LengkapiDataMouRequest;
+use App\Http\Requests\SimpanDrafMouMitraRequest;
 use App\Http\Requests\UpdateProfilRequest;
 use App\Support\BidangKerjasama;
 use App\Support\DataDemo;
+use App\Support\Mou\DrafMouMitra;
+use App\Support\Mou\RendererDokumen;
+use App\Support\Mou\StrukturTemplateMou;
 use App\Support\PengajuanMasuk;
 use App\Support\PermohonanPerpanjangan;
 use App\Support\StatusKerjasama;
@@ -47,7 +52,7 @@ class MitraController extends Controller
      * PIC yang sama dengan identitas session. Tidak memakai id/parameter URL.
      *
      * @param  array<string, mixed>  $mitra
-     * @return array{kode: string, label: string}
+     * @return array{kode: string, label: string, jenis_dokumen: string}
      */
     private function bidang(array $mitra): array
     {
@@ -59,8 +64,8 @@ class MitraController extends Controller
         $label = BidangKerjasama::label($kode);
 
         return $kode !== '' && $label !== ''
-            ? ['kode' => $kode, 'label' => $label]
-            : ['kode' => '', 'label' => ''];
+            ? ['kode' => $kode, 'label' => $label, 'jenis_dokumen' => BidangKerjasama::jenisDokumen($kode)]
+            : ['kode' => '', 'label' => '', 'jenis_dokumen' => ''];
     }
 
     /** Kunci session untuk permohonan perpanjangan (demo). */
@@ -407,6 +412,318 @@ class MitraController extends Controller
         return redirect()
             ->route('mitra.mou')
             ->with('ok', 'MoU "'.$validated['judul'].'" berhasil dikirim dan menunggu peninjauan admin.');
+    }
+
+    // =====================================================================
+    // Generator MoU berbasis blok (halaman "Buat MoU")
+    // =====================================================================
+
+    /**
+     * Template MoU untuk bidang mitra ini (dari pengajuan, bukan URL).
+     * Mengembalikan ['bidang' => ..., 'template' => ...|null, 'pesan' => string|null].
+     *
+     * @param  array<string, mixed>  $mitra
+     * @return array{bidang: array{kode: string, label: string, jenis_dokumen: string}, template: array<string, mixed>|null, pesan: string|null}
+     */
+    private function templateMitra(array $mitra): array
+    {
+        $bidang = $this->bidang($mitra);
+
+        if ($bidang['kode'] === '') {
+            return ['bidang' => $bidang, 'template' => null, 'pesan' => 'Pengajuan kerja sama Anda belum memiliki bidang kerja sama. Hubungi admin kerja sama untuk melengkapinya.'];
+        }
+
+        $template = StrukturTemplateMou::untukBidang($bidang['kode']);
+
+        if ($template === null) {
+            return ['bidang' => $bidang, 'template' => null, 'pesan' => 'Template MoU untuk bidang ini belum tersedia.'];
+        }
+
+        if (! StrukturTemplateMou::dapatDipakaiMitra($template)) {
+            return ['bidang' => $bidang, 'template' => null, 'pesan' => StrukturTemplateMou::pesanBelumTersedia()];
+        }
+
+        return ['bidang' => $bidang, 'template' => $template, 'pesan' => null];
+    }
+
+    /**
+     * Nilai awal form lengkapi data: dari pengajuan mitra + profil. Data ini
+     * terisi otomatis; hanya sebagian yang bisa disunting mitra di form.
+     *
+     * @param  array<string, mixed>  $mitra
+     * @return array<string, string>
+     */
+    private function dataAwalForm(array $mitra): array
+    {
+        $pengajuan = PengajuanMasuk::untukEmail((string) ($mitra['email'] ?? '')) ?? [];
+        $pihakKesatu = (array) config('mou.pihak_kesatu', []);
+
+        $ambil = static fn (string $k) => is_string($pengajuan[$k] ?? null) ? (string) $pengajuan[$k] : '';
+
+        return [
+            'nomor_surat' => '',
+            'pihak_kedua_penandatangan' => (string) ($mitra['pic'] ?? ''),
+            'pihak_kedua_jabatan' => (string) ($mitra['jabatan_pic'] ?? ''),
+            'pihak_kedua_dasar_pengangkatan' => '',
+            'pihak_kedua_alamat' => (string) ($mitra['alamat'] ?? ''),
+            'telepon_instansi' => (string) ($mitra['telp'] ?? ''),
+            'email_instansi' => (string) ($mitra['email'] ?? ''),
+            'tempat' => $ambil('kota') !== '' ? $ambil('kota') : '',
+            'tanggal_penandatanganan' => CarbonImmutable::now(config('app.timezone', 'UTC'))->toDateString(),
+            'pihak_kesatu_pejabat_pelaksana' => (string) ($pihakKesatu['pejabat_pelaksana'] ?? ''),
+            'dasar_hukum_daerah' => '',
+            'masa_aktif_tahun' => '3',
+        ];
+    }
+
+    /**
+     * Gabung nilai form (yang diisi mitra) dengan data pengajuan yang tertulis
+     * di dokumen. Data pengajuan TIDAK bisa ditimpa mitra lewat input bebas.
+     *
+     * @param  array<string, mixed>  $mitra
+     * @param  array<string, string>  $form
+     * @return array<string, string>
+     */
+    private function gabungNilai(array $mitra, array $form, string $labelBidang): array
+    {
+        $pengajuan = PengajuanMasuk::untukEmail((string) ($mitra['email'] ?? '')) ?? [];
+        $nilai = static fn (string $k, string $cadangan = '') => is_string($pengajuan[$k] ?? null) && trim((string) $pengajuan[$k]) !== ''
+            ? (string) $pengajuan[$k]
+            : $cadangan;
+
+        $pihakKeduaNama = $form['pihak_kedua_penandatangan'] !== ''
+            ? $form['pihak_kedua_penandatangan']
+            : (string) ($mitra['pic'] ?? '');
+
+        $dasarDaerah = trim($form['dasar_hukum_daerah']);
+
+        return array_merge($form, [
+            // Data dari pengajuan (server, bukan klien).
+            'nama_instansi' => $nilai('instansi', (string) ($mitra['instansi'] ?? '')),
+            'nama_pic' => $pihakKeduaNama,
+            'jabatan_pic' => $form['pihak_kedua_jabatan'] !== '' ? $form['pihak_kedua_jabatan'] : (string) ($mitra['jabatan_pic'] ?? ''),
+            'alamat_instansi' => $nilai('alamat', (string) ($mitra['alamat'] ?? '')),
+            'bidang' => $labelBidang,
+            // Dasar hukum daerah: tiap baris jadi satu butir bernomor.
+            'dasar_hukum_daerah' => $this->daftarDasarHukumDaerah($dasarDaerah),
+        ]);
+    }
+
+    /** Ubah teks dasar hukum daerah (satu per baris) menjadi daftar bernomor. */
+    private function daftarDasarHukumDaerah(string $teks): string
+    {
+        $baris = array_filter(
+            array_map(
+                static fn ($b) => trim((string) preg_replace('/^\d+\.\s*/', '', (string) $b)),
+                preg_split('/\r\n|\r|\n/', $teks) ?: [],
+            ),
+            static fn (string $b) => $b !== '',
+        );
+
+        if ($baris === []) {
+            return '';
+        }
+
+        $keluar = [];
+        $nomor = 1;
+        foreach ($baris as $satu) {
+            $keluar[] = $nomor.'. '.$satu;
+            $nomor++;
+        }
+
+        return implode("\n", $keluar);
+    }
+
+    /** Halaman "Buat MoU": template otomatis + form lengkapi data + pratinjau. */
+    public function buatMou(Request $request): View
+    {
+        $mitra = $this->mitra($request);
+        $info = $this->templateMitra($mitra);
+
+        $form = $this->dataAwalForm($mitra);
+        $lama = $request->session()->get('mou_form_terakhir');
+
+        if (is_array($lama)) {
+            $form = array_merge($form, array_map('strval', $lama));
+        }
+
+        $dokumen = null;
+        $pembiayaan = (string) (PengajuanMasuk::untukEmail((string) ($mitra['email'] ?? ''))['pembiayaan'] ?? '');
+
+        if ($info['template'] !== null) {
+            $nilai = $this->gabungNilai($mitra, $form, $info['bidang']['label']);
+            $nilai['pembiayaan'] = $pembiayaan;
+            $data = RendererDokumen::data($info['template'], array_merge($nilai, RendererDokumen::turunan($form)));
+
+            $dokumen = RendererDokumen::render($info['template'], $data);
+        }
+
+        return view('user.mou-buat', [
+            'mitra' => $mitra,
+            'bidang' => $info['bidang'],
+            'template' => $info['template'],
+            'pesan' => $info['pesan'],
+            'form' => $form,
+            'fieldForm' => (array) config('mou.form_lengkapi', []),
+            'pengajuan' => PengajuanMasuk::untukEmail((string) ($mitra['email'] ?? '')) ?? [],
+            'dokumen' => $dokumen,
+            'docxTersedia' => false, // TODO-BACKEND: ekspor DOCX (lihat laporan)
+        ]);
+    }
+
+    /** Simpan draf MoU baru milik mitra dari form lengkapi + pratinjau saat ini. */
+    public function simpanMouBaru(LengkapiDataMouRequest $request): RedirectResponse
+    {
+        $mitra = $this->mitra($request);
+        $info = $this->templateMitra($mitra);
+
+        if ($info['template'] === null) {
+            return back()->withInput()->withErrors(['form' => (string) $info['pesan']]);
+        }
+
+        $form = $request->nilaiBersih();
+        $request->session()->put('mou_form_terakhir', $form);
+
+        $nilai = $this->gabungNilai($mitra, $form, $info['bidang']['label']);
+        $pembiayaan = (string) (PengajuanMasuk::untukEmail((string) ($mitra['email'] ?? ''))['pembiayaan'] ?? '');
+        $nilai['pembiayaan'] = $pembiayaan;
+
+        $data = RendererDokumen::data($info['template'], array_merge($nilai, RendererDokumen::turunan($form)));
+        $dokumen = RendererDokumen::render($info['template'], $data);
+
+        $draf = DrafMouMitra::buat(
+            (string) $mitra['username'],
+            $info['bidang']['kode'],
+            (string) ($info['template']['kode'] ?? ''),
+            (string) $dokumen['judul'],
+            array_merge($form, ['pembiayaan' => $pembiayaan]),
+            (array) $dokumen['blok'],
+        );
+
+        return redirect()
+            ->route('mitra.mou.buat.lihat', $draf['id'])
+            ->with('ok', 'Draf MoU disimpan. Anda dapat menyunting tiap bagian sebelum mengirim ke admin.');
+    }
+
+    /** Halaman sunting + pratinjau satu draf milik mitra. */
+    public function lihatMou(Request $request, string $id): View
+    {
+        $mitra = $this->mitra($request);
+        $draf = DrafMouMitra::milik((string) $mitra['username'], $id);
+
+        if ($draf === null) {
+            abort(404);
+        }
+
+        return view('user.mou-buat-lihat', [
+            'mitra' => $mitra,
+            'draf' => $draf,
+            'dokumen' => [
+                'kode' => $draf['kode_template'] ?? '',
+                'nama' => '',
+                'status' => 'final',
+                'judul' => $draf['judul'] ?? '',
+                'blok' => $draf['blok'] ?? [],
+            ],
+            'docxTersedia' => false, // TODO-BACKEND: ekspor DOCX
+        ]);
+    }
+
+    /** Simpan suntingan per bagian atau kirim ke admin (status terkirim). */
+    public function simpanMou(SimpanDrafMouMitraRequest $request, string $id): RedirectResponse
+    {
+        $mitra = $this->mitra($request);
+        $draf = DrafMouMitra::milik((string) $mitra['username'], $id);
+
+        if ($draf === null) {
+            abort(404);
+        }
+
+        $bagian = $request->bagianBersih();
+        $blok = $this->terapkanBagian((array) ($draf['blok'] ?? []), $bagian);
+
+        $status = $request->input('aksi') === 'kirim'
+            ? DrafMouMitra::STATUS_TERKIRIM
+            : DrafMouMitra::STATUS_DRAF;
+
+        DrafMouMitra::perbarui((string) $mitra['username'], $id, [
+            'judul' => $request->input('judul') !== null ? (string) $request->input('judul') : ($draf['judul'] ?? ''),
+            'blok' => $blok,
+            'status' => $status,
+            'aksi' => $status === DrafMouMitra::STATUS_TERKIRIM ? 'Dikirim ke admin' : 'Disimpan',
+        ]);
+
+        if ($status === DrafMouMitra::STATUS_TERKIRIM) {
+            return redirect()
+                ->route('mitra.mou')
+                ->with('ok', 'Draf MoU berhasil dikirim dan menunggu peninjauan admin.');
+        }
+
+        return redirect()
+            ->route('mitra.mou.buat.lihat', $id)
+            ->with('ok', 'Draf MoU disimpan.');
+    }
+
+    /** Pratinjau dokumen (halaman cetak) satu draf milik mitra. */
+    public function pratinjauMouMitra(Request $request, string $id): View
+    {
+        $mitra = $this->mitra($request);
+        $draf = DrafMouMitra::milik((string) $mitra['username'], $id);
+
+        if ($draf === null) {
+            abort(404);
+        }
+
+        return view('user.mou-cetak', [
+            'draf' => $draf,
+            'dokumen' => [
+                'kode' => $draf['kode_template'] ?? '',
+                'nama' => '',
+                'status' => 'final',
+                'judul' => $draf['judul'] ?? '',
+                'blok' => $draf['blok'] ?? [],
+            ],
+        ]);
+    }
+
+    /**
+     * Terapkan suntingan teks per bagian ke struktur blok dokumen. Urutan
+     * bagian di form SAMA dengan urutan paragraf/ayat dokumen, jadi
+     * pemetaannya dilakukan berurutan (indeks global).
+     *
+     * @param  array<int, array<string, mixed>>  $blok
+     * @param  list<string>  $bagian
+     * @return array<int, array<string, mixed>>
+     */
+    private function terapkanBagian(array $blok, array $bagian): array
+    {
+        $i = 0;
+
+        foreach ($blok as $bi => $satu) {
+            $tipe = (string) ($satu['tipe'] ?? '');
+
+            if (array_key_exists('paragraf', $satu) && is_array($satu['paragraf'])) {
+                $paragraf = [];
+                foreach ($satu['paragraf'] as $p) {
+                    $paragraf[] = $bagian[$i] ?? (string) $p;
+                    $i++;
+                }
+                $blok[$bi]['paragraf'] = $paragraf;
+
+                continue;
+            }
+
+            if ($tipe === 'pasal' && is_array($satu['ayat'] ?? null)) {
+                $ayat = [];
+                foreach ($satu['ayat'] as $a) {
+                    $ayat[] = $bagian[$i] ?? (string) $a;
+                    $i++;
+                }
+                $blok[$bi]['ayat'] = $ayat;
+            }
+        }
+
+        return $blok;
     }
 
     /** Detail satu MoU; MoU milik mitra lain dijawab 404. */

@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\AdminSuperadminController;
 use App\Support\AdminAkses;
-use App\Support\BidangKerjasama;
+use App\Support\Mou\StrukturTemplateMou;
 use App\Support\PengajuanMasuk;
 use App\Support\PermohonanPerpanjangan;
 use App\Support\StatusKerjasama;
@@ -31,6 +31,12 @@ use Illuminate\Support\Facades\Route;
 
 /** Middleware untuk satu kemampuan menurut config/admin_akses.php. */
 $hanya = static fn (string $kemampuan): string => 'admin.only:'.implode(',', AdminAkses::peranUntuk($kemampuan));
+
+/** Kode template MoU yang ada (berkas storage/app/mou/*.json), untuk batas rute. */
+$kodeTemplate = array_keys(StrukturTemplateMou::semua());
+if ($kodeTemplate === []) {
+    $kodeTemplate = ['__tidak_ada__'];
+}
 
 // ---------------- DASHBOARD RINGKASAN ----------------
 Route::middleware($hanya('dashboard'))->group(function () {
@@ -135,16 +141,27 @@ Route::middleware($hanya('galeri'))->group(function () {
 });
 
 // ---------------- TEMPLATE MOU PER BIDANG ----------------
-Route::middleware($hanya('template_mou'))->group(function () {
+Route::middleware($hanya('template_mou'))->group(function () use ($kodeTemplate) {
     Route::get('/template-mou', [AdminSuperadminController::class, 'templateMou'])->name('template_mou');
 
-    // Kode bidang dibatasi config; kode lain menjadi 404 sebelum controller.
+    // Daftar lebih spesifik didaftarkan sebelum wildcard {kode}.
+    Route::put('/template-mou/pengaturan', [AdminSuperadminController::class, 'simpanPengaturanMou'])
+        ->middleware('throttle:admin-template-mou')
+        ->name('template_mou.pengaturan');
+
+    Route::put('/template-mou/pemetaan', [AdminSuperadminController::class, 'simpanPemetaanMou'])
+        ->middleware('throttle:admin-template-mou')
+        ->name('template_mou.pemetaan');
+
+    // Kode template dibatasi berkas di storage/app/mou; kode lain 404 sebelum controller.
     Route::put('/template-mou/{kode}', [AdminSuperadminController::class, 'simpanTemplateMou'])
-        ->whereIn('kode', BidangKerjasama::kode())
+        ->whereIn('kode', $kodeTemplate)
+        ->middleware('throttle:admin-template-mou')
         ->name('template_mou.update');
 
     Route::post('/template-mou/{kode}/reset', [AdminSuperadminController::class, 'resetTemplateMou'])
-        ->whereIn('kode', BidangKerjasama::kode())
+        ->whereIn('kode', $kodeTemplate)
+        ->middleware('throttle:admin-template-mou')
         ->name('template_mou.reset');
 });
 

@@ -741,6 +741,351 @@ tersimpan di `log_aktivitas.json` dan halaman menampilkan 8 perubahan terakhir.
 Saat backend dibangun: tabel template (per bidang) + tabel versi (isi tiap
 versi), Policy/gerbang khusus Superadmin, dan audit trail SQL.
 
+## 16. Fondasi Template MoU Berbasis Blok (SELESAI)
+
+### Ringkasan
+Fondasi baru untuk generator MoU: config nilai tetap, struktur template berblok
+(sampul → pembukaan → menimbang → mengingat → pasal[] → penutup → tanda_tangan
+→ lampiran), dan daftar placeholder terpusat. Terpisah dari `TemplateMou` lama
+(flat text) — fondasi ini belum dipakai view/controller mana pun.
+
+### Sumber referensi
+`docs/referensi-mou/REFERENSI_STRUKTUR_MOU.md` **tidak ada** di repo (folder
+kosong). Referensi nyata = 3 PDF scan di `routes/MOU/` (tanpa text layer),
+di-OCR (easyocr, ini alat luar repo) untuk mengekstrak struktur:
+- `MoU Dengan Tanjungbalai.pdf` → Nota Kesepakatan Pemda (Pasal 1–15).
+- `Kota Jambi MoU.pdf` → variasi Nota Kesepakatan Pemda.
+- `Politeknik Caltex Riau (PKS).pdf` → PKS Beasiswa Talenta Digital (DTS), 15 pasal + lampiran rencana aksi.
+
+### Keputusan
+- Nilai tetap di `config/mou.php`: `pemetaan` (bidang → template, tanda
+  `// KONFIRMASI MENTOR`), `pihak_kesatu` (nama unit, alamat, telepon, email
+  dari bagian korespondensi contoh; penandatangan/jabatan default
+  `[ISI penandatangan Pihak Kesatu]`; pejabat pelaksana Kepala Balai Besar
+  Pelatihan SDM Komdigi Medan), `dasar_hukum_nasional` (7 peraturan, tanda
+  `// VERIFIKASI nomor peraturan`), `pembiayaan_varian` (APBN/APBD/Cost Sharing,
+  tanda `// VERIFIKASI MENTOR`).
+- Struktur template disimpan sebagai **JSON di `storage/app/mou/*.json`**
+  (sesuai permintaan) dan **di-commit**: pola proyek umumnya men-*generate*
+  storage, tetapi template ini aset konten yang harus ada sejak clone pertama.
+  `storage/app/.gitignore` dikecualikan khusus untuk `mou/*.json`.
+- Daftar placeholder tunggal di `app/Support/Mou/PendaftaranPlaceholder.php`
+  (nama, sumber: form|lengkapi_mitra|config|turunan, keterangan, wajib) dipakai
+  renderer, form lengkapi data, dan editor.
+- Loader/validator `app/Support/Mou/StrukturTemplateMou.php`: pemetaan bidang,
+  validasi blok, deteksi placeholder yatim. TODO-BACKEND: pindah ke tabel
+  `mou_template`.
+
+### File
+DIBUAT
+- `config/mou.php` — pemetaan, pihak_kesatu, dasar_hukum_nasional, pembiayaan_varian.
+- `app/Support/Mou/PendaftaranPlaceholder.php` — daftar placeholder terpusat.
+- `app/Support/Mou/StrukturTemplateMou.php` — loader, validasi blok, pemetaan bidang, cek yatim.
+- `storage/app/mou/nota_kesepakatan_pemda.json` — template GTA (Nota Kesepakatan Pemda, 14 pasal).
+- `storage/app/mou/pks_beasiswa_talenta_digital.json` — template VSGA (PKS Beasiswa Talenta Digital, 15 pasal).
+- `storage/app/mou/kerangka_umum.json` — template bidang_3 (kerangka netral, 10 pasal, status draf).
+- `tests/Feature/Mou/FondasiTemplateMouTest.php` — 19 test.
+DIUBAH
+- `storage/app/.gitignore` — kecualikan `mou/*.json` agar template ter-commit.
+
+### Keamanan
+- [x] Placeholder asing (yatim) terdeteksi: `StrukturTemplateMou::placeholderYatim`
+      + test "tidak ada placeholder yatim di seluruh template".
+- [x] Placeholder terpusat satu sumber: test "setiap placeholder yang dipakai
+      template terdaftar".
+- [x] Tidak ada teks MoU di controller/view; semua dari config + template.
+
+### Pengecekan
+- `php artisan test` → 278 test, 277 lolos (1599 assertion). 1 gagal
+  `LandingCmsSyncTest.php:68` (**pra-eksisting**, bukan dari perubahan ini;
+  terbukti gagal juga saat perubahan ini tidak diterapkan).
+- `pint --test` (file baru) → passed; `phpstan` (file baru) → 0 error.
+- `npm run build` → berhasil. `npm run types:check` tidak dijalankan (tanpa
+  perubahan TypeScript).
+
+### Menunggu konfirmasi user
+- `config/mou.php` `pemetaan`: `bidang_3` masih placeholder (kode bidang ketiga
+  belum ditentukan mentor; belum ada di `config/kerjasama.php`).
+- Nomor peraturan `dasar_hukum_nasional` (7 butir) perlu verifikasi mentor.
+- Teks `pembiayaan_varian` perlu verifikasi mentor.
+- `pihak_kesatu.penandatangan`/`jabatan` default masih `[ISI ...]`.
+
+### Langkah berikutnya
+- Fase berikut: renderer blok → HTML/dokumen, form "lengkapi data mitra", dan
+  editor template berbasis blok. Menunggu perintah "Lanjut".
+
+## 17. Isi Template MoU A, B, dan Kerangka Bidang 3 (SELESAI)
+
+### Ringkasan
+Tiga template diisi dengan **redaksi referensi apa adanya** (dari OCR PDF di
+`routes/MOU/`), ditambah **penomoran pasal dinamis**, mekanisme varian
+pembiayaan, dan gerbang status `draf`. Template A = Nota Kesepakatan Pemda
+(Tanjungbalai), Template B = PKS Beasiswa Talenta Digital (Politeknik Caltex
+Riau), `kerangka_umum` = kerangka Template A berstatus `draf` dengan penanda
+`[ISI ...]` untuk isi khusus bidang ke-3.
+
+### Keputusan
+- **Penomoran pasal dinamis** via `StrukturTemplateMou::pasalAktif()`: nomor
+  pasal dihitung ulang berurutan dari pasal aktif (pasal opsional yang dimatikan
+  tidak meninggalkan lubang nomor). Judul pasal asal tetap disimpan di field
+  `nomor` untuk jejak, nomor tampil dihitung saat render.
+- **Klausul opsional per-ayat**: item `ayat` boleh berupa objek
+  `{ teks, opsional, aktif_bawaan }` — dipakai untuk Pasal 4 huruf c ("kegiatan
+  lain yang disepakati") pada Template A dan kerangka_umum. `ayatAktif()`
+  menyaringnya.
+- **Template A** 15 pasal: MAKSUD DAN TUJUAN, OBJEK, LOKASI, RUANG LINGKUP,
+  TUGAS DAN TANGGUNG JAWAB, PELAKSANAAN, KERAHASIAAN, TRANSFER DATA…PELINDUNGAN
+  DATA PRIBADI (opsional, aktif bawaan), PEMBIAYAAN, JANGKA WAKTU, KEADAAN
+  KAHAR, PENYELESAIAN PERSELISIHAN, KORESPONDENSI DAN KOMUNIKASI, PERUBAHAN
+  (opsional, aktif bawaan `false`), PENUTUP. Mengingat = `{{dasar_hukum}}`
+  (nasional dari config) + `{{dasar_hukum_daerah}}` (data mitra). Lampiran
+  Rencana Kerja **10 kolom**.
+- **Template B** 15 pasal persis urutan referensi (Maksud dan Tujuan, Definisi,
+  Ruang Lingkup, Pelaksanaan Program, Jangka Waktu, Kewajiban dan Hak,
+  Kerahasiaan, Transfer Data dan Pelindungan Data Pribadi, Pembiayaan, Evaluasi,
+  Korespondensi, Penyelesaian Perselisihan, Keadaan Kahar, HKI, Lain-lain).
+  Pasal 7 dan 8 ditandai `// VERIFIKASI` (dokumen sumber hlm. 4-7). Lampiran
+  Rencana Aksi **9 kolom**, judul memuat `{{tahun_mulai}}` s.d. `{{tahun_akhir}}`.
+- **Pembiayaan**: `StrukturTemplateMou::klausulPembiayaan($kode)` memilih varian
+  `config('mou.pembiayaan_varian')` (APBN/APBD/Cost Sharing); kosong/tak dikenal
+  → `config('mou.pembiayaan_bawaan')` (redaksi bawaan dokumen).
+- **Gerbang draf**: `dapatDipakaiMitra()`/`dapatGenerate()` hanya `true` untuk
+  status `final`; template `draf` ditolak dengan `pesanBelumTersedia()`
+  ("Template belum tersedia."). `kerangka_umum` berstatus `draf` sehingga bidang
+  `bidang_3` belum dapat di-generate mitra.
+- Placeholder baru: `dasar_hukum_daerah` (lengkapi_mitra), `tahun_mulai` dan
+  `tahun_akhir` (turunan).
+- Komentar `// TODO: menunggu referensi bidang ke-3` disimpan di field
+  `catatan` pasal (bukan `ayat`) agar tidak tampil sebagai isi dokumen.
+
+### File
+DIUBAH
+- `storage/app/mou/nota_kesepakatan_pemda.json` — redaksi referensi, 15 pasal, lampiran 10 kolom (versi 2).
+- `storage/app/mou/pks_beasiswa_talenta_digital.json` — redaksi referensi, 15 pasal, VERIFIKASI Pasal 7-8, lampiran 9 kolom (versi 2).
+- `storage/app/mou/kerangka_umum.json` — kerangka Template A, status draf, `[ISI ...]`, catatan TODO (versi 2).
+- `app/Support/Mou/StrukturTemplateMou.php` — `pasalAktif`, `judulPasalAktif`, `ayatAktif`, `dapatDipakaiMitra`, `dapatGenerate`, `pesanBelumTersedia`, `klausulPembiayaan`.
+- `app/Support/Mou/PendaftaranPlaceholder.php` — `dasar_hukum_daerah`, `tahun_mulai`, `tahun_akhir`.
+- `config/mou.php` — `pembiayaan_bawaan`.
+DIBUAT
+- `tests/Feature/Mou/IsiTemplateMouTest.php` — 16 test (daftar pasal, penomoran dinamis, gerbang draf, varian pembiayaan, VERIFIKASI, tanpa kata "AI").
+
+### Keamanan
+- [x] Tidak ada kata "AI" di isi template: test "tidak ada kata AI di isi template".
+- [x] Template draf tidak dapat dipakai mitra: test "template final boleh dipakai
+      mitra, template draf tidak" + "bidang bidang_3 memakai kerangka draf dan
+      ditolak generate".
+- [x] Placeholder tetap terdaftar (tidak yatim): test lama `FondasiTemplateMouTest`
+      masih lolos.
+
+### Pengecekan
+- `php artisan test` → 294 test, 293 lolos (1715 assertion). 1 gagal
+  `LandingCmsSyncTest.php:68` (**pra-eksisting**, tidak terkait perubahan ini).
+- `pint --test` (file baru) → passed; `phpstan` (file baru) → 0 error.
+- `npm run build` → berhasil. `npm run types:check` tidak dijalankan (tanpa
+  perubahan TypeScript).
+
+### Menunggu konfirmasi user
+- Nomor peraturan `dasar_hukum_nasional` (7 butir) perlu verifikasi mentor.
+- Teks `pembiayaan_varian`/`pembiayaan_bawaan` perlu verifikasi mentor.
+- `bidang_3` masih placeholder (kode bidang ketiga belum ditentukan).
+- `pihak_kesatu.penandatangan`/`jabatan` default masih `[ISI ...]`.
+- Kolom Lampiran Template A (10) disusun gabungan (referensi Tanjungbalai hlm. 7-8
+  tidak terbaca), perlu verifikasi mentor.
+
+### Langkah berikutnya
+- Fase berikut: renderer blok → HTML/dokumen, form "lengkapi data mitra", dan
+  editor template berbasis blok. Menunggu perintah "Lanjut".
+
+---
+
+## 18. Generator MoU Mitra + Pratinjau Dokumen (SELESAI)
+
+Alur `Buat MoU` di area mitra. Bidang & template dipilih otomatis dari pengajuan
+(tidak ada pemilihan bidang dari URL), data pengajuan terisi otomatis, mitra
+melengkapi placeholder, dokumen dirender sebagai pratinjau resmi, tiap bagian
+bisa disunting, disimpan sebagai draf milik mitra, lalu dikirim ke admin.
+
+### Keputusan
+- **Jalur lama dipertahankan, diturunkan peran.** `/mitra/mou/draf` (satu textarea
+  `TemplateMou`) tetap ada sebagai tautan sekunder ("draf teks bebas"); generator
+  berbasis blok jadi jalur utama dari tombol "Buat MoU".
+- **Placeholder pihak kedua ditambahkan** dan dipakai template:
+  `{{pihak_kedua_penandatangan}}`, `{{pihak_kedua_jabatan}}`,
+  `{{pihak_kedua_dasar_pengangkatan}}`, `{{pihak_kedua_alamat}}` — menggantikan
+  `{{nama_pic}}`/`{{jabatan_pic}}`/`{{alamat_instansi}}` di blok pembukaan ketiga
+  template. `nama_pic` tetap dipakai sebagai nilai turunan (diisi dari
+  `pihak_kedua_penandatangan`) agar `PendaftaranPlaceholder` tetap konsisten.
+- **Renderer menghasilkan teks biasa, bukan HTML.** Escaping dilakukan Blade
+  (`{{ }}`) dan `PenandaIsi::sorot()`. `PenandaIsi` adalah SATU-SATUNYA jalur yang
+  menghasilkan markup (`<mark class="mou-isi-kosong">`), dan ia meng-escape dulu
+  seluruh teks sebelum menyorot penanda `[ISI ...]`.
+- **Placeholder kosong → `[ISI nama_field]`** (disorot), dihasilkan renderer.
+- **DOCX**: tombol nonaktif + tooltip + `// TODO-BACKEND: ekspor DOCX`
+  (`composer.json` tidak memuat `phpoffice/phpword`; tidak menambah dependency).
+- **Kepemilikan**: draf disimpan per `username` mitra di
+  `storage/app/draf_mou_mitra.json`, id UUID; akses mitra lain → 404.
+- **Data pengajuan tidak dapat ditimpa klien**: form hanya menerima field
+  whitelist (`config('mou.form_lengkapi')`); `nama_instansi`, `alamat_instansi`,
+  `pembiayaan`, `bidang` selalu diambil server dari pengajuan/profil.
+
+### File
+DIBUAT
+- `app/Support/Mou/Penomoran.php` — `terbilang`, `hari`, `bulan`, `tanggalResmi`, `tanggalRingkas`, `prefiksWilayah`, `namaWilayah`, `parse`.
+- `app/Support/Mou/RendererDokumen.php` — `data`, `turunan`, `render`, `gantiPlaceholder` (blok → dokumen terstruktur).
+- `app/Support/Mou/DrafMouMitra.php` — `buat`/`perbarui`/`milik`/`untukPemilik`/`hapus`/`bersihkanBagian`, riwayat versi.
+- `app/Support/Mou/PenandaIsi.php` — `sorot()` (escape dulu, lalu bungkus `[ISI ...]`).
+- `app/Http/Requests/LengkapiDataMouRequest.php` — validasi form lengkapi (rules dibangun dari config), `nilaiBersih()`.
+- `app/Http/Requests/SimpanDrafMouMitraRequest.php` — validasi simpan/kirim edit per bagian, `bagianBersih()`.
+- `resources/views/user/mou-buat.blade.php` — form lengkapi data + pratinjau.
+- `resources/views/user/mou-buat-lihat.blade.php` — sunting per bagian + riwayat versi.
+- `resources/views/user/mou-cetak.blade.php` — halaman cetak mandiri.
+- `resources/views/user/partials/mou-dokumen.blade.php` — partial dokumen resmi.
+- `public/assets/user/css/mou-dokumen.css` — gaya dokumen + `@media print`.
+- `public/assets/user/js/mou-generator.js` — toggle pratinjau (tanpa `innerHTML`).
+- `tests/Feature/Mou/GeneratorMouMitraTest.php` — 25 test.
+DIUBAH
+- `app/Http/Controllers/MitraController.php` — `buatMou`, `simpanMouBaru`, `lihatMou`, `simpanMou`, `pratinjauMouMitra` + helper (`templateMitra`, `dataAwalForm`, `gabungNilai`, `daftarDasarHukumDaerah`, `terapkanBagian`).
+- `routes/web.php` — `mitra.mou.buat`, `.buat.simpan`, `.buat.lihat`, `.buat.update`, `.buat.cetak` (throttle `mou-generate`).
+- `app/Providers/AppServiceProvider.php` — limiter `mou-generate` (10/menit per akun+IP).
+- `app/Support/Mou/StrukturTemplateMou.php` — `pasalAktif` menyertakan `catatan`.
+- `app/Support/Mou/PendaftaranPlaceholder.php` — placeholder pihak kedua + `nomor_surat`.
+- `config/mou.php` — `form_lengkapi` (satu sumber view + validasi).
+- `resources/views/layouts/user.blade.php` — tambah `@stack('styles')`.
+- `resources/views/user/mou.blade.php` — tombol "Buat MoU" (jalur utama) + tautan sekunder draf lama.
+- `storage/app/mou/{nota_kesepakatan_pemda,pks_beasiswa_talenta_digital,kerangka_umum}.json` — placeholder pihak kedua + alamat/dasar pengangkatan di pembukaan.
+
+### Keamanan
+- [x] Tiap bidang → template benar: test "setiap bidang menghasilkan template yang benar"
+  (GTA→nota_kesepakatan_pemda, VSGA→pks_beasiswa_talenta_digital, tak dikenal→kerangka_umum).
+- [x] Placeholder terisi: test "renderer mengisi placeholder dari data".
+- [x] `[ISI]` untuk data kosong: test "placeholder tanpa nilai tampil sebagai [ISI nama_field]".
+- [x] Payload `<script>` tidak tereksekusi: test "payload script pada isian tidak tereksekusi
+  (ter-escape)" + "penanda [ISI] disorot tanpa membocorkan tag pengguna".
+- [x] Mitra lain ditolak (404): test "mitra lain ditolak 404 saat membuka draf bukan miliknya"
+  (termasuk halaman cetak).
+- [x] Terbilang benar: test "terbilang bilangan benar untuk contoh tanggal/tahun" (5, 21, 2026,
+  11, 100, 1500) + "tanggal resmi dan prefiks wilayah benar".
+- [x] Validasi panjang: test "input form panjang berlebih ditolak validasi".
+- [x] Data pengajuan tidak dapat ditimpa klien: test "data pengajuan tidak dapat ditimpa lewat
+  input klien".
+- [x] Suntingan mitra tanpa HTML: test "suntingan mitra tidak menyimpan tag HTML".
+- [x] Riwayat versi: test "riwayat versi bertambah pada setiap simpanan".
+- [x] Tanpa `innerHTML` dari input pengguna: `PenandaIsi` escape dulu;
+  `mou-generator.js` hanya menyembunyikan/menampilkan elemen.
+- [x] Rate limit generate/simpan: limiter `mou-generate` di `AppServiceProvider` + middleware
+  route.
+
+### Pengecekan
+- `php artisan test` → 319 test, 318 lolos (1889 assertion). 1 gagal
+  `LandingCmsSyncTest.php:68` (**pra-eksisting**, terbukti tidak terkait perubahan ini).
+- `pint --test` → passed. `phpstan analyse app --memory-limit=1G` → 0 error.
+- `npm run build` → berhasil.
+- `npm run types:check` tidak dijalankan (tanpa perubahan TypeScript).
+
+### Catatan untuk backend
+- Pindahkan template dari `storage/app/mou/*.json` ke tabel `mou_template`.
+- Pindahkan draf mitra dari `storage/app/draf_mou_mitra.json` ke tabel `draf_mou`
+  (+ `draf_mou_versi`), UUID route key, kepemilikan lewat Policy (saat ini cek
+  manual di `DrafMouMitra::milik`).
+- **Ekspor DOCX** belum dibangun (`// TODO-BACKEND: ekspor DOCX`) — perlu library
+  DOCX yang disetujui.
+- Identitas mitra masih dari session `mitra_data` (mode demo), bukan guard auth.
+
+### Menunggu konfirmasi user
+- Placeholder pihak kedua baru (`pihak_kedua_dasar_pengangkatan`) mengubah redaksi
+  pembukaan ketiga template; perlu verifikasi mentor apakah sesuai format resmi.
+- Redaksi `{{pihak_kedua_alamat}}` vs `{{alamat_instansi}}` sudah disatukan ke
+  placeholder baru.
+- `pihak_kesatu.penandatangan`/`jabatan` default masih `[ISI ...]`.
+- Kolom Lampiran Template A (10) & `bidang_3` masih menunggu (dari §17).
+
+### Langkah berikutnya
+- Editor template berbasis blok untuk Superadmin. Menunggu perintah "Lanjut".
+
+---
+
+## 19. Editor Template MoU Superadmin Sesuai Referensi (SELESAI)
+
+Halaman `/{SUPERADMIN_PATH}/template-mou` dialihkan dari editor teks datar
+(`TemplateMou`) ke **editor berbasis blok** yang menyunting
+`storage/app/mou/*.json` — struktur yang sama dipakai generator mitra.
+
+### Keputusan
+- **Halaman ini menyunting template blok.** `TemplateMou` (teks datar) tetap ada
+  dan tetap dipakai jalur draf mitra lama `/mitra/mou/draf`; tidak dihapus.
+  `SimpanTemplateMouRequest` (tidak lagi terpakai) dihapus.
+- **Operasi tulis ditambahkan ke `StrukturTemplateMou`** (layer yang sama dengan
+  pembaca): `simpan`, `kembalikan`, `hapus`, `bawaan`, `pemetaan`, `simpanPemetaan`,
+  `pengaturan`, `simpanPengaturan`. Berkas JSON tetap sumbernya; `config/mou.php`
+  menjadi nilai awal.
+- **"Kembalikan ke bawaan"** memakai aset `resources/mou-bawaan/{kode}.json`
+  (snapshot isi template, di-commit) — bukan DB/seed kode.
+- **Pemetaan bidang→template** disimpan sebagai overlay
+  `storage/app/mou/_pemetaan.json` (menimpa `config('mou.pemetaan')`). Dropdown di
+  halaman ini menyimpan pemetaan; kode template tak dikenal ditolak.
+- **Pengaturan Pihak Kesatu + dasar hukum nasional** disimpan sebagai overlay
+  `storage/app/mou/_pengaturan.json` (menimpa `config('mou.pihak_kesatu')` dan
+  `config('mou.dasar_hukum_nasional')`). `RendererDokumen::data()` membaca
+  `StrukturTemplateMou::pengaturan()`, dan kini mengisi `{{dasar_hukum}}`
+  (sebelumnya tidak pernah terisi → selalu `[ISI dasar_hukum]`).
+- **Editor mengirim struktur blok sebagai satu medan JSON (`blok`)**; server
+  memvalidasi ULANG tiap blok (tipe, bentuk pasal/ayat, jumlah, panjang, tag HTML,
+  placeholder asing). Client tidak dipercaya untuk urutan/tipe/isi.
+- **Pratinjau memakai `RendererDokumen::render()`** + data contoh — renderer yang
+  sama dengan generator mitra, tidak ada jalur `innerHTML`.
+
+### File
+DIBUAT
+- `resources/mou-bawaan/{nota_kesepakatan_pemda,pks_beasiswa_talenta_digital,kerangka_umum}.json` — isi bawaan ("kembalikan ke bawaan").
+- `app/Http/Requests/SimpanTemplateBlokRequest.php` — validasi struktur blok + placeholder + HTML + batas.
+- `app/Http/Requests/SimpanPengaturanMouRequest.php` — validasi Pihak Kesatu + dasar hukum nasional.
+- `app/Http/Requests/SimpanPemetaanMouRequest.php` — validasi pemetaan bidang→template.
+DIUBAH
+- `app/Support/Mou/StrukturTemplateMou.php` — operasi tulis, overlay pemetaan/pengaturan, `bawaan`.
+- `app/Support/Mou/RendererDokumen.php` — baca `pengaturan()`; isi `{{dasar_hukum}}`.
+- `app/Http/Controllers/AdminSuperadminController.php` — `templateMou` (blok), `simpanTemplateMou`, `resetTemplateMou`, `simpanPengaturanMou`, `simpanPemetaanMou`.
+- `routes/superadmin.php` — `whereIn` kode template, rute `template_mou.pengaturan`/`template_mou.pemetaan`, throttle.
+- `app/Providers/AppServiceProvider.php` — limiter `admin-template-mou` (20/menit per akun+IP).
+- `config/admin_akses.php` — label aksi `template_mou.pengaturan`/`template_mou.pemetaan`.
+- `resources/views/admin/template_mou.blade.php` — ditulis ulang menjadi editor blok + pratinjau + pengaturan + pemetaan.
+- `tests/Feature/TemplateMouAdminTest.php` — 21 test (editor blok, pasal opsional, validasi, otorisasi, finalisasi bidang 3, draf lama).
+DIHAPUS
+- `app/Http/Requests/SimpanTemplateMouRequest.php` — tidak terpakai setelah halaman dialihkan ke editor blok.
+
+### Keamanan
+- [x] Role lain ditolak (404) untuk GET + PUT + POST: test "role lain ditolak untuk GET dan seluruh aksi tulis" (superadmin-only via middleware `admin.only:superadmin`).
+- [x] Placeholder tak dikenal ditolak: test "placeholder tidak dikenal ditolak dan template tidak berubah".
+- [x] HTML berbahaya ditolak: test "tag HTML berbahaya ditolak".
+- [x] Struktur blok/JSON tak sah ditolak: test "struktur blok tidak sah ditolak", "blok bukan JSON sah ditolak".
+- [x] Status di luar final/draf ditolak: test "status di luar final/draf ditolak".
+- [x] Panjang & jumlah dibatasi: `SimpanTemplateBlokRequest` (MAKS_PASAL/MAKS_AYAT/MAKS_TEKS).
+- [x] CSRF: semua form `@csrf` + `@method`.
+- [x] Rate limit: limiter `admin-template-mou` pada seluruh rute tulis.
+- [x] Hanya final dapat dipakai mitra: test "finalisasi bidang 3 ... menjadi dapat dipakai mitra", "template draf tidak dapat dipakai mitra".
+- [x] Perubahan tidak mengubah draf lama: test "perubahan template berlaku untuk draf mitra berikutnya, draf lama tidak berubah".
+- [x] Versi + log tercatat: test "superadmin menyimpan blok template dan versi dicatat di log", "kembalikan ke bawaan memulihkan isi dan mencatat log", "pengaturan ... tersimpan", "pemetaan ... tersimpan".
+
+### Pengecekan
+- `php artisan test` → 325 test, 324 lolos (1917 assertion). 1 gagal
+  `LandingCmsSyncTest.php:68` (**pra-eksisting**).
+- `pint --test` → passed. `phpstan analyse app --memory-limit=1G` → 0 error.
+- `npm run build` → berhasil.
+
+### Catatan untuk backend
+- Pindahkan template, pemetaan, dan pengaturan ke tabel (`mou_template`,
+  `mou_pemetaan`, `mou_pengaturan`) dengan riwayat versi + kolom `diperbarui_oleh`.
+- `resources/mou-bawaan/*.json` menjadi basis data seed bawaan saat migrasi.
+
+### Menunggu konfirmasi user
+- Isi bawaan (`resources/mou-bawaan/*.json`) adalah salinan isi saat ini; perlu
+  ditinjau mentor bila redaksi template berubah lagi.
+- `pihak_kesatu.penandatangan`/`jabatan` masih `[ISI ...]` sampai diisi lewat
+  halaman Pengaturan.
+- Kolom Lampiran Template A (10) & `bidang_3` masih menunggu (dari §17).
+
+### Langkah berikutnya
+- Menunggu perintah pengguna.
+
 ---
 
 ## Tambahan — Peran Admin Konten (`admin_konten`)
@@ -760,10 +1105,8 @@ Status: selesai (menunggu konfirmasi user)
 - Konten portal memakai `AdminSuperadminController` yang sama dengan
   Superadmin; closure duplikat di `routes/superadmin.php` dihapus sehingga
   hanya ada satu implementasi.
-- Logika awal "sesi peran lain 404" kemudian diganti oleh Fase F (sesi
-  terpisah per peran): tiap panel memakai cookie sesi sendiri, sehingga tidak
-  ada lagi sesi peran lain yang perlu ditolak di halaman login. Pengecekan
-  peran per route (`admin.only`) tetap ditegakkan.
+- Sesi yang sudah login sebagai peran lain tidak bisa membuka halaman login
+  maupun login ulang di prefix peran lain (404, pola penyamaran panel).
 - Konten portal benar-benar terhubung ke landing page: artikel, galeri, dan
   visi/profil yang disimpan admin konten ditulis ke `storage/app/landing_cms.json`
   oleh `LandingCms`, lalu dibaca halaman `/` tanpa sesi admin. Diuji dengan
@@ -791,9 +1134,8 @@ DIUBAH
 - `app/Http/Controllers/AdminSuperadminController.php` — `dashboardKonten()`
   dan method CMS bersama (tentang/artikel/galeri) untuk dua prefix.
 - `routes/superadmin.php` — CMS memakai controller, bukan closure salinan.
-- `app/Http/Controllers/AdminLoginController.php` — logika tolak sesi peran
-  lain di halaman login (404) diganti oleh Fase F: tiap peran memakai cookie
-  sesi sendiri, halaman login peran selalu tampil bagi tamu panel itu.
+- `app/Http/Controllers/AdminLoginController.php` — tolak sesi peran lain di
+  halaman login (404) agar sesi tidak berpindah peran tanpa logout.
 - `public/assets/admin/css/panel.css` — kelas `.cell-sub` untuk keterangan
   kecil di bawah nilai sel.
 - `.env.example` — `ADMIN_KONTEN_*` + komentar kredensial demo yang akurat.
@@ -809,10 +1151,8 @@ DIUBAH
 ### Keamanan
 - [x] Login terpisah + throttle `admin-login` (5/menit per IP + username).
 - [x] Sesi diregenerasi saat login; logout menginvalidasi sesi + token.
-- [x] Login silang peran ditolak: kredensial peran lain gagal di pintu ini.
-      Isolasi sesi antar panel dijaga oleh cookie sesi terpisah per peran
-      (Fase F); pengecekan peran per route (`admin.only`) tetap 404 lintas
-      prefix.
+- [x] Login silang peran ditolak: kredensial peran lain gagal di pintu ini,
+      dan sesi peran lain mendapat 404 (tidak bisa berpindah peran).
 - [x] Otorisasi server untuk semua method lewat `admin.only:<kemampuan>`;
       halaman terlarang tidak terdaftar di prefix admin konten.
 - [x] Dashboard memfilter status `Disetujui` saja; nama/email/telepon PIC
@@ -840,81 +1180,91 @@ DIUBAH
 
 ---
 
-## 16. Fase F — Sesi Terpisah per Peran (SELESAI)
+## Bidang kerja sama sesuai referensi MoU (24 November 2026)
 
-Status: selesai (menunggu konfirmasi user)
+Branch: `feat/template-mou-referensi`. Commit: `feat(form): pilihan bidang sesuai referensi mou`.
 
-### Masalah
-Membuka `/superadmin/*` setelah login panel lain (mis. admin konten) menghasilkan
-404. Akar: satu browser = satu cookie sesi, dan `AdminLoginController::tolakSesiPeranLain()`
-serta `AdminOnly` menolak peran yang tidak cocok dengan prefix. Bukan bug akun;
-memang "satu sesi = satu peran". Dilaporkan juga terjadi antar jendela pada
-perangkat yang sama.
+### Perubahan
+- `config/kerjasama.php` 'bidang' kini menyimpan item lengkap: `kode`, `label`,
+  `deskripsi_singkat`, `jenis_dokumen`, `template`, `aktif`. GTA & VSGA aktif;
+  slot ke-3 (`bidang_3`) nonaktif dengan komentar TODO.
+- `app/Support/BidangKerjasama.php`: accessor baru `aktif()`, `item()`,
+  `jenisDokumen()`, `template()`, `pemetaanTemplate()`. `daftar()` mengembalikan
+  item ternormalisasi (bukan lagi kode => label). `kode()` hanya bidang aktif.
+- `config/mou.php` 'pemetaan' **diturunkan** dari `config/kerjasama.php`
+  (satu sumber; tidak mungkin bertentangan).
+- Form pengajuan: kartu radio tunggal menampilkan label, deskripsi, badge jenis
+  dokumen; `aktif=false` tidak dirender. CSS `.pjn-bidang-*` ditambahkan.
+- Dashboard mitra menampilkan label + jenis dokumen. Generator/editor/draf
+  membaca sumber yang sama.
+- Test: `tests/Feature/BidangKerjasamaKonsistenTest.php` (baru) + penyesuaian
+  `BidangKerjasamaTest` / `PengajuanFormTest`.
 
-### Keputusan
-Tiap panel peran memakai **cookie sesi + `session.path` sendiri** lewat middleware
-`SessionPerPeran`, sehingga beberapa panel bisa login bersamaan di browser yang
-sama tanpa saling menimpa. Cookie XSRF ikut terpisah otomatis (Laravel menurunkan
-path XSRF dari `session.path`). RBAC `admin.only` tetap ditegakkan per route —
-cookie satu peran tetap tidak bisa membuka prefix peran lain (404).
-
-Catatan §5.4: solusi ini **memperkuat** pemisahan peran, bukan melonggarkan. Tidak
-ada proteksi yang dinonaktifkan. `tolakSesiPeranLain()` dihapus karena redundan
-setelah cookie dipisah.
-
-### File
-DIBUAT
-- `config/session_roles.php` — peta prefix → nama cookie (diturunkan dari
-  `config/admin_akses.php`/.env), plus cookie bawaan untuk publik & mitra.
-- `app/Http/Middleware/SessionPerPeran.php` — memilih `session.cookie` +
-  `session.path` dari segmen pertama URL; cocok sebagai segmen utuh.
-- `tests/Feature/Auth/SessionPerPeranTest.php` — middleware memilih cookie/path
-  benar, publik/mitra tidak berubah, prefix utuh, nama cookie unik.
-- `tests/Feature/Auth/SesiTerpisahTest.php` — Set-Cookie nama+path per panel,
-  HttpOnly+SameSite Lax, login tiap panel, isolasi sesi, RBAC lintas prefix,
-  tamu = 200, logout terpisah.
-
-DIUBAH
-- `bootstrap/app.php` — `SessionPerPeran` di-`prependToGroup('web', ...)` supaya
-  berjalan sebelum `EncryptCookies` + `StartSession`.
-- `app/Http/Controllers/AdminLoginController.php` — hapus `tolakSesiPeranLain()`;
-  halaman login peran selalu tampil (200) untuk tamu panel itu.
-- `tests/Feature/Auth/AdminLoginTest.php` — test "sesi peran lain 404" diganti
-  menjadi "sesi peran lain tidak menghalangi login panel ini".
-- `tests/Feature/Auth/AdminKontenTest.php` — test login silang di pintu konten
-  diganti menjadi "sesi peran lain tidak menghalangi login di pintu konten".
-
-### Keamanan
-- [x] Cookie sesi HttpOnly + SameSite=Lax; Secure otomatis saat https (config/session).
-- [x] Regenerasi sesi saat login tetap; logout menginvalidasi sesi + token panel
-      itu saja (cookie terpisah, tidak menyentuh panel lain).
-- [x] RBAC `admin.only` tetap: cookie superadmin → `/admin-konten/*` = 404;
-      cookie admin konten → `/superadmin/*` = 404.
-- [x] Throttle login (`admin-login`) tidak berubah.
-- [x] Status peran tetap di sesi (tidak ada penyimpanan global per-IP/cache/DB).
-- [x] CSRF: cookie XSRF terpisah per panel mengikuti `session.path`; form `_token`
-      tetap lolos (tak ada 419) — dibuktikan login nyata via dua cookie jar.
-
-### Pengecekan
-- `php artisan test` → **330 test, 330 lolos**.
-- `pint --test` (berkas diubah) → passed. `phpstan analyse` → 0 error.
-- `npm run build` → berhasil.
-- `npm run types:check` → **gagal, LAMA** (bukan akibat fase ini): error
-  Wayfinder pre-existing di `resources/js/actions/.../RedirectController.ts`,
-  `resources/js/routes/mitra/index.ts`, `app-header.tsx` (`'query'` method,
-  `@/routes` tanpa `dashboard`/`home`). Terbukti gagal sama di state bersih.
-- Bukti server riil (dua cookie jar):
-  `/superadmin/login` → cookie `kerjasama_superadmin_session`, `path=/superadmin`;
-  `/admin-kerjasama/login` → `kerjasama_admin_kerjasama_session`, `path=/admin-kerjasama`;
-  `/admin-konten/login` → `kerjasama_admin_konten_session`, `path=/admin-konten`.
-  Login admin konten (demo) → dashboard 200; cookie konten ke `/superadmin/dashboard` → 302;
-  `/superadmin/login` tetap 200; tamu ke ketiga login → 200.
+### Menunggu konfirmasi
+- Bidang ke-3 (masih `aktif=false`) dan pemetaan VSGA/GTA ke template.
+- Apakah `PROPOSAL`/`KERANGKA` perlu jadi jenis dokumen tambahan.
 
 ### Catatan untuk backend
-- Bila peran pindah ke tabel `users`, peta `config/session_roles.php` cukup jadi
-  kolom `session_cookie`; kontrak middleware tidak berubah.
-- `session.path` per peran = cookie XSRF per peran; pastikan proxy/CDN tidak
-  menyatukan path bila nanti ada sub-path tambahan.
+- Saat bidang pindah ke tabel DB: buat tabel `bidang` (kolom kode, label,
+  deskripsi, jenis_dokumen, template, aktif) dan relasi ke pengajuan; validasi
+  server cukup cek `aktif=true` + kode ada.
+- Seed bidang dari `config/kerjasama.php`; jangan hardcode label di view.
 
-### Langkah berikutnya
-- Menunggu konfirmasi user. Belum di-commit ke `main`, belum di-push.
+---
+
+## Tiga Pilihan Bidang Kerja Sama (24 November 2026)
+
+Branch: `feat/template-mou-referensi`. Commit: `feat(form): tiga pilihan bidang kerja sama`.
+
+### Masalah
+Form baru menampilkan 2 pilihan (GTA, VSGA) padahal ada 3 template referensi;
+dua referensi Pemda (Jambi + Tanjungbalai) tergabung jadi satu pilihan
+`nota_kesepakatan_pemda`, dan slot bidang ke-3 dinonaktifkan.
+
+### Perubahan
+Tiga pilihan kini terhubung **1-ke-1** ke tiga template berbeda:
+
+| Kode | Kategori | Dokumen | Template |
+|---|---|---|---|
+| `GTA` | Pemda Standar (ref 1: Kota Jambi) | Nota Kesepakatan | `nota_kesepakatan_pemda` (14 pasal) |
+| `PEMDA_PDP` | Pemda Format UU PDP (ref 2: Tanjungbalai) | Nota Kesepakatan | `nota_kesepakatan_pemda_pdp` (15 pasal, pasal PDP tetap) |
+| `VSGA` | Perguruan Tinggi PKS DTS (ref 3: Politeknik Caltex Riau) | Perjanjian Kerja Sama | `pks_beasiswa_talenta_digital` (15 pasal) |
+
+- `nota_kesepakatan_pemda.json`: pasal "TRANSFER DATA…PELINDUNGAN DATA PRIBADI"
+  `aktif_bawaan` → `false` (14 pasal, tanpa PDP); pasal "PERUBAHAN" → `true`
+  agar jumlah pasal sesuai referensi (14/15). Nama ditambah "(Standar)".
+- **Baru** `nota_kesepakatan_pemda_pdp.json` (storage + resources/mou-bawaan):
+  salinan Pemda dengan pasal PDP aktif (15 pasal). Nama "(Format UU PDP)".
+- `config/kerjasama.php`: slot `bidang_3` dihapus, tambah `PEMDA_PDP`; tiap item
+  dapat field baru `sasaran_mitra` (target mitra + format dokumen); label GTA
+  diberi penanda "Pemerintah Daerah", VSGA "Perguruan Tinggi".
+- `BidangKerjasama::daftar()` menormalisasi `sasaran_mitra`.
+- Form: kartu pilihan kini juga menampilkan baris "Sasaran: …" (CSS
+  `.pjn-bidang-target`); hint, indentation, ikon, dan tanda hubung dirapikan.
+- `config/mou.php` `pemetaan` otomatis ikut (satu sumber) — sudah memetakan
+  `PEMDA_PDP` → `nota_kesepakatan_pemda_pdp`.
+
+### Keamanan / otorisasi
+- Tidak ada perubahan pada validasi server: `StorePengajuanRequest` tetap
+  `Rule::in(BidangKerjasama::kode())`, jadi hanya 3 kode aktif yang diterima;
+  kode lain (mis. `bidang_3` lama, `KODE_ASING`) ditolak 422.
+- Data pengajuan lama `GTA`/`VSGA` tetap dikenali (kode tidak diubah).
+
+### Pengecekan
+- `php artisan test` → **386 test, 386 lolos, 2360 assertion** (sebelumnya 375).
+- `pint --test` → passed; `phpstan` (memory 1G) → 0 error.
+- Verifikasi HTTP: `/pengajuan` → 200, 3 radio `bidang` (GTA, PEMDA_PDP, VSGA),
+  tiap kartu menampilkan nama, badge jenis dokumen, deskripsi, dan sasaran mitra.
+- Verifikasi pemetaan: GTA→nota_kesepakatan_pemda (14), PEMDA_PDP→…_pdp (15),
+  VSGA→pks_beasiswa_talenta_digital (15).
+
+### Menunggu konfirmasi
+- Label final tiap kategori (GTA/VSGA tetap dipakai sebagai kode; sebutan
+  "Pemda Standar / Pemda UU PDP / Perguruan Tinggi DTS" perlu persetujuan mentor).
+- Apakah `kerangka_umum` (draf) tetap diperlukan sebagai slot bidang ke-4 kelak.
+
+### Catatan untuk backend
+- Tiga kode bidang → tiga `template` kini berbeda; saat pindah ke DB, tambah
+  kolom `sasaran_mitra` di tabel `bidang`.
+- `PEMDA_PDP` memakai template terpisah (bukan toggle runtime); bila nanti ada
+  lebih banyak varian, pertimbangkan kolom `pasal_nonaktif` per bidang.

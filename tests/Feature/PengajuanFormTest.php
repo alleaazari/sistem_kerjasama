@@ -51,7 +51,7 @@ test('penanda langkah berubah jadi centang hanya bila bagiannya lengkap', functi
     expect($body)->toContain('PJN_STEP_RULES')
         ->and($body)->toContain("fields: ['pddikti-input', 'jenis_instansi', 'organisasi', 'kota', 'provinsi', 'alamat']")
         ->and($body)->toContain("fields: ['pic', 'email', 'telp']")
-        ->and($body)->toContain("'.pjn-checkbox-group', '.pjn-pembiayaan-group'");
+        ->and($body)->toContain("'.pjn-bidang-group', '.pjn-pembiayaan-group'");
 
     // Centang hanya gaya visual untuk .done; tidak ada centang permanen di markup awal.
     expect($body)->toContain('.pjn-step.done .pjn-step-num::after');

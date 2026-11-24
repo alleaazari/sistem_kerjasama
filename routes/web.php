@@ -3,6 +3,7 @@
 use App\Http\Controllers\MitraController;
 use App\Http\Requests\StorePengajuanRequest;
 use App\Support\LandingCms;
+use App\Support\UnitKerja;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -157,6 +158,15 @@ Route::middleware('mitra.only')->group(function () {
     Route::get('/mitra/mou/draf', [MitraController::class, 'drafMou'])->name('mitra.mou.draf');
     Route::post('/mitra/mou/draf', [MitraController::class, 'simpanDrafMou'])
         ->middleware('throttle:mou-draf')->name('mitra.mou.draf.simpan');
+
+    // Generator MoU berbasis blok: "Buat MoU" -> lengkapi data -> sunting/kirim.
+    Route::get('/mitra/mou/buat', [MitraController::class, 'buatMou'])->name('mitra.mou.buat');
+    Route::post('/mitra/mou/buat', [MitraController::class, 'simpanMouBaru'])
+        ->middleware('throttle:mou-generate')->name('mitra.mou.buat.simpan');
+    Route::get('/mitra/mou/buat/{id}', [MitraController::class, 'lihatMou'])->name('mitra.mou.buat.lihat');
+    Route::post('/mitra/mou/buat/{id}', [MitraController::class, 'simpanMou'])
+        ->middleware('throttle:mou-generate')->name('mitra.mou.buat.update');
+    Route::get('/mitra/mou/buat/{id}/cetak', [MitraController::class, 'pratinjauMouMitra'])->name('mitra.mou.buat.cetak');
     Route::get('/mitra/mou/{id}', [MitraController::class, 'detailMou'])->name('mitra.mou.detail');
     Route::get('/mitra/mou/{id}/berkas', [MitraController::class, 'pratinjauMou'])->name('mitra.mou.berkas');
     Route::get('/mitra/mou/{id}/unduh', [MitraController::class, 'unduhMou'])->name('mitra.mou.unduh');
@@ -219,4 +229,91 @@ Route::get('/api/pddikti', function (Request $request) {
     }
 
     return response()->json(['source' => 'Fallback API', 'data' => []]);
+})->middleware('throttle:pddikti');
+
+// Daftar Unit Kerja / Divisi / Fakultas untuk dropdown bertingkat setelah
+// instansi dipilih. Lookup PDDikti dicoba lebih dulu (bila ada data prodi),
+// lalu selalu jatuh ke daftar fallback statis dari App\Support\UnitKerja.
+Route::get('/api/pddikti/unit-kerja', function (Request $request) {
+    $id = trim((string) $request->query('id', ''));
+    $nama = trim((string) $request->query('nama', ''));
+    $jenis = trim((string) $request->query('jenis', ''));
+
+    // Batasi panjang input agar tidak jadi celah pembengkakan kunci cache.
+    $id = Str::limit($id, 40, '');
+    $nama = Str::limit($nama, 160, '');
+    $jenis = Str::limit($jenis, 40, '');
+
+    $fallback = UnitKerja::fallback($jenis);
+
+    // Tanpa kode PT atau untuk instansi non-kampus, langsung pakai fallback:
+    // tidak perlu memanggil jaringan.
+    $bisaLookup = $id !== '' && ($jenis === '' || $jenis === 'perguruan_tinggi');
+
+    if (! $bisaLookup) {
+        return response()->json([
+            'source' => 'Data fallback',
+            'data' => $fallback,
+            'isian_sendiri' => UnitKerja::LABEL_ISIAN_SENDIRI,
+            'nilai_isian_sendiri' => UnitKerja::ISIAN_SENDIRI,
+        ]);
+    }
+
+    $cacheKey = 'pddikti-unit:'.md5(Str::lower($id));
+
+    $hasil = Cache::remember($cacheKey, now()->addHours(6), function () use ($id) {
+        try {
+            $response = Http::timeout(4)
+                ->withHeaders([
+                    'User-Agent' => config('app.name').' Kerja Sama ('.config('app.url').')',
+                    'Accept' => 'application/json, text/plain, */*',
+                ])
+                ->get('https://api-frontend.kemdikbud.go.id/v2/detail_pt_prodi/'.urlencode($id));
+
+            if (! $response->successful()) {
+                return [];
+            }
+
+            $data = $response->json();
+            if (! is_array($data)) {
+                return [];
+            }
+
+            $unit = [];
+            foreach (array_slice($data, 0, 100) as $item) {
+                if (! is_array($item)) {
+                    continue;
+                }
+                $namaProdi = $item['nama_prodi'] ?? $item['nama'] ?? $item['prodi'] ?? '';
+                if (is_string($namaProdi) && trim($namaProdi) !== '') {
+                    $unit[] = trim($namaProdi);
+                }
+            }
+
+            // Urutkan unik, buang duplikat.
+            $unit = array_values(array_unique($unit));
+            sort($unit);
+
+            return $unit;
+        } catch (Throwable) {
+            // Endpoint tidak tersedia / timeout: pakai fallback.
+            return [];
+        }
+    });
+
+    if (count($hasil) > 0) {
+        return response()->json([
+            'source' => 'API PDDIKTI Kemdikbud Live',
+            'data' => $hasil,
+            'isian_sendiri' => UnitKerja::LABEL_ISIAN_SENDIRI,
+            'nilai_isian_sendiri' => UnitKerja::ISIAN_SENDIRI,
+        ]);
+    }
+
+    return response()->json([
+        'source' => 'Data fallback',
+        'data' => $fallback,
+        'isian_sendiri' => UnitKerja::LABEL_ISIAN_SENDIRI,
+        'nilai_isian_sendiri' => UnitKerja::ISIAN_SENDIRI,
+    ]);
 })->middleware('throttle:pddikti');

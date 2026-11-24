@@ -112,7 +112,22 @@
                 </div>
                 <div class="pjn-field">
                     <label class="pjn-label" for="organisasi">Unit Kerja / Divisi / Fakultas <span class="pjn-required">*</span></label>
-                    <input type="text" id="organisasi" name="organisasi" value="{{ old('organisasi') }}" placeholder="cth. Fakultas Teknik / Biro Kerja Sama" class="pjn-input" required>
+                    {{-- Dropdown bertingkat: terisi setelah instansi dipilih. --}}
+                    <div class="pjn-unit-wrap">
+                        <select id="organisasi" name="organisasi" class="pjn-input" required
+                                data-terpilih="{{ (string) old('organisasi', '') }}" disabled
+                                aria-describedby="organisasi-hint">
+                            <option value="">-- Pilih Instansi Terlebih Dahulu --</option>
+                        </select>
+                        <span class="pjn-search-spinner pjn-unit-spinner" id="organisasi-spinner" style="display:none;" aria-hidden="true">
+                            <span class="spinner-ring"></span>
+                        </span>
+                    </div>
+                    <input type="text" id="organisasi-custom" name="organisasi_custom"
+                           value="{{ old('organisasi_custom') }}" placeholder="Ketik nama fakultas / biro / divisi"
+                           class="pjn-input pjn-unit-custom" maxlength="255" hidden autocomplete="off">
+                    <p class="pjn-hint" id="organisasi-hint">Pilih instansi dulu; daftar unit kerja akan dimuat otomatis.</p>
+                    <button type="button" class="pjn-link-btn" id="organisasi-kembali" hidden>Pilih dari daftar</button>
                 </div>
             </div>
 
@@ -218,73 +233,86 @@
 
             <div class="pjn-field">
                 <span class="pjn-label" id="bidang-label">Bidang Kerja Sama yang Diminati <span class="pjn-required">*</span></span>
-                <div class="pjn-checkbox-group" role="radiogroup" aria-labelledby="bidang-label" aria-required="true">
-                    @foreach (\App\Support\BidangKerjasama::daftar() as $kode => $label)
-                    <label class="pjn-checkbox-label">
-                        <input type="radio" name="bidang" value="{{ $kode }}" {{ old('bidang') === $kode ? 'checked' : '' }} class="pjn-checkbox" required>
-                        <span class="pjn-checkbox-custom"></span>
-                        {{ $label }}
+                <p class="pjn-hint">Pilih satu kategori sesuai instansi Anda. Jenis dokumen dibuat otomatis mengikuti pilihan.</p>
+                <div class="pjn-bidang-group" role="radiogroup" aria-labelledby="bidang-label" aria-required="true">
+                    @foreach (\App\Support\BidangKerjasama::aktif() as $kode => $item)
+                    <label class="pjn-bidang-card" for="bidang-{{ $kode }}">
+                        <input type="radio" id="bidang-{{ $kode }}" name="bidang" value="{{ $kode }}" {{ old('bidang') === $kode ? 'checked' : '' }} class="pjn-bidang-radio" required>
+                        <span class="pjn-bidang-mark" aria-hidden="true"></span>
+                        <span class="pjn-bidang-body">
+                            <span class="pjn-bidang-head">
+                                <span class="pjn-bidang-name">{{ $item['label'] }}</span>
+                                @if ($item['jenis_dokumen'] !== '')
+                                <span class="pjn-bidang-badge">{{ $item['jenis_dokumen'] }}</span>
+                                @endif
+                            </span>
+                            @if ($item['deskripsi_singkat'] !== '')
+                            <span class="pjn-bidang-desc">{{ $item['deskripsi_singkat'] }}</span>
+                            @endif
+                            @if ($item['sasaran_mitra'] !== '')
+                            <span class="pjn-bidang-target">Sasaran: {{ $item['sasaran_mitra'] }}</span>
+                            @endif
+                        </span>
                     </label>
                     @endforeach
                 </div>
                 @error('bidang')<p class="pjn-field-error">{{ $message }}</p>@enderror
             </div>
 
-<div class="pjn-field">
-    <label class="pjn-label" for="metode_pelatihan">Metode Pelatihan <span class="pjn-required">*</span></label>
-    <select id="metode_pelatihan" name="metode_pelatihan" class="pjn-input" required>
-        <option value="">-- Pilih Metode --</option>
-        <option value="offline" {{ old('metode_pelatihan')=='offline'?'selected':'' }}>Tatap Muka / Offline</option>
-        <option value="online" {{ old('metode_pelatihan')=='online'?'selected':'' }}>Daring / Online</option>
-        <option value="hybrid" {{ old('metode_pelatihan')=='hybrid'?'selected':'' }}>Hybrid / Blended</option>
-        <option value="workshop" {{ old('metode_pelatihan')=='workshop'?'selected':'' }}>Workshop</option>
-        <option value="magang" {{ old('metode_pelatihan')=='magang'?'selected':'' }}>Magang / Praktik</option>
-        <option value="seminar" {{ old('metode_pelatihan')=='seminar'?'selected':'' }}>Seminar / Webinar</option>
-    </select>
-</div>
+            <div class="pjn-field">
+                <label class="pjn-label" for="metode_pelatihan">Metode Pelatihan <span class="pjn-required">*</span></label>
+                <select id="metode_pelatihan" name="metode_pelatihan" class="pjn-input" required>
+                    <option value="">-- Pilih Metode --</option>
+                    <option value="offline" {{ old('metode_pelatihan')=='offline'?'selected':'' }}>Tatap Muka / Offline</option>
+                    <option value="online" {{ old('metode_pelatihan')=='online'?'selected':'' }}>Daring / Online</option>
+                    <option value="hybrid" {{ old('metode_pelatihan')=='hybrid'?'selected':'' }}>Hybrid / Blended</option>
+                    <option value="workshop" {{ old('metode_pelatihan')=='workshop'?'selected':'' }}>Workshop</option>
+                    <option value="magang" {{ old('metode_pelatihan')=='magang'?'selected':'' }}>Magang / Praktik</option>
+                    <option value="seminar" {{ old('metode_pelatihan')=='seminar'?'selected':'' }}>Seminar / Webinar</option>
+                </select>
+            </div>
 
-<div class="pjn-field">
-    <label class="pjn-label" for="pembiayaan">Pembiayaan <span class="pjn-required">*</span></label>
-    <div class="pjn-pembiayaan-group">
-        <label class="pjn-checkbox-label pjn-pembiayaan-item">
-            <input type="radio" name="pembiayaan" value="apbd" {{ old('pembiayaan')=='apbd'?'checked':'' }} class="pjn-checkbox" required>
-            <span class="pjn-checkbox-custom"></span>
-            <span>APBD</span>
-        </label>
-        <label class="pjn-checkbox-label pjn-pembiayaan-item">
-            <input type="radio" name="pembiayaan" value="apbn" {{ old('pembiayaan')=='apbn'?'checked':'' }} class="pjn-checkbox" required>
-            <span class="pjn-checkbox-custom"></span>
-            <span>APBN</span>
-        </label>
-        <label class="pjn-checkbox-label pjn-pembiayaan-item">
-            <input type="radio" name="pembiayaan" value="cost_sharing" {{ old('pembiayaan')=='cost_sharing'?'checked':'' }} class="pjn-checkbox" required>
-            <span class="pjn-checkbox-custom"></span>
-            <span>Cost Sharing</span>
-        </label>
-        <span class="pjn-info-trigger" tabindex="0" title="Penjelasan Skema Pembiayaan">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            <span class="pjn-tooltip-box">
-                <span class="pjn-tooltip-header"> Penjelasan Skema Pembiayaan</span>
-                <ul class="pjn-tooltip-list">
-                    <li>
-                        <strong>1. APBD (Anggaran Daerah)</strong>
-                        <span>Seluruh pembiayaan kegiatan bersumber dari APBD Pemerintah Daerah Mitra.</span>
-                    </li>
-                    <li>
-                        <strong>2. APBN (Anggaran Negara)</strong>
-                        <span>Pembiayaan ditanggung oleh APBN Kementerian Komunikasi dan Digital (Kemkomdigi).</span>
-                    </li>
-                    <li>
-                        <strong>3. Cost Sharing (Berbagi Biaya)</strong>
-                        <span>Pembiayaan ditanggung bersama secara proporsional antara Kemkomdigi dan Mitra (misal: Komdigi menyediakan narasumber, Mitra menyediakan tempat & konsumsi).</span>
-                    </li>
-                </ul>
-            </span>
-        </span>
-    </div>
-    <p class="pjn-hint">Arahkan kursor atau klik icon <b>(?)</b> di samping tombol Cost Sharing untuk melihat penjelasan lengkap APBD, APBN, & Cost Sharing.</p>
-</div>
-
+            <div class="pjn-field">
+                <label class="pjn-label" for="pembiayaan">Pembiayaan <span class="pjn-required">*</span></label>
+                <div class="pjn-pembiayaan-group">
+                    <label class="pjn-checkbox-label pjn-pembiayaan-item">
+                        <input type="radio" name="pembiayaan" value="apbd" {{ old('pembiayaan')=='apbd'?'checked':'' }} class="pjn-checkbox" required>
+                        <span class="pjn-checkbox-custom"></span>
+                        <span>APBD</span>
+                    </label>
+                    <label class="pjn-checkbox-label pjn-pembiayaan-item">
+                        <input type="radio" name="pembiayaan" value="apbn" {{ old('pembiayaan')=='apbn'?'checked':'' }} class="pjn-checkbox" required>
+                        <span class="pjn-checkbox-custom"></span>
+                        <span>APBN</span>
+                    </label>
+                    <label class="pjn-checkbox-label pjn-pembiayaan-item">
+                        <input type="radio" name="pembiayaan" value="cost_sharing" {{ old('pembiayaan')=='cost_sharing'?'checked':'' }} class="pjn-checkbox" required>
+                        <span class="pjn-checkbox-custom"></span>
+                        <span>Cost Sharing</span>
+                    </label>
+                    <span class="pjn-info-trigger" tabindex="0" title="Penjelasan Skema Pembiayaan">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        <span class="pjn-tooltip-box">
+                            <span class="pjn-tooltip-header">Penjelasan Skema Pembiayaan</span>
+                            <ul class="pjn-tooltip-list">
+                                <li>
+                                    <strong>1. APBD (Anggaran Daerah)</strong>
+                                    <span>Seluruh pembiayaan kegiatan bersumber dari APBD Pemerintah Daerah Mitra.</span>
+                                </li>
+                                <li>
+                                    <strong>2. APBN (Anggaran Negara)</strong>
+                                    <span>Pembiayaan ditanggung oleh APBN Kementerian Komunikasi dan Digital (Komdigi).</span>
+                                </li>
+                                <li>
+                                    <strong>3. Cost Sharing (Berbagi Biaya)</strong>
+                                    <span>Pembiayaan ditanggung bersama secara proporsional antara Komdigi dan Mitra (misal: Komdigi menyediakan narasumber, Mitra menyediakan tempat & konsumsi).</span>
+                                </li>
+                            </ul>
+                        </span>
+                    </span>
+                </div>
+                <p class="pjn-hint">Arahkan kursor atau klik ikon <b>(?)</b> di samping tombol Cost Sharing untuk melihat penjelasan lengkap APBD, APBN, dan Cost Sharing.</p>
+            </div>
 
         </div>
     </div>
@@ -632,13 +660,16 @@ textarea.pjn-input { resize: vertical; min-height: 90px; }
 }
 .pjn-search-icon {
     position: absolute;
-    left: 12px;
+    left: 14px;
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;
     z-index: 1;
+    display: flex;
+    line-height: 0;
 }
-.pjn-input-search { padding-left: 38px; padding-right: 40px; }
+/* Padding kiri cukup agar teks tidak menindih ikon kaca pembesar. */
+.pjn-input-search { padding-left: 42px; padding-right: 40px; }
 .pjn-search-spinner {
     position: absolute;
     right: 12px;
@@ -653,6 +684,24 @@ textarea.pjn-input { resize: vertical; min-height: 90px; }
     animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Dropdown unit kerja (bertingkat) */
+.pjn-unit-wrap { position: relative; }
+.pjn-unit-spinner { right: 34px; }
+.pjn-unit-custom { margin-top: 8px; }
+.pjn-link-btn {
+    margin-top: 6px;
+    padding: 0;
+    background: none;
+    border: none;
+    color: #1d4ed8;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+}
+.pjn-link-btn:hover { color: #0b3a6b; }
 
 .pjn-dropdown {
     position: absolute;
@@ -788,6 +837,103 @@ textarea.pjn-input { resize: vertical; min-height: 90px; }
     border-color: #1d4ed8;
     color: #0b3a6b;
     font-weight: 600;
+}
+
+/* KARTU PILIHAN BIDANG (radio tunggal) */
+.pjn-bidang-group {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+.pjn-bidang-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    padding: 14px 16px;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    position: relative;
+    transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.pjn-bidang-card:hover {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+.pjn-bidang-radio {
+    position: absolute;
+    width: 1px; height: 1px;
+    opacity: 0;
+}
+.pjn-bidang-radio:focus-visible ~ .pjn-bidang-mark {
+    outline: 3px solid #1d4ed8;
+    outline-offset: 2px;
+}
+.pjn-bidang-mark {
+    width: 18px; height: 18px;
+    margin-top: 2px;
+    border: 2px solid #cbd5e1;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #FDFCF9;
+    transition: all 0.2s;
+}
+.pjn-bidang-radio:checked ~ .pjn-bidang-mark {
+    border-color: #1d4ed8;
+}
+.pjn-bidang-radio:checked ~ .pjn-bidang-mark::after {
+    content: '';
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #1d4ed8;
+}
+.pjn-bidang-card:has(.pjn-bidang-radio:checked) {
+    background: #eff6ff;
+    border-color: #1d4ed8;
+    box-shadow: 0 2px 6px rgba(11, 58, 107, 0.08);
+}
+.pjn-bidang-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+.pjn-bidang-head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.pjn-bidang-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0b3a6b;
+}
+.pjn-bidang-badge {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #1d4ed8;
+    background: #dbeafe;
+    border-radius: 6px;
+    padding: 2px 8px;
+    white-space: nowrap;
+}
+.pjn-bidang-desc {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #475569;
+}
+.pjn-bidang-target {
+    font-size: 12px;
+    line-height: 1.5;
+    color: #64748b;
+    border-top: 1px dashed #e2e8f0;
+    padding-top: 6px;
+    margin-top: 2px;
 }
 
 /* PEMBIAYAAN INFO TOOLTIP */
@@ -1100,6 +1246,10 @@ function pddiktiSearch(val) {
         hiddenId.value = '';
     }
 
+    // Isian manual: tebak jenis instansi dari nama (tanpa menimpa pilihan
+    // manual user yang sudah ada).
+    isiJenisInstansi(tebakJenisInstansi(q), false);
+
     if (q.length < 2) {
         dropdown.style.display = 'none';
         return;
@@ -1194,6 +1344,80 @@ function highlightMatch(str, q) {
         escHtml(str.substring(i + q.length));
 }
 
+// Peta opsi Jenis Instansi yang tersedia di <select id="jenis_instansi">.
+// Nilai = value pada <option>; label dipakai hanya untuk dokumentasi.
+var JENIS_INSTANSI = {
+    perguruan_tinggi: 'perguruan_tinggi',
+    pemerintah_daerah: 'pemerintah_daerah',
+    kementerian: 'kementerian',
+    bumn: 'bumn',
+    swasta: 'swasta',
+    lsm: 'lsm',
+    lainnya: 'lainnya'
+};
+
+// Tebak jenis instansi dari nama. Hanya mengisi bila hasilnya jelas; selain itu
+// mengembalikan string kosong agar dropdown dibiarkan apa adanya.
+function tebakJenisInstansi(nama) {
+    var n = String(nama || '').toLowerCase().trim();
+    if (!n) return '';
+
+    // Perguruan tinggi: awalan nama bentuk PT yang lazim.
+    if (/\b(universitas|institut|politeknik|sekolah tinggi|akademi|poltekkes|poltek|uin|uinsu|iain|stikes|stmik)\b/.test(n)) {
+        return JENIS_INSTANSI.perguruan_tinggi;
+    }
+    // Kementerian / lembaga pusat (dicek sebelum pemda karena "badan/lembaga"
+    // juga dipakai unit pusat).
+    if (/\b(kementerian|kemen\w*|lembaga|lpnk|bkn|bssn)\b/.test(n)) {
+        return JENIS_INSTANSI.kementerian;
+    }
+    // Pemerintah daerah.
+    if (/\b(dinas|pemerintah (daerah|provinsi|kabupaten|kota)|pemprov|pemkot|pemkab|pemda|bappeda|sekretariat daerah|setda|kecamatan|kelurahan)\b/.test(n)) {
+        return JENIS_INSTANSI.pemerintah_daerah;
+    }
+    return '';
+}
+
+// Petakan teks jenis dari data PDDikti (mis. "Universitas Negeri",
+// "Politeknik Swasta") ke nilai opsi <select>. Kosong bila tak dikenali.
+function petakanJenisPddikti(teks) {
+    var t = String(teks || '').toLowerCase();
+    if (!t) return '';
+    if (/(universitas|institut|politeknik|sekolah tinggi|akademi)/.test(t)) {
+        return JENIS_INSTANSI.perguruan_tinggi;
+    }
+    return '';
+}
+
+// Isi jenis instansi otomatis. `paksa` = true menimpa pilihan yang ada
+// (dipakai saat memilih kampus terverifikasi); `paksa` = false hanya mengisi
+// bila dropdown masih kosong atau nilainya berasal dari deteksi otomatis
+// (bukan pilihan manual user), agar pilihan manual tidak ditimpa.
+function isiJenisInstansi(jenisData, paksa) {
+    var select = document.getElementById('jenis_instansi');
+    if (!select) return;
+
+    var nilai = jenisData || '';
+    if (!nilai) return;
+
+    // Nilai dari data harus benar-benar ada sebagai opsi.
+    var ada = Array.prototype.some.call(select.options, function (opt) {
+        return opt.value === nilai;
+    });
+    if (!ada) return;
+
+    // Tanpa paksa: jangan timpa pilihan manual user.
+    if (!paksa && select.value && select.getAttribute('data-otomatis') !== '1') return;
+
+    select.value = nilai;
+    select.setAttribute('data-otomatis', '1');
+    // Tandai bahwa change ini berasal dari kode, agar listener 'change' tidak
+    // menganggapnya pilihan manual (yang akan menghapus flag otomatis).
+    select.setAttribute('data-programatik', '1');
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    select.removeAttribute('data-programatik');
+}
+
 function selectPT(id, nama, kota, provinsi, jenis) {
     document.getElementById('pddikti-input').value = nama;
     document.getElementById('pddikti-id').value = id;
@@ -1202,9 +1426,19 @@ function selectPT(id, nama, kota, provinsi, jenis) {
     // Auto-fill provinsi & kota dari hasil PDDIKTI; dropdown ikut disinkronkan.
     sinkronWilayah(provinsi, kota);
 
+    // Auto-fill jenis instansi: utamakan tebakan dari nama, lalu jatuh ke data
+    // PDDikti bila tebakan tidak menghasilkan nilai. Selalu menimpa (paksa).
+    var jenis = tebakJenisInstansi(nama);
+    if (!jenis) jenis = petakanJenisPddikti(jenisData);
+    isiJenisInstansi(jenis, true);
+
     var info = document.getElementById('pddikti-selected-info');
     info.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#1d4ed8" stroke-width="2"/><path d="M9 12l2 2 4-4" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Terverifikasi: <b>' + escHtml(nama) + '</b>' + (kota ? ' &mdash; ' + escHtml(kota) : '') + '</span>';
     info.style.display = 'flex';
+
+    // Memilih PT dari PDDikti mengubah nilai secara programatik (tidak memicu
+    // input/change), jadi daftar unit kerja harus dimuat eksplisit.
+    muatUnitKerja();
 }
 
 function escHtml(s) {
@@ -1275,6 +1509,13 @@ function restoreDraft() {
             } else if (key === 'pembiayaan') {
                 var rad = form.querySelector('input[type="radio"][name="pembiayaan"][value="' + data[key] + '"]');
                 if (rad) rad.checked = true;
+            } else if (key === 'organisasi') {
+                // Dropdown unit dimuat async: simpan pilihan untuk dipulihkan
+                // setelah daftar selesai dimuat (lihat pasangUnitKerjaBertingkat).
+                var selOrg = document.getElementById('organisasi');
+                if (selOrg && !selOrg.getAttribute('data-terpilih')) {
+                    selOrg.setAttribute('data-terpilih', data[key]);
+                }
             } else {
                 var el = form.querySelector('[name="' + key + '"]');
                 if (el && !el.value) {
@@ -1379,12 +1620,18 @@ function validatePengajuanForm() {
         clearFieldError(jenisInstansi, null);
     }
 
-    // 3. Organisasi / Fakultas
-    var org = document.getElementById('organisasi');
-    if (!org || !org.value.trim()) {
-        reportErr(org, null, 'Unit Kerja / Divisi / Fakultas wajib diisi');
+    // 3. Organisasi / Fakultas — nilai final dari dropdown atau input manual.
+    var unit = nilaiUnitKerja();
+    if (unit.el && unit.el.hidden) {
+        // Mode manual aktif tapi input masih tersembunyi: paksa tampil.
+        unitModeManual(true);
+    }
+    if (!unit.el || !unit.nilai) {
+        reportErr(unit.el, null, 'Unit Kerja / Divisi / Fakultas wajib diisi');
+    } else if (unit.nilai.length > 255) {
+        reportErr(unit.el, null, 'Unit Kerja / Divisi / Fakultas maksimal 255 karakter');
     } else {
-        clearFieldError(org, null);
+        clearFieldError(unit.el, null);
     }
 
     // 4. Provinsi
@@ -1461,7 +1708,7 @@ function validatePengajuanForm() {
 
     // 10. Bidang Kerja Sama (radio, wajib satu)
     var bidangDipilih = form.querySelector('input[type="radio"][name="bidang"]:checked');
-    var bidangGroup = form.querySelector('.pjn-checkbox-group');
+    var bidangGroup = form.querySelector('.pjn-bidang-group');
     if (!bidangDipilih) {
         reportErr(null, bidangGroup, 'Pilih bidang kerja sama yang diminati');
     } else {
@@ -1546,7 +1793,7 @@ function pjnSetupSteps() {
 var PJN_STEP_RULES = [
     { card: 'pjn-step-1', fields: ['pddikti-input', 'jenis_instansi', 'organisasi', 'kota', 'provinsi', 'alamat'] },
     { card: 'pjn-step-2', fields: ['pic', 'email', 'telp'] },
-    { card: 'pjn-step-3', fields: ['metode_pelatihan'], groups: ['.pjn-checkbox-group', '.pjn-pembiayaan-group'] }
+    { card: 'pjn-step-3', fields: ['metode_pelatihan'], groups: ['.pjn-bidang-group', '.pjn-pembiayaan-group'] }
 ];
 
 function pjnStepFilled(idx) {
@@ -1554,6 +1801,8 @@ function pjnStepFilled(idx) {
     if (!rule) return false;
 
     var filled = rule.fields.every(function (id) {
+        // Organisasi memakai nilai final (dropdown atau input manual).
+        if (id === 'organisasi') return nilaiUnitKerja().nilai.length > 0;
         var el = document.getElementById(id);
         if (!el) return false;
         var val = String(el.value || '').trim();
@@ -1711,10 +1960,225 @@ function pasangWilayahBertingkat() {
     });
 }
 
+/* =================== UNIT KERJA BERTINGKAT (INSTANSI → UNIT) =================== */
+var UNIT_ISIAN_SENDIRI = '__custom__';
+var UNIT_LABEL_KOSONG = '-- Pilih Instansi Terlebih Dahulu --';
+var unitTimeout = null;
+var unitSeq = 0;
+
+function unitStatus(teks) {
+    var hint = document.getElementById('organisasi-hint');
+    if (hint) hint.textContent = teks;
+}
+
+// Mode manual: sembunyikan dropdown, tampilkan input teks + tombol kembali.
+function unitModeManual(aktif) {
+    var sel = document.getElementById('organisasi');
+    var custom = document.getElementById('organisasi-custom');
+    var kembali = document.getElementById('organisasi-kembali');
+    if (!sel || !custom || !kembali) return;
+
+    if (aktif) {
+        sel.hidden = true;
+        sel.required = false;
+        custom.hidden = false;
+        custom.required = true;
+        kembali.hidden = false;
+        custom.focus();
+    } else {
+        sel.hidden = false;
+        sel.required = true;
+        custom.hidden = true;
+        custom.required = false;
+        kembali.hidden = true;
+    }
+}
+
+// Isi dropdown unit. `pilihan` = nilai yang ingin dipulihkan (old()/draft).
+function isiDropdownUnit(daftar, pilihan) {
+    var sel = document.getElementById('organisasi');
+    if (!sel) return;
+
+    while (sel.options.length > 0) sel.remove(0);
+
+    var kosong = document.createElement('option');
+    kosong.value = '';
+    kosong.textContent = '-- Pilih Unit Kerja / Divisi / Fakultas --';
+    sel.appendChild(kosong);
+
+    (daftar || []).forEach(function (nama) {
+        var opt = document.createElement('option');
+        opt.value = nama;
+        opt.textContent = nama;
+        sel.appendChild(opt);
+    });
+
+    // Opsi "Isi sendiri" SELALU paling bawah.
+    var custom = document.createElement('option');
+    custom.value = UNIT_ISIAN_SENDIRI;
+    custom.textContent = 'Isi sendiri…';
+    sel.appendChild(custom);
+
+    sel.disabled = false;
+
+    if (pilihan && pilihan !== UNIT_ISIAN_SENDIRI && (daftar || []).indexOf(pilihan) !== -1) {
+        sel.value = pilihan;
+    } else if (pilihan === UNIT_ISIAN_SENDIRI) {
+        sel.value = UNIT_ISIAN_SENDIRI;
+        unitModeManual(true);
+    } else {
+        sel.value = '';
+    }
+}
+
+// Kosongkan + nonaktifkan dropdown (instansi berubah/kosong).
+function resetDropdownUnit() {
+    var sel = document.getElementById('organisasi');
+    if (!sel) return;
+
+    while (sel.options.length > 0) sel.remove(0);
+    var kosong = document.createElement('option');
+    kosong.value = '';
+    kosong.textContent = UNIT_LABEL_KOSONG;
+    sel.appendChild(kosong);
+    sel.disabled = true;
+    sel.value = '';
+
+    var custom = document.getElementById('organisasi-custom');
+    if (custom) custom.value = '';
+    unitModeManual(false);
+}
+
+// Muat daftar unit dari endpoint sesuai instansi terpilih/terketik.
+function muatUnitKerja() {
+    var instansi = document.getElementById('pddikti-input');
+    var jenis = document.getElementById('jenis_instansi');
+    var sel = document.getElementById('organisasi');
+    var spinner = document.getElementById('organisasi-spinner');
+    if (!instansi || !sel) return;
+
+    var nama = (instansi.value || '').trim();
+    var id = (document.getElementById('pddikti-id') || {}).value || '';
+    var jenisVal = jenis ? jenis.value : '';
+
+    clearTimeout(unitTimeout);
+
+    // Setiap pemanggilan membatalkan respons lama yang belum tiba.
+    var seq = ++unitSeq;
+
+    if (nama.length < 2) {
+        resetDropdownUnit();
+        unitStatus('Pilih instansi dulu; daftar unit kerja akan dimuat otomatis.');
+        return;
+    }
+
+    // Kosongkan nilai lama segera: ganti instansi = ganti daftar unit, dan
+    // pilihan/isi manual lama tidak boleh tertinggal selama data dimuat.
+    var nilaiLama = sel.getAttribute('data-terpilih') || '';
+    sel.setAttribute('data-terpilih', '');
+    var customAwal = document.getElementById('organisasi-custom');
+    if (customAwal) customAwal.value = '';
+    resetDropdownUnit();
+    unitModeManual(false);
+
+    if (spinner) spinner.style.display = 'flex';
+
+    // Debounce singkat agar tidak memanggil API tiap ketikan huruf.
+    unitTimeout = setTimeout(function () {
+        var url = '/api/pddikti/unit-kerja?nama=' + encodeURIComponent(nama) +
+            '&jenis=' + encodeURIComponent(jenisVal) +
+            (id ? '&id=' + encodeURIComponent(id) : '');
+
+        fetch(url, { signal: AbortSignal.timeout(5000) })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                if (seq !== unitSeq) return; // respons usang, abaikan
+                if (spinner) spinner.style.display = 'none';
+
+                var daftar = (res && res.data) ? res.data : [];
+                if (res && res.nilai_isian_sendiri) UNIT_ISIAN_SENDIRI = res.nilai_isian_sendiri;
+
+                isiDropdownUnit(daftar, nilaiLama);
+                unitStatus(daftar.length + ' unit kerja dimuat. Pilih salah satu atau "Isi sendiri".');
+                pjnUpdateSteps();
+            })
+            .catch(function () {
+                if (seq !== unitSeq) return;
+                if (spinner) spinner.style.display = 'none';
+                // Endpoint gagal: kosongkan daftar tapi tetap tawarkan "Isi sendiri".
+                isiDropdownUnit([], '');
+                unitStatus('Daftar unit tidak tersedia. Pilih "Isi sendiri" untuk mengetik manual.');
+            });
+    }, 350);
+}
+
+function pasangUnitKerjaBertingkat() {
+    var sel = document.getElementById('organisasi');
+    var custom = document.getElementById('organisasi-custom');
+    var kembali = document.getElementById('organisasi-kembali');
+    var instansi = document.getElementById('pddikti-input');
+    var jenis = document.getElementById('jenis_instansi');
+    if (!sel || !instansi) return;
+
+    // Keadaan awal: bila ada old()/draft untuk unit, muat daftar lalu pulihkan
+    // (nilai dipulihkan dari atribut data-terpilih di dalam muatUnitKerja).
+    if ((instansi.value || '').trim().length >= 2) {
+        muatUnitKerja();
+    } else {
+        resetDropdownUnit();
+    }
+
+    // Ganti instansi (ketik atau pilih) → muat ulang daftar unit.
+    instansi.addEventListener('change', muatUnitKerja);
+    instansi.addEventListener('input', muatUnitKerja);
+    if (jenis) jenis.addEventListener('change', muatUnitKerja);
+
+    // Pilih opsi: "Isi sendiri" → mode manual; selain itu kembali ke dropdown.
+    sel.addEventListener('change', function () {
+        if (sel.value === UNIT_ISIAN_SENDIRI) {
+            unitModeManual(true);
+        } else {
+            unitModeManual(false);
+            if (sel.value) clearFieldError(sel, null);
+        }
+        pjnUpdateSteps();
+    });
+
+    // Tombol kembali ke daftar.
+    if (kembali) {
+        kembali.addEventListener('click', function () {
+            sel.value = '';
+            if (custom) custom.value = '';
+            unitModeManual(false);
+            sel.focus();
+            pjnUpdateSteps();
+        });
+    }
+
+    // Ketik manual → status langkah ikut berubah.
+    if (custom) custom.addEventListener('input', function () {
+        if (custom.value.trim()) clearFieldError(custom, null);
+        pjnUpdateSteps();
+    });
+}
+
+// Nilai unit kerja final untuk dikirim: teks dropdown, atau input manual.
+function nilaiUnitKerja() {
+    var sel = document.getElementById('organisasi');
+    var custom = document.getElementById('organisasi-custom');
+    if (!sel) return { el: null, nilai: '' };
+
+    if (sel.value === UNIT_ISIAN_SENDIRI) {
+        return { el: custom, nilai: custom ? (custom.value || '').trim() : '' };
+    }
+    return { el: sel, nilai: (sel.value || '').trim() };
+}
+
 // Real-time input error clearing & draft auto-save
 document.addEventListener('DOMContentLoaded', function() {
     restoreDraft();
     pasangWilayahBertingkat();
+    pasangUnitKerjaBertingkat();
     pjnSetupSteps();
     pjnUpdateSteps();
 
@@ -1739,8 +2203,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (el) {
             if (el.id === 'provinsi') {
                 // Perubahan provinsi sudah ditangani pasangWilayahBertingkat().
+            } else if (el.id === 'jenis_instansi') {
+                // Pilihan manual user: jangan ditimpa deteksi otomatis nanti.
+                // Abaikan change yang dipicu isiJenisInstansi (programatik).
+                if (el.getAttribute('data-programatik') !== '1') {
+                    el.setAttribute('data-otomatis', '0');
+                }
+                if (el.value) clearFieldError(el, null);
             } else if (el.type === 'radio' && el.name === 'bidang') {
-                var bidangGroup = form.querySelector('.pjn-checkbox-group');
+                var bidangGroup = form.querySelector('.pjn-bidang-group');
                 clearFieldError(null, bidangGroup);
             } else if (el.type === 'radio' && el.name === 'pembiayaan') {
                 var pembiayaanGroup = form.querySelector('.pjn-pembiayaan-group');
@@ -1758,6 +2229,23 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!validatePengajuanForm()) {
             e.preventDefault();
             return false;
+        }
+
+        // Kirim nilai final unit kerja lewat satu field `organisasi`:
+        // pilihan dropdown, atau teks "Isi sendiri". Input manual dikosongkan
+        // namanya agar tidak ikut terkirim ganda.
+        var unit = nilaiUnitKerja();
+        var sel = document.getElementById('organisasi');
+        var custom = document.getElementById('organisasi-custom');
+        if (sel && custom) {
+            var opsi = document.createElement('option');
+            opsi.value = unit.nilai;
+            opsi.textContent = unit.nilai;
+            opsi.selected = true;
+            sel.appendChild(opsi);
+            sel.disabled = false;
+            sel.required = false;
+            custom.setAttribute('name', '');
         }
 
         var btn = document.getElementById('btn-submit');

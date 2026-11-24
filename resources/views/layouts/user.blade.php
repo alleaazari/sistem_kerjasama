@@ -14,6 +14,7 @@
     <x-asset path="assets/shared/css/base.css" />
     <x-asset path="assets/shared/css/footer.css" />
     <x-asset path="assets/user/css/mitra.css" />
+    @stack('styles')
 </head>
 @php
     $username = $mitra['username'] ?? 'mitra';
