@@ -1177,3 +1177,35 @@ DIUBAH
   dan ganti pengecekan peran config/session dengan kolom role + Policy.
 - Aksi tulis konten portal belum dicatat ke `LogAktivitas`; saat audit trail
   SQL dibangun, catat perubahan tentang/artikel/galeri beserta perannya.
+
+---
+
+## Bidang kerja sama sesuai referensi MoU (24 November 2026)
+
+Branch: `feat/template-mou-referensi`. Commit: `feat(form): pilihan bidang sesuai referensi mou`.
+
+### Perubahan
+- `config/kerjasama.php` 'bidang' kini menyimpan item lengkap: `kode`, `label`,
+  `deskripsi_singkat`, `jenis_dokumen`, `template`, `aktif`. GTA & VSGA aktif;
+  slot ke-3 (`bidang_3`) nonaktif dengan komentar TODO.
+- `app/Support/BidangKerjasama.php`: accessor baru `aktif()`, `item()`,
+  `jenisDokumen()`, `template()`, `pemetaanTemplate()`. `daftar()` mengembalikan
+  item ternormalisasi (bukan lagi kode => label). `kode()` hanya bidang aktif.
+- `config/mou.php` 'pemetaan' **diturunkan** dari `config/kerjasama.php`
+  (satu sumber; tidak mungkin bertentangan).
+- Form pengajuan: kartu radio tunggal menampilkan label, deskripsi, badge jenis
+  dokumen; `aktif=false` tidak dirender. CSS `.pjn-bidang-*` ditambahkan.
+- Dashboard mitra menampilkan label + jenis dokumen. Generator/editor/draf
+  membaca sumber yang sama.
+- Test: `tests/Feature/BidangKerjasamaKonsistenTest.php` (baru) + penyesuaian
+  `BidangKerjasamaTest` / `PengajuanFormTest`.
+
+### Menunggu konfirmasi
+- Bidang ke-3 (masih `aktif=false`) dan pemetaan VSGA/GTA ke template.
+- Apakah `PROPOSAL`/`KERANGKA` perlu jadi jenis dokumen tambahan.
+
+### Catatan untuk backend
+- Saat bidang pindah ke tabel DB: buat tabel `bidang` (kolom kode, label,
+  deskripsi, jenis_dokumen, template, aktif) dan relasi ke pengajuan; validasi
+  server cukup cek `aktif=true` + kode ada.
+- Seed bidang dari `config/kerjasama.php`; jangan hardcode label di view.

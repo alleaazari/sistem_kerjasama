@@ -74,6 +74,9 @@
                 <p class="status-bidang">
                     <span class="status-bidang-kode">Bidang: {{ $bidang['kode'] !== '' ? $bidang['kode'] : '-' }}</span>
                     <span class="status-bidang-label">{{ $bidang['label'] !== '' ? $bidang['label'] : '-' }}</span>
+                    @if (!empty($bidang['jenis_dokumen']))
+                    <span class="status-bidang-jenis">Jenis dokumen: {{ $bidang['jenis_dokumen'] }}</span>
+                    @endif
                 </p>
             </div>
             <span class="status-badge">{{ $status['label'] }}</span>

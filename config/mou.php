@@ -1,5 +1,7 @@
 <?php
 
+use App\Support\BidangKerjasama;
+
 /*
 |--------------------------------------------------------------------------
 | Fondasi template MoU — SATU sumber nilai tetap
@@ -26,18 +28,17 @@ return [
     |----------------------------------------------------------------------
     | Pemetaan bidang kerja sama -> kode template
     |----------------------------------------------------------------------
-    | Kunci = kode bidang pada config/kerjasama.php (dan slot bidang baru).
-    | Nilai = nama template, dicocokkan dengan kolom `kode` pada berkas
-    | template di storage/app/mou/.
+    | DITURUNKAN dari config/kerjasama.php 'bidang' (kunci 'template' tiap
+    | item) supaya kedua berkas tidak mungkin bertentangan. Mengubah template
+    | sebuah bidang cukup di config/kerjasama.php.
+    |
+    | Pemetaan dapat ditimpa sementara oleh Superadmin lewat editor template
+    | (storage/app/mou/_pemetaan.json); lihat StrukturTemplateMou::pemetaan().
     |
     | Bidang yang tidak ada di peta ini memakai template 'kerangka_umum'.
     */
     // KONFIRMASI MENTOR: pemetaan bidang ke template
-    'pemetaan' => [
-        'GTA' => 'nota_kesepakatan_pemda',
-        'VSGA' => 'pks_beasiswa_talenta_digital',
-        'bidang_3' => 'kerangka_umum',
-    ],
+    'pemetaan' => BidangKerjasama::pemetaanTemplate(),
 
     /*
     |----------------------------------------------------------------------

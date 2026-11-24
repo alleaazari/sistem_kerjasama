@@ -21,15 +21,49 @@ return [
 
     /*
     |----------------------------------------------------------------------
-    | Bidang kerja sama yang diminati
+    | Bidang kerja sama yang diminati — SATU sumber
     |----------------------------------------------------------------------
-    | Kunci = kode yang disimpan di data & divalidasi server.
-    | Nilai = label resmi yang tampil di form, halaman mitra, dan draf MoU.
-    | Menambah bidang cukup menambah satu baris di sini.
+    | Dipakai oleh form pengajuan, halaman mitra, validasi server, dan
+    | generator MoU. config/mou.php menurunkan pemetaan bidang -> template
+    | dari daftar ini (lihat kunci 'template'), jadi tidak ada duplikasi.
+    |
+    | Tiap item:
+    |   kode             : disimpan di data & divalidasi server.
+    |   label            : nama resmi untuk tampilan.
+    |   deskripsi_singkat: ringkasan satu baris untuk kartu pilihan.
+    |   jenis_dokumen    : nama dokumen (mis. "Nota Kesepakatan").
+    |   template         : kode template di config/mou.php / storage/app/mou.
+    |   aktif            : hanya bidang aktif yang tampil & diterima server.
+    |
+    | Menambah bidang cukup menambah satu item; mengubah 'template' di sini
+    | otomatis menyelaraskan pemetaan generator MoU.
     */
+    // KONFIRMASI MENTOR: pemetaan VSGA/GTA ke template
     'bidang' => [
-        'VSGA' => 'Vocational School Graduate Academy (VSGA)',
-        'GTA' => 'Government Transformation Academy (GTA)',
+        'GTA' => [
+            'kode' => 'GTA',
+            'label' => 'Government Transformation Academy (GTA)',
+            'deskripsi_singkat' => 'Peningkatan kapasitas SDM bidang komunikasi dan digital untuk pemerintah daerah',
+            'jenis_dokumen' => 'Nota Kesepakatan',
+            'template' => 'nota_kesepakatan_pemda',
+            'aktif' => true,
+        ],
+        'VSGA' => [
+            'kode' => 'VSGA',
+            'label' => 'Vocational School Graduate Academy (VSGA)',
+            'deskripsi_singkat' => 'Penyelenggaraan program beasiswa talenta digital bersama perguruan tinggi',
+            'jenis_dokumen' => 'Perjanjian Kerja Sama',
+            'template' => 'pks_beasiswa_talenta_digital',
+            'aktif' => true,
+        ],
         // TODO: bidang ketiga ditentukan mentor
+        'bidang_3' => [
+            'kode' => 'bidang_3',
+            'label' => '',
+            'deskripsi_singkat' => '',
+            'jenis_dokumen' => '',
+            'template' => 'kerangka_umum',
+            'aktif' => false,
+        ],
     ],
 ];

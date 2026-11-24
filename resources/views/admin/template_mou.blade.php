@@ -280,9 +280,9 @@
                 @method('PUT')
 
                 <div class="row" style="max-width:520px;">
-                    @foreach ($daftarBidang as $kodeBidang => $labelBidang)
+                    @foreach ($daftarBidang as $kodeBidang => $itemBidang)
                         <div class="row">
-                            <label for="map-{{ $kodeBidang }}">{{ $labelBidang }} ({{ $kodeBidang }})</label>
+                            <label for="map-{{ $kodeBidang }}">{{ $itemBidang['label'] !== '' ? $itemBidang['label'] : $kodeBidang }} ({{ $kodeBidang }})</label>
                             <select id="map-{{ $kodeBidang }}" name="pemetaan[{{ $kodeBidang }}]">
                                 <option value="">— kerangka_umum (bawaan) —</option>
                                 @foreach ($daftar as $tmpl)

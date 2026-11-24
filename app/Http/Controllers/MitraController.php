@@ -52,7 +52,7 @@ class MitraController extends Controller
      * PIC yang sama dengan identitas session. Tidak memakai id/parameter URL.
      *
      * @param  array<string, mixed>  $mitra
-     * @return array{kode: string, label: string}
+     * @return array{kode: string, label: string, jenis_dokumen: string}
      */
     private function bidang(array $mitra): array
     {
@@ -64,8 +64,8 @@ class MitraController extends Controller
         $label = BidangKerjasama::label($kode);
 
         return $kode !== '' && $label !== ''
-            ? ['kode' => $kode, 'label' => $label]
-            : ['kode' => '', 'label' => ''];
+            ? ['kode' => $kode, 'label' => $label, 'jenis_dokumen' => BidangKerjasama::jenisDokumen($kode)]
+            : ['kode' => '', 'label' => '', 'jenis_dokumen' => ''];
     }
 
     /** Kunci session untuk permohonan perpanjangan (demo). */
@@ -423,7 +423,7 @@ class MitraController extends Controller
      * Mengembalikan ['bidang' => ..., 'template' => ...|null, 'pesan' => string|null].
      *
      * @param  array<string, mixed>  $mitra
-     * @return array{bidang: array{kode: string, label: string}, template: array<string, mixed>|null, pesan: string|null}
+     * @return array{bidang: array{kode: string, label: string, jenis_dokumen: string}, template: array<string, mixed>|null, pesan: string|null}
      */
     private function templateMitra(array $mitra): array
     {

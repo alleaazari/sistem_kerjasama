@@ -218,12 +218,23 @@
 
             <div class="pjn-field">
                 <span class="pjn-label" id="bidang-label">Bidang Kerja Sama yang Diminati <span class="pjn-required">*</span></span>
-                <div class="pjn-checkbox-group" role="radiogroup" aria-labelledby="bidang-label" aria-required="true">
-                    @foreach (\App\Support\BidangKerjasama::daftar() as $kode => $label)
-                    <label class="pjn-checkbox-label">
-                        <input type="radio" name="bidang" value="{{ $kode }}" {{ old('bidang') === $kode ? 'checked' : '' }} class="pjn-checkbox" required>
-                        <span class="pjn-checkbox-custom"></span>
-                        {{ $label }}
+                <p class="pjn-hint">Pilih satu bidang. Jenis dokumen kerja sama mengikuti bidang yang dipilih.</p>
+                <div class="pjn-bidang-group" role="radiogroup" aria-labelledby="bidang-label" aria-required="true">
+                    @foreach (\App\Support\BidangKerjasama::aktif() as $kode => $item)
+                    <label class="pjn-bidang-card">
+                        <input type="radio" name="bidang" value="{{ $kode }}" {{ old('bidang') === $kode ? 'checked' : '' }} class="pjn-bidang-radio" required>
+                        <span class="pjn-bidang-mark" aria-hidden="true"></span>
+                        <span class="pjn-bidang-body">
+                            <span class="pjn-bidang-head">
+                                <span class="pjn-bidang-name">{{ $item['label'] }}</span>
+                                @if ($item['jenis_dokumen'] !== '')
+                                <span class="pjn-bidang-badge">{{ $item['jenis_dokumen'] }}</span>
+                                @endif
+                            </span>
+                            @if ($item['deskripsi_singkat'] !== '')
+                            <span class="pjn-bidang-desc">{{ $item['deskripsi_singkat'] }}</span>
+                            @endif
+                        </span>
                     </label>
                     @endforeach
                 </div>
@@ -788,6 +799,95 @@ textarea.pjn-input { resize: vertical; min-height: 90px; }
     border-color: #1d4ed8;
     color: #0b3a6b;
     font-weight: 600;
+}
+
+/* KARTU PILIHAN BIDANG (radio tunggal) */
+.pjn-bidang-group {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+.pjn-bidang-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    padding: 14px 16px;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    position: relative;
+    transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.pjn-bidang-card:hover {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+.pjn-bidang-radio {
+    position: absolute;
+    width: 1px; height: 1px;
+    opacity: 0;
+}
+.pjn-bidang-radio:focus-visible ~ .pjn-bidang-mark {
+    outline: 3px solid #1d4ed8;
+    outline-offset: 2px;
+}
+.pjn-bidang-mark {
+    width: 18px; height: 18px;
+    margin-top: 2px;
+    border: 2px solid #cbd5e1;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #FDFCF9;
+    transition: all 0.2s;
+}
+.pjn-bidang-radio:checked ~ .pjn-bidang-mark {
+    border-color: #1d4ed8;
+}
+.pjn-bidang-radio:checked ~ .pjn-bidang-mark::after {
+    content: '';
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #1d4ed8;
+}
+.pjn-bidang-card:has(.pjn-bidang-radio:checked) {
+    background: #eff6ff;
+    border-color: #1d4ed8;
+    box-shadow: 0 2px 6px rgba(11, 58, 107, 0.08);
+}
+.pjn-bidang-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+.pjn-bidang-head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.pjn-bidang-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0b3a6b;
+}
+.pjn-bidang-badge {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #1d4ed8;
+    background: #dbeafe;
+    border-radius: 6px;
+    padding: 2px 8px;
+    white-space: nowrap;
+}
+.pjn-bidang-desc {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #475569;
 }
 
 /* PEMBIAYAAN INFO TOOLTIP */
@@ -1461,7 +1561,7 @@ function validatePengajuanForm() {
 
     // 10. Bidang Kerja Sama (radio, wajib satu)
     var bidangDipilih = form.querySelector('input[type="radio"][name="bidang"]:checked');
-    var bidangGroup = form.querySelector('.pjn-checkbox-group');
+    var bidangGroup = form.querySelector('.pjn-bidang-group');
     if (!bidangDipilih) {
         reportErr(null, bidangGroup, 'Pilih bidang kerja sama yang diminati');
     } else {
@@ -1546,7 +1646,7 @@ function pjnSetupSteps() {
 var PJN_STEP_RULES = [
     { card: 'pjn-step-1', fields: ['pddikti-input', 'jenis_instansi', 'organisasi', 'kota', 'provinsi', 'alamat'] },
     { card: 'pjn-step-2', fields: ['pic', 'email', 'telp'] },
-    { card: 'pjn-step-3', fields: ['metode_pelatihan'], groups: ['.pjn-checkbox-group', '.pjn-pembiayaan-group'] }
+    { card: 'pjn-step-3', fields: ['metode_pelatihan'], groups: ['.pjn-bidang-group', '.pjn-pembiayaan-group'] }
 ];
 
 function pjnStepFilled(idx) {
@@ -1740,7 +1840,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (el.id === 'provinsi') {
                 // Perubahan provinsi sudah ditangani pasangWilayahBertingkat().
             } else if (el.type === 'radio' && el.name === 'bidang') {
-                var bidangGroup = form.querySelector('.pjn-checkbox-group');
+                var bidangGroup = form.querySelector('.pjn-bidang-group');
                 clearFieldError(null, bidangGroup);
             } else if (el.type === 'radio' && el.name === 'pembiayaan') {
                 var pembiayaanGroup = form.querySelector('.pjn-pembiayaan-group');

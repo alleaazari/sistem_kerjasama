@@ -17,8 +17,8 @@
                 <div class="row">
                     <label for="kategori_ks">Kategori Bidang Kerjasama</label>
                     <select id="kategori_ks">
-                        @foreach (\App\Support\BidangKerjasama::daftar() as $kode => $label)
-                        <option value="{{ $kode }}">{{ $label }}</option>
+                        @foreach (\App\Support\BidangKerjasama::aktif() as $kode => $item)
+                        <option value="{{ $kode }}">{{ $item['label'] }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -106,7 +106,7 @@
         var target = document.getElementById('target_peserta').value;
         var goal = document.getElementById('tujuan_ks').value;
         // Kode bidang dari config; dokumen memakai label resminya.
-        var labelBidang = @json(\App\Support\BidangKerjasama::daftar());
+        var labelBidang = @json(collect(\App\Support\BidangKerjasama::aktif())->map(fn ($i) => $i['label']));
         var categoryLabel = labelBidang[category] || category;
 
         progressFill.style.width = '30%';
