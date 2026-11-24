@@ -252,21 +252,23 @@ test('sesi superadmin tidak boleh membuka prefix admin kerjasama', function () {
         ->assertNotFound();
 });
 
-test('sesi peran lain tidak bisa membuka halaman login atau berpindah peran', function () {
+test('sesi peran lain tidak menghalangi halaman login atau perpindahan peran', function () {
+    // Cookie sesi terpisah per peran: sesi admin_konten tidak lagi menutup
+    // halaman login superadmin. Tamu panel superadmin selalu melihat form.
     $this->withSession(['admin_auth' => ['name' => 'Uji', 'role' => 'admin_konten']])
         ->get(route('superadmin.login'))
-        ->assertNotFound();
+        ->assertOk();
 
-    // Sudah masuk sebagai admin konten: kredensial superadmin tidak boleh
-    // dipakai untuk berpindah peran tanpa keluar lebih dulu.
+    // Login dengan kredensial superadmin yang sah tetap berhasil; sesi cookie
+    // panel superadmin ini yang dipakai, bukan sesi admin_konten.
     $this->withSession(['admin_auth' => ['name' => 'Uji', 'role' => 'admin_konten']])
         ->post(route('superadmin.login.post'), [
             'username' => 'uji-superadmin',
             'password' => SANDI_SUPERADMIN,
         ])
-        ->assertNotFound();
+        ->assertRedirect(route(AdminAkses::beranda('superadmin')));
 
-    expect(session('admin_auth.role'))->toBe('admin_konten');
+    expect(session('admin_auth.role'))->toBe('superadmin');
 });
 
 test('halaman konten hanya untuk superadmin, admin kerjasama ditolak 404', function (string $nama) {

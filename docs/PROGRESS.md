@@ -760,8 +760,10 @@ Status: selesai (menunggu konfirmasi user)
 - Konten portal memakai `AdminSuperadminController` yang sama dengan
   Superadmin; closure duplikat di `routes/superadmin.php` dihapus sehingga
   hanya ada satu implementasi.
-- Sesi yang sudah login sebagai peran lain tidak bisa membuka halaman login
-  maupun login ulang di prefix peran lain (404, pola penyamaran panel).
+- Logika awal "sesi peran lain 404" kemudian diganti oleh Fase F (sesi
+  terpisah per peran): tiap panel memakai cookie sesi sendiri, sehingga tidak
+  ada lagi sesi peran lain yang perlu ditolak di halaman login. Pengecekan
+  peran per route (`admin.only`) tetap ditegakkan.
 - Konten portal benar-benar terhubung ke landing page: artikel, galeri, dan
   visi/profil yang disimpan admin konten ditulis ke `storage/app/landing_cms.json`
   oleh `LandingCms`, lalu dibaca halaman `/` tanpa sesi admin. Diuji dengan
@@ -789,8 +791,9 @@ DIUBAH
 - `app/Http/Controllers/AdminSuperadminController.php` — `dashboardKonten()`
   dan method CMS bersama (tentang/artikel/galeri) untuk dua prefix.
 - `routes/superadmin.php` — CMS memakai controller, bukan closure salinan.
-- `app/Http/Controllers/AdminLoginController.php` — tolak sesi peran lain di
-  halaman login (404) agar sesi tidak berpindah peran tanpa logout.
+- `app/Http/Controllers/AdminLoginController.php` — logika tolak sesi peran
+  lain di halaman login (404) diganti oleh Fase F: tiap peran memakai cookie
+  sesi sendiri, halaman login peran selalu tampil bagi tamu panel itu.
 - `public/assets/admin/css/panel.css` — kelas `.cell-sub` untuk keterangan
   kecil di bawah nilai sel.
 - `.env.example` — `ADMIN_KONTEN_*` + komentar kredensial demo yang akurat.
@@ -806,8 +809,10 @@ DIUBAH
 ### Keamanan
 - [x] Login terpisah + throttle `admin-login` (5/menit per IP + username).
 - [x] Sesi diregenerasi saat login; logout menginvalidasi sesi + token.
-- [x] Login silang peran ditolak: kredensial peran lain gagal di pintu ini,
-      dan sesi peran lain mendapat 404 (tidak bisa berpindah peran).
+- [x] Login silang peran ditolak: kredensial peran lain gagal di pintu ini.
+      Isolasi sesi antar panel dijaga oleh cookie sesi terpisah per peran
+      (Fase F); pengecekan peran per route (`admin.only`) tetap 404 lintas
+      prefix.
 - [x] Otorisasi server untuk semua method lewat `admin.only:<kemampuan>`;
       halaman terlarang tidak terdaftar di prefix admin konten.
 - [x] Dashboard memfilter status `Disetujui` saja; nama/email/telepon PIC
@@ -832,3 +837,84 @@ DIUBAH
   dan ganti pengecekan peran config/session dengan kolom role + Policy.
 - Aksi tulis konten portal belum dicatat ke `LogAktivitas`; saat audit trail
   SQL dibangun, catat perubahan tentang/artikel/galeri beserta perannya.
+
+---
+
+## 16. Fase F — Sesi Terpisah per Peran (SELESAI)
+
+Status: selesai (menunggu konfirmasi user)
+
+### Masalah
+Membuka `/superadmin/*` setelah login panel lain (mis. admin konten) menghasilkan
+404. Akar: satu browser = satu cookie sesi, dan `AdminLoginController::tolakSesiPeranLain()`
+serta `AdminOnly` menolak peran yang tidak cocok dengan prefix. Bukan bug akun;
+memang "satu sesi = satu peran". Dilaporkan juga terjadi antar jendela pada
+perangkat yang sama.
+
+### Keputusan
+Tiap panel peran memakai **cookie sesi + `session.path` sendiri** lewat middleware
+`SessionPerPeran`, sehingga beberapa panel bisa login bersamaan di browser yang
+sama tanpa saling menimpa. Cookie XSRF ikut terpisah otomatis (Laravel menurunkan
+path XSRF dari `session.path`). RBAC `admin.only` tetap ditegakkan per route —
+cookie satu peran tetap tidak bisa membuka prefix peran lain (404).
+
+Catatan §5.4: solusi ini **memperkuat** pemisahan peran, bukan melonggarkan. Tidak
+ada proteksi yang dinonaktifkan. `tolakSesiPeranLain()` dihapus karena redundan
+setelah cookie dipisah.
+
+### File
+DIBUAT
+- `config/session_roles.php` — peta prefix → nama cookie (diturunkan dari
+  `config/admin_akses.php`/.env), plus cookie bawaan untuk publik & mitra.
+- `app/Http/Middleware/SessionPerPeran.php` — memilih `session.cookie` +
+  `session.path` dari segmen pertama URL; cocok sebagai segmen utuh.
+- `tests/Feature/Auth/SessionPerPeranTest.php` — middleware memilih cookie/path
+  benar, publik/mitra tidak berubah, prefix utuh, nama cookie unik.
+- `tests/Feature/Auth/SesiTerpisahTest.php` — Set-Cookie nama+path per panel,
+  HttpOnly+SameSite Lax, login tiap panel, isolasi sesi, RBAC lintas prefix,
+  tamu = 200, logout terpisah.
+
+DIUBAH
+- `bootstrap/app.php` — `SessionPerPeran` di-`prependToGroup('web', ...)` supaya
+  berjalan sebelum `EncryptCookies` + `StartSession`.
+- `app/Http/Controllers/AdminLoginController.php` — hapus `tolakSesiPeranLain()`;
+  halaman login peran selalu tampil (200) untuk tamu panel itu.
+- `tests/Feature/Auth/AdminLoginTest.php` — test "sesi peran lain 404" diganti
+  menjadi "sesi peran lain tidak menghalangi login panel ini".
+- `tests/Feature/Auth/AdminKontenTest.php` — test login silang di pintu konten
+  diganti menjadi "sesi peran lain tidak menghalangi login di pintu konten".
+
+### Keamanan
+- [x] Cookie sesi HttpOnly + SameSite=Lax; Secure otomatis saat https (config/session).
+- [x] Regenerasi sesi saat login tetap; logout menginvalidasi sesi + token panel
+      itu saja (cookie terpisah, tidak menyentuh panel lain).
+- [x] RBAC `admin.only` tetap: cookie superadmin → `/admin-konten/*` = 404;
+      cookie admin konten → `/superadmin/*` = 404.
+- [x] Throttle login (`admin-login`) tidak berubah.
+- [x] Status peran tetap di sesi (tidak ada penyimpanan global per-IP/cache/DB).
+- [x] CSRF: cookie XSRF terpisah per panel mengikuti `session.path`; form `_token`
+      tetap lolos (tak ada 419) — dibuktikan login nyata via dua cookie jar.
+
+### Pengecekan
+- `php artisan test` → **330 test, 330 lolos**.
+- `pint --test` (berkas diubah) → passed. `phpstan analyse` → 0 error.
+- `npm run build` → berhasil.
+- `npm run types:check` → **gagal, LAMA** (bukan akibat fase ini): error
+  Wayfinder pre-existing di `resources/js/actions/.../RedirectController.ts`,
+  `resources/js/routes/mitra/index.ts`, `app-header.tsx` (`'query'` method,
+  `@/routes` tanpa `dashboard`/`home`). Terbukti gagal sama di state bersih.
+- Bukti server riil (dua cookie jar):
+  `/superadmin/login` → cookie `kerjasama_superadmin_session`, `path=/superadmin`;
+  `/admin-kerjasama/login` → `kerjasama_admin_kerjasama_session`, `path=/admin-kerjasama`;
+  `/admin-konten/login` → `kerjasama_admin_konten_session`, `path=/admin-konten`.
+  Login admin konten (demo) → dashboard 200; cookie konten ke `/superadmin/dashboard` → 302;
+  `/superadmin/login` tetap 200; tamu ke ketiga login → 200.
+
+### Catatan untuk backend
+- Bila peran pindah ke tabel `users`, peta `config/session_roles.php` cukup jadi
+  kolom `session_cookie`; kontrak middleware tidak berubah.
+- `session.path` per peran = cookie XSRF per peran; pastikan proxy/CDN tidak
+  menyatukan path bila nanti ada sub-path tambahan.
+
+### Langkah berikutnya
+- Menunggu konfirmasi user. Belum di-commit ke `main`, belum di-push.

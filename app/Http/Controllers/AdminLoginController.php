@@ -21,7 +21,9 @@ use Illuminate\View\View;
  *  - Kredensial tidak pernah ditulis di kode, hanya hash bcrypt dari .env.
  *  - Akun peran lain tidak bisa masuk di sini; pesannya tetap generik supaya
  *    keberadaan akun tidak bocor.
- *  - Session diregenerasi saat login dan diinvalidasi saat logout.
+ *  - Tiap panel punya cookie sesi sendiri (SessionPerPeran), jadi login di
+ *    satu panel tidak menyentuh sesi panel lain.
+ *  - Session diregenerasi saat login dan diinvalidasi saat logout (per panel).
  *  - Throttle per IP + username dipasang di route (limiter `admin-login`).
  *
  * TODO-BACKEND: setelah tabel `users` ada, ganti pembacaan config dengan
@@ -56,8 +58,6 @@ class AdminLoginController extends Controller
             return redirect()->route(AdminAkses::beranda((string) AdminAkses::peranSesi()));
         }
 
-        $this->tolakSesiPeranLain($peran);
-
         return view('admin.login', [
             'peran' => $peran,
             'labelPeran' => AdminAkses::label($peran),
@@ -69,9 +69,6 @@ class AdminLoginController extends Controller
     public function masuk(Request $request): RedirectResponse
     {
         $peran = $this->peran($request);
-
-        // Sesi peran lain tidak boleh berpindah peran lewat pintu ini.
-        $this->tolakSesiPeranLain($peran);
 
         $data = $request->validate([
             'username' => ['required', 'string', 'max:255'],
@@ -102,8 +99,11 @@ class AdminLoginController extends Controller
 
     public function keluar(Request $request): RedirectResponse
     {
-        // Peran di sesi; bila sesi sudah hilang, pakai peran prefix tempat
-        // logout dipanggil supaya pengguna tidak dilempar ke panel peran lain.
+        // Sesi yang diinvalidasi adalah sesi panel ini saja (cookie terpisah
+        // per peran), jadi logout di satu panel tidak mengeluarkan peran lain.
+        // Peran diambil dari sesi panel ini; bila sesi sudah hilang, pakai peran
+        // prefix tempat logout dipanggil supaya pengguna tidak dilempar ke panel
+        // peran lain.
         $peran = AdminAkses::peranSesi() ?? $this->peran($request);
 
         session()->forget(['admin_auth', 'admin_artikel', 'admin_galeri']);
@@ -127,7 +127,9 @@ class AdminLoginController extends Controller
         return $peran;
     }
 
-    /** Sesi yang ada sudah memenuhi syarat untuk masuk ke prefix ini. */
+    /**
+     * Sesi yang ada sudah memenuhi syarat untuk masuk ke prefix ini.
+     */
     private function sesiCocok(string $peran): bool
     {
         $sesi = AdminAkses::peranSesi();
@@ -137,18 +139,6 @@ class AdminLoginController extends Controller
         }
 
         return in_array($sesi, AdminAkses::peranLoginDi($peran), true);
-    }
-
-    /**
-     * Sesi yang sudah masuk sebagai peran lain tidak boleh memakai pintu ini.
-     * Halaman panel lain pun disamarkan 404 untuk peran yang salah; login
-     * mengikuti aturan yang sama agar sesi tidak berpindah peran tanpa keluar.
-     */
-    private function tolakSesiPeranLain(string $peran): void
-    {
-        if (AdminAkses::peranSesi() !== null && ! $this->sesiCocok($peran)) {
-            abort(404);
-        }
     }
 
     /**

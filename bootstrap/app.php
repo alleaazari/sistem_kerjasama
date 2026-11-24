@@ -4,6 +4,7 @@ use App\Http\Middleware\AdminOnly;
 use App\Http\Middleware\HideAdmin;
 use App\Http\Middleware\MitraOnly;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SessionPerPeran;
 use App\Support\AdminAkses;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -62,6 +63,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.only' => AdminOnly::class,
             'mitra.only' => MitraOnly::class,
         ]);
+
+        // Pilih cookie sesi per prefix peran SEBELUM StartSession, sehingga tiap
+        // panel punya sesi sendiri dan bisa aktif bersamaan. Prepend menaruhnya
+        // di awal grup `web`, mendahului EncryptCookies + StartSession.
+        $middleware->prependToGroup('web', SessionPerPeran::class);
 
         // Header keamanan dasar untuk seluruh request web.
         $middleware->web(append: [

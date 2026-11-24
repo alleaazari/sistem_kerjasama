@@ -169,12 +169,21 @@ test('peran lain ditolak di semua route admin konten (GET, POST)', function (str
             ->{$def['method']}($url, [])
             ->assertNotFound("{$role} boleh {$nama} ({$def['method']})");
     }
-
-    // Login silang di pintu admin konten juga tidak boleh.
-    $this->withSession(sesiKonten($role))
-        ->post(route('konten.login.post'), ['username' => 'konten', 'password' => 'konten123'])
-        ->assertNotFound();
 })->with(['superadmin', 'admin_kerjasama', 'developer']);
+
+test('sesi peran lain tidak menghalangi login di pintu admin konten', function () {
+    // Sesi panel lain (cookie terpisah) tidak menyentuh tamu di pintu konten:
+    // halaman login tetap tampil, dan kredensial superadmin tetap ditolak
+    // dengan pesan generik (bukan 404).
+    $this->withSession(sesiKonten('superadmin'))
+        ->get(route('konten.login'))
+        ->assertOk();
+
+    $this->withSession(sesiKonten('superadmin'))
+        ->from(route('konten.login'))
+        ->post(route('konten.login.post'), ['username' => 'uji-superadmin', 'password' => 'apa-saja'])
+        ->assertSessionHas('login_error', 'Nama pengguna atau kata sandi tidak sesuai.');
+});
 
 test('admin konten boleh membuka semua halaman miliknya', function (string $nama) {
     $this->withSession(sesiKonten())
