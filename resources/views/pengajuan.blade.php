@@ -66,35 +66,36 @@
 
             {{-- PDDIKTI SEARCH --}}
             <div class="pjn-field">
-                <label class="pjn-label" for="instansi">
-                    Nama Perguruan Tinggi / Instansi
-                    <span class="pjn-required">*</span>
-                </label>
-                <div class="pjn-search-wrap" id="pddikti-wrap">
-                    <div class="pjn-search-icon">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#64748b" stroke-width="2"/><path d="m21 21-4.35-4.35" stroke="#64748b" stroke-width="2" stroke-linecap="round"/></svg>
-                    </div>
-                    <input
-                        type="text"
-                        id="pddikti-input"
-                        name="instansi"
-                        value="{{ old('instansi') }}"
-                        placeholder="Ketik nama perguruan tinggi atau instansi..."
-                        autocomplete="off"
-                        required
-                        class="pjn-input pjn-input-search"
-                        oninput="pddiktiSearch(this.value)"
-                        onfocus="if(this.value.length>=2) pddiktiSearch(this.value)"
-                    >
-                    <div class="pjn-search-spinner" id="pddikti-spinner" style="display:none;">
-                        <div class="spinner-ring"></div>
-                    </div>
-                </div>
-                <div class="pjn-dropdown" id="pddikti-dropdown" style="display:none;"></div>
-                <div id="pddikti-selected-info" class="pjn-selected-info" style="display:none;"></div>
-                <input type="hidden" id="pddikti-id" name="pddikti_id" value="">
-                <p class="pjn-hint">Pencarian terhubung langsung ke API PDDIKTI Kemdikbud secara real-time. Jika instansi tidak ada di PDDIKTI (seperti dinas daerah), Anda bisa mengetikkan nama lengkap secara manual.</p>
-            </div>
+    <label class="pjn-label" for="pddikti-input">
+        Nama Perguruan Tinggi / Instansi
+        <span class="pjn-required">*</span>
+    </label>
+    <div class="pjn-search-wrap" id="pddikti-wrap" style="position: relative;">
+        <div class="pjn-search-icon" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; pointer-events: none; z-index: 2;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#64748b" stroke-width="2"/><path d="m21 21-4.35-4.35" stroke="#64748b" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <input
+            type="text"
+            id="pddikti-input"
+            name="instansi"
+            value="{{ old('instansi') }}"
+            placeholder="Ketik nama perguruan tinggi atau instansi..."
+            autocomplete="off"
+            required
+            class="pjn-input pjn-input-search"
+            style="padding-left: 42px !important; padding-right: 40px !important;"
+            oninput="pddiktiSearch(this.value)"
+            onfocus="if(this.value.length>=2) pddiktiSearch(this.value)"
+        >
+        <div class="pjn-search-spinner" id="pddikti-spinner" style="display:none; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); z-index: 2;">
+            <div class="spinner-ring"></div>
+        </div>
+    </div>
+    <div class="pjn-dropdown" id="pddikti-dropdown" style="display:none;"></div>
+    <div id="pddikti-selected-info" class="pjn-selected-info" style="display:none;"></div>
+    <input type="hidden" id="pddikti-id" name="pddikti_id" value="">
+    <p class="pjn-hint">Pencarian terhubung langsung ke API PDDIKTI Kemdikbud secara real-time. Jika instansi tidak ada di PDDIKTI (seperti dinas daerah), Anda bisa mengetikkan nama lengkap secara manual.</p>
+</div>
 
             <div class="pjn-grid-2">
                 <div class="pjn-field">
