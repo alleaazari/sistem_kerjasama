@@ -108,7 +108,7 @@ test('peran tanpa kemampuan ditolak di route panel, bukan hanya disembunyikan', 
     expect($ditembus)->toBe([]);
 });
 
-test('kontrak matriks: superadmin memegang semua halaman, admin kerja sama hanya tiga halaman kerja', function () {
+test('kontrak matriks: superadmin semua, admin kerja sama tiga halaman kerja, admin konten hanya dashboard konten + konten portal', function () {
     expect(AdminAkses::kemampuan('superadmin'))->toContain(
         'dashboard', 'inbox', 'inbox.approve', 'inbox.reject',
         'draf', 'draf_proposal.unduh', 'masa_aktif', 'masa_aktif.atur',
@@ -119,6 +119,11 @@ test('kontrak matriks: superadmin memegang semua halaman, admin kerja sama hanya
         'inbox', 'inbox.approve', 'inbox.reject',
         'draf', 'draf_proposal.unduh',
         'masa_aktif', 'masa_aktif.atur',
+    ]);
+
+    expect(AdminAkses::kemampuan('admin_konten'))->toBe([
+        'dashboard_konten',
+        'tentang', 'artikel', 'galeri',
     ]);
 });
 

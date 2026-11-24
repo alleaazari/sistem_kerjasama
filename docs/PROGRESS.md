@@ -1085,3 +1085,95 @@ DIHAPUS
 
 ### Langkah berikutnya
 - Menunggu perintah pengguna.
+
+---
+
+## Tambahan — Peran Admin Konten (`admin_konten`)
+
+Status: selesai (menunggu konfirmasi user)
+
+### Ringkasan
+- Peran internal baru satu tingkat di bawah `admin_kerjasama`. Prefix dari
+  `ADMIN_KONTEN_PATH` (default `admin-konten`), halaman login sendiri
+  `/{ADMIN_KONTEN_PATH}/login`, kredensial `.env` berupa hash bcrypt
+  (`ADMIN_KONTEN_USERNAME`, `ADMIN_KONTEN_PASSWORD_HASH`) yang wajib berbeda
+  dari peran lain. Tanpa `.env`, akun demo hanya aktif di luar production.
+- Kemampuan: `dashboard_konten` (daftar mitra disetujui, baca-saja),
+  `tentang`, `artikel`, `galeri`. Terlarang dan tidak didaftarkan di prefix
+  ini: inbox, draf proposal, masa aktif (aksi), template MoU, aktivitas,
+  kelola pengguna.
+- Konten portal memakai `AdminSuperadminController` yang sama dengan
+  Superadmin; closure duplikat di `routes/superadmin.php` dihapus sehingga
+  hanya ada satu implementasi.
+- Sesi yang sudah login sebagai peran lain tidak bisa membuka halaman login
+  maupun login ulang di prefix peran lain (404, pola penyamaran panel).
+- Konten portal benar-benar terhubung ke landing page: artikel, galeri, dan
+  visi/profil yang disimpan admin konten ditulis ke `storage/app/landing_cms.json`
+  oleh `LandingCms`, lalu dibaca halaman `/` tanpa sesi admin. Diuji dengan
+  pengunjung anonim (`flushSession()` lalu `GET /`).
+
+### File
+DIBUAT
+- `routes/admin_konten.php` — dashboard read-only + rute konten portal
+  (tentang/artikel/galeri) di prefix admin konten.
+- `resources/views/admin/dashboard_konten.blade.php` — tabel mitra diterima
+  (instansi, bidang, status `Disetujui`, masa aktif + kondisi), tanpa aksi dan
+  tanpa kontak PIC.
+- `tests/Feature/Auth/AdminKontenTest.php` — matriks peran × route × method,
+  dashboard hanya mitra disetujui, HTML tanpa tautan terlarang, login demo &
+  hash `.env`, throttle, regenerasi sesi, logout, CRUD artikel, dan koneksi
+  konten ke landing page.
+
+DIUBAH
+- `config/admin_akses.php` — peran `admin_konten`, halaman
+  `dashboard_konten` (nama route `dashboard_konten` agar tidak bertabrakan
+  dengan `dashboard` milik Superadmin), komentar matriks peran.
+- `bootstrap/app.php` — `routes/admin_konten.php` hanya dimuat untuk peran
+  ini; `routes/admin_kerja.php` hanya untuk peran yang punya inbox/draf/masa
+  aktif, sehingga rute terlarang tidak pernah terdaftar untuk admin konten.
+- `app/Http/Controllers/AdminSuperadminController.php` — `dashboardKonten()`
+  dan method CMS bersama (tentang/artikel/galeri) untuk dua prefix.
+- `routes/superadmin.php` — CMS memakai controller, bukan closure salinan.
+- `app/Http/Controllers/AdminLoginController.php` — tolak sesi peran lain di
+  halaman login (404) agar sesi tidak berpindah peran tanpa logout.
+- `public/assets/admin/css/panel.css` — kelas `.cell-sub` untuk keterangan
+  kecil di bawah nilai sel.
+- `.env.example` — `ADMIN_KONTEN_*` + komentar kredensial demo yang akurat.
+- `phpunit.xml` — kredensial uji `ADMIN_KONTEN_*` (hash bcrypt, bukan
+  plaintext di config).
+- `tests/Feature/Auth/AdminLoginTest.php` — admin konten pada dataset login,
+  logout, dan uji silang peran.
+- `tests/Feature/Auth/MatriksAksesTest.php` — kontrak kemampuan admin konten.
+- `tests/Feature/LandingCmsSyncTest.php` — test "sesi admin tidak lagi dipakai
+  untuk konten landing" memakai storage sementara agar tidak gagal hanya
+  karena berkas CMS di mesin pengembang sudah disunting.
+
+### Keamanan
+- [x] Login terpisah + throttle `admin-login` (5/menit per IP + username).
+- [x] Sesi diregenerasi saat login; logout menginvalidasi sesi + token.
+- [x] Login silang peran ditolak: kredensial peran lain gagal di pintu ini,
+      dan sesi peran lain mendapat 404 (tidak bisa berpindah peran).
+- [x] Otorisasi server untuk semua method lewat `admin.only:<kemampuan>`;
+      halaman terlarang tidak terdaftar di prefix admin konten.
+- [x] Dashboard memfilter status `Disetujui` saja; nama/email/telepon PIC
+      tidak pernah dikirim ke view (diuji di HTML).
+- [x] Menu dirender dari kemampuan peran; item terlarang tidak muncul.
+- [x] Test tidak lagi menyentuh berkas demo pengembang: penyimpanan diarahkan
+      ke direktori sementara per test (`useStoragePath`).
+- [ ] TODO-BACKEND: peran masih dibaca dari config + session, belum kolom
+      role di tabel `users` dan Policy.
+
+### Pengecekan
+- `php artisan test` → **305 test, 305 lolos** (1148 assertion).
+- `pint --test` untuk semua berkas yang diubah → passed. Repo-wide masih
+  gagal pada `tests/Feature/TemplateMouAdminTest.php` (`single_quote`) yang
+  tidak disentuh.
+- `phpstan analyse` → 0 error. `npm run build` → berhasil.
+
+### Catatan untuk backend
+- `dashboard_konten` masih membaca `PengajuanMasuk` dan `MasaAktifMitra`
+  (JSON demo). Saat tabel DB tersedia: scope kueri ke status disetujui,
+  batasi kolom yang dipilih (jangan pernah mengambil PIC untuk peran ini),
+  dan ganti pengecekan peran config/session dengan kolom role + Policy.
+- Aksi tulis konten portal belum dicatat ke `LogAktivitas`; saat audit trail
+  SQL dibangun, catat perubahan tentang/artikel/galeri beserta perannya.

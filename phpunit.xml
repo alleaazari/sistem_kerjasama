@@ -38,6 +38,8 @@
         <env name="SUPERADMIN_PASSWORD_HASH" value="$2y$04$Lsphp799yov2r7Gvb7kBpeWsUO6yM23jS43beGWyT486ZXsCvtZY2"/>
         <env name="ADMIN_KERJASAMA_USERNAME" value="uji-kerjasama"/>
         <env name="ADMIN_KERJASAMA_PASSWORD_HASH" value="$2y$04$qeAPe/MZQkWjC51XqEM9lOGRFjqdG4inIIzdjbTWY5tH6ll9zDapq"/>
+        <env name="ADMIN_KONTEN_USERNAME" value="uji-konten"/>
+        <env name="ADMIN_KONTEN_PASSWORD_HASH" value="$2y$04$rvcc4SH89LP9lR7bi3KAIOppsinSn33Y10Ax9S7Q1ep0nM6WolvFG"/>
         <env name="DEVELOPER_USERNAME" value="uji-developer"/>
         <env name="DEVELOPER_PASSWORD_HASH" value="$2y$04$y.0T/YqBV4tdS/PmHeIMK.oQDCp2GA3LJ5y/widMJdGA6xVbEXwBi"/>
     </php>

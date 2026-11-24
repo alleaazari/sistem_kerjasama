@@ -23,15 +23,27 @@ return Application::configure(basePath: dirname(__DIR__))
                     ->prefix(AdminAkses::path($peran))
                     ->name(AdminAkses::nama($peran).'.');
 
-                // Pintu masuk: login, logout, root peran.
+                // Pintu masuk: login, logout, root peran (setiap peran punya).
                 $grup()->group(base_path('routes/admin_bersama.php'));
 
-                // Halaman kerja sama dipakai bersama (middleware per kemampuan).
-                $grup()->group(base_path('routes/admin_kerja.php'));
+                // Halaman kerja sama (inbox, draf, masa aktif): hanya dimuat
+                // untuk peran yang memang punya salah satu kemampuan tersebut,
+                // agar admin_konten tidak pernah terdaftar ke rute terlarang.
+                if (array_intersect(
+                    AdminAkses::kemampuan($peran),
+                    ['inbox', 'draf', 'masa_aktif']
+                ) !== []) {
+                    $grup()->group(base_path('routes/admin_kerja.php'));
+                }
 
-                // Halaman yang memang hanya milik peran ini.
+                // Halaman eksklusif superadmin.
                 if ($peran === 'superadmin') {
                     $grup()->group(base_path('routes/superadmin.php'));
+                }
+
+                // Halaman eksklusif admin konten (dashboard read-only + konten portal).
+                if ($peran === 'admin_konten') {
+                    $grup()->group(base_path('routes/admin_konten.php'));
                 }
             }
 

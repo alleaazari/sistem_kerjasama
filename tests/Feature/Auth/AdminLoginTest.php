@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\RateLimiter;
 
 const SANDI_SUPERADMIN = 'superrahasia-uji-superadmin';
 const SANDI_KERJASAMA = 'kerjasama-uji-admin';
+const SANDI_KONTEN = 'konten-uji-admin';
 
 beforeEach(function () {
     // Tiap test mulai dari keadaan throttle bersih.
@@ -32,12 +33,14 @@ test('halaman login tiap peran tampil dengan judul perannya', function (string $
 })->with([
     ['superadmin', 'Masuk Super Administrator'],
     ['admin_kerjasama', 'Masuk Admin Kerja Sama'],
+    ['admin_konten', 'Masuk Admin Konten'],
 ]);
 
-test('login superadmin dan admin kerjasama memakai URL berbeda', function () {
+test('login tiap peran memakai URL sendiri', function () {
     expect(AdminAkses::path('superadmin'))->not->toBe(AdminAkses::path('admin_kerjasama'))
         ->and(route('superadmin.login'))->toBe(url('/'.AdminAkses::path('superadmin').'/login'))
-        ->and(route('kerjasama.login'))->toBe(url('/'.AdminAkses::path('admin_kerjasama').'/login'));
+        ->and(route('kerjasama.login'))->toBe(url('/'.AdminAkses::path('admin_kerjasama').'/login'))
+        ->and(route('konten.login'))->toBe(url('/'.AdminAkses::path('admin_konten').'/login'));
 });
 
 // ---------------------------------------------------------------- login berhasil
@@ -60,6 +63,15 @@ test('admin kerjasama berhasil masuk dan diarahkan ke berandanya', function () {
     expect(session('admin_auth.role'))->toBe('admin_kerjasama');
 });
 
+test('admin konten berhasil masuk dan diarahkan ke berandanya', function () {
+    $this->post(route('konten.login.post'), [
+        'username' => 'uji-konten',
+        'password' => SANDI_KONTEN,
+    ])->assertRedirect(route(AdminAkses::beranda('admin_konten')));
+
+    expect(session('admin_auth.role'))->toBe('admin_konten');
+});
+
 test('beranda tiap peran adalah halaman pertama yang memang miliknya', function () {
     // Superadmin mendarat di dashboard ringkasan.
     expect(AdminAkses::beranda('superadmin'))->toBe('superadmin.dashboard');
@@ -67,6 +79,11 @@ test('beranda tiap peran adalah halaman pertama yang memang miliknya', function 
     // Admin Kerja Sama tidak punya dashboard; mendarat di inbox.
     expect(AdminAkses::beranda('admin_kerjasama'))->toBe('kerjasama.inbox')
         ->and(AdminAkses::boleh('admin_kerjasama', 'dashboard'))->toBeFalse();
+
+    // Admin Konten mendarat di daftar mitra diterima (baca-saja).
+    expect(AdminAkses::beranda('admin_konten'))->toBe('konten.dashboard_konten')
+        ->and(AdminAkses::boleh('admin_konten', 'dashboard'))->toBeFalse()
+        ->and(AdminAkses::boleh('admin_konten', 'inbox'))->toBeFalse();
 });
 
 test('sesi diregenerasi saat login berhasil', function () {
@@ -83,9 +100,15 @@ test('sesi diregenerasi saat login berhasil', function () {
 // ---------------------------------------------------------------- login gagal
 
 test('password salah ditolak dengan pesan generik', function (string $peran) {
+    $username = match ($peran) {
+        'superadmin' => 'uji-superadmin',
+        'admin_kerjasama' => 'uji-kerjasama',
+        default => 'uji-konten',
+    };
+
     $respons = $this->from(route(AdminAkses::nama($peran).'.login'))
         ->post(route(AdminAkses::nama($peran).'.login.post'), [
-            'username' => $peran === 'superadmin' ? 'uji-superadmin' : 'uji-kerjasama',
+            'username' => $username,
             'password' => 'kata-sandi-keliru',
         ]);
 
@@ -93,7 +116,7 @@ test('password salah ditolak dengan pesan generik', function (string $peran) {
         ->assertSessionHas('login_error', 'Nama pengguna atau kata sandi tidak sesuai.');
 
     expect(session('admin_auth'))->toBeNull();
-})->with(['superadmin', 'admin_kerjasama']);
+})->with(['superadmin', 'admin_kerjasama', 'admin_konten']);
 
 test('username tidak dikenal ditolak dengan pesan yang sama', function () {
     $this->post(route('superadmin.login.post'), [
@@ -122,6 +145,28 @@ test('akun admin kerjasama ditolak di halaman superadmin', function () {
         ->post(route('superadmin.login.post'), [
             'username' => 'uji-kerjasama',
             'password' => SANDI_KERJASAMA,
+        ])
+        ->assertSessionHas('login_error', 'Nama pengguna atau kata sandi tidak sesuai.');
+
+    expect(session('admin_auth'))->toBeNull();
+});
+
+test('akun admin konten ditolak di halaman superadmin', function () {
+    $this->from(route('superadmin.login'))
+        ->post(route('superadmin.login.post'), [
+            'username' => 'uji-konten',
+            'password' => SANDI_KONTEN,
+        ])
+        ->assertSessionHas('login_error', 'Nama pengguna atau kata sandi tidak sesuai.');
+
+    expect(session('admin_auth'))->toBeNull();
+});
+
+test('akun superadmin ditolak di halaman admin konten', function () {
+    $this->from(route('konten.login'))
+        ->post(route('konten.login.post'), [
+            'username' => 'uji-superadmin',
+            'password' => SANDI_SUPERADMIN,
         ])
         ->assertSessionHas('login_error', 'Nama pengguna atau kata sandi tidak sesuai.');
 
@@ -176,7 +221,7 @@ test('logout menginvalidasi sesi dan kembali ke login peran itu', function (stri
         ->assertRedirect(route(AdminAkses::nama($peran).'.login'));
 
     expect(session('admin_auth'))->toBeNull();
-})->with(['superadmin', 'admin_kerjasama']);
+})->with(['superadmin', 'admin_kerjasama', 'admin_konten']);
 
 test('logout memakai halaman login peran yang sedang dipakai, bukan peran lain', function () {
     $this->withSession(['admin_auth' => ['name' => 'Uji', 'role' => 'admin_kerjasama']])
@@ -205,6 +250,23 @@ test('sesi superadmin tidak boleh membuka prefix admin kerjasama', function () {
     $this->withSession(['admin_auth' => ['name' => 'Uji', 'role' => 'superadmin']])
         ->get(route('kerjasama.inbox'))
         ->assertNotFound();
+});
+
+test('sesi peran lain tidak bisa membuka halaman login atau berpindah peran', function () {
+    $this->withSession(['admin_auth' => ['name' => 'Uji', 'role' => 'admin_konten']])
+        ->get(route('superadmin.login'))
+        ->assertNotFound();
+
+    // Sudah masuk sebagai admin konten: kredensial superadmin tidak boleh
+    // dipakai untuk berpindah peran tanpa keluar lebih dulu.
+    $this->withSession(['admin_auth' => ['name' => 'Uji', 'role' => 'admin_konten']])
+        ->post(route('superadmin.login.post'), [
+            'username' => 'uji-superadmin',
+            'password' => SANDI_SUPERADMIN,
+        ])
+        ->assertNotFound();
+
+    expect(session('admin_auth.role'))->toBe('admin_konten');
 });
 
 test('halaman konten hanya untuk superadmin, admin kerjasama ditolak 404', function (string $nama) {

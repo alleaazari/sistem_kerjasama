@@ -28,6 +28,9 @@
 |                     aktivitas, pengguna
 |   Admin Kerja Sama: inbox + setuju/tolak, draf + unduh, masa aktif + atur
 |                     (setelah login langsung ke inbox, tanpa dashboard)
+|   Admin Konten    : dashboard data mitra diterima (baca-saja), profil/visi
+|                     misi, artikel, galeri (setelah login langsung ke
+|                     dashboard data mitra diterima)
 |
 | Peran operasional punya prefix URL dan halaman login sendiri; kredensial
 | dibaca dari .env sebagai hash bcrypt (tidak pernah plaintext di repo).
@@ -97,6 +100,15 @@ return [
             'label' => 'Profil & Visi Misi',
             'section' => 'konten',
             'ikon' => 'profil',
+        ],
+
+        // Nama route sengaja berbeda dari `dashboard` milik Superadmin: satu
+        // nama route = satu kemampuan, sehingga matriks akses tetap satu arah.
+        'dashboard_konten' => [
+            'route' => 'dashboard_konten',
+            'label' => 'Data Mitra Diterima',
+            'section' => 'kerja',
+            'ikon' => 'dashboard',
         ],
 
         'artikel' => [
@@ -225,6 +237,29 @@ return [
                 'password_hash' => (string) env('ADMIN_KERJASAMA_PASSWORD_HASH', ''),
             ],
         ],
+
+        /*
+        | Admin Konten: satu tingkat di bawah Admin Kerja Sama. Hanya boleh melihat
+        | daftar mitra yang sudah diterima dan mengelola konten portal (tentang,
+        | artikel, galeri). Tanpa inbox, draf, masa aktif, template MoU, aktivitas,
+        | dan kelola pengguna.
+        */
+        'admin_konten' => [
+            'label' => 'Admin Konten',
+            'path' => env('ADMIN_KONTEN_PATH', 'admin-konten'),
+            'nama' => 'konten',
+            'beranda' => 'dashboard_konten',
+            'kemampuan' => [
+                'dashboard_konten',
+                'tentang', 'artikel', 'galeri',
+            ],
+            'akun' => [
+                'name' => (string) env('ADMIN_KONTEN_NAME', 'Admin Konten'),
+                'username' => (string) env('ADMIN_KONTEN_USERNAME', ''),
+                'email' => (string) env('ADMIN_KONTEN_EMAIL', ''),
+                'password_hash' => (string) env('ADMIN_KONTEN_PASSWORD_HASH', ''),
+            ],
+        ],
     ],
 
     /*
@@ -252,6 +287,12 @@ return [
             'username' => 'kerjasama',
             'email' => 'kerjasama@komdigi.go.id',
             'password' => 'kerjasama123',
+        ],
+        'admin_konten' => [
+            'name' => 'Admin Konten',
+            'username' => 'konten',
+            'email' => 'konten@komdigi.go.id',
+            'password' => 'konten123',
         ],
         'developer' => [
             'name' => 'Developer',

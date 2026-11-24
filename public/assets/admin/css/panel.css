@@ -516,6 +516,12 @@ table.data-table tbody tr:hover {
   display: block;
 }
 
+/* Keterangan kecil di bawah nilai sel (mis. kondisi masa aktif). */
+.cell-sub {
+  display: block;
+  margin-top: var(--space-1);
+}
+
 .req {
   color: var(--danger-500);
 }
