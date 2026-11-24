@@ -645,13 +645,16 @@ textarea.pjn-input { resize: vertical; min-height: 90px; }
 }
 .pjn-search-icon {
     position: absolute;
-    left: 12px;
+    left: 14px;
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;
     z-index: 1;
+    display: flex;
+    line-height: 0;
 }
-.pjn-input-search { padding-left: 38px; padding-right: 40px; }
+/* Padding kiri cukup agar teks tidak menindih ikon kaca pembesar. */
+.pjn-input-search { padding-left: 42px; padding-right: 40px; }
 .pjn-search-spinner {
     position: absolute;
     right: 12px;
@@ -1210,6 +1213,10 @@ function pddiktiSearch(val) {
         hiddenId.value = '';
     }
 
+    // Isian manual: tebak jenis instansi dari nama (tanpa menimpa pilihan
+    // manual user yang sudah ada).
+    isiJenisInstansi(tebakJenisInstansi(q), false);
+
     if (q.length < 2) {
         dropdown.style.display = 'none';
         return;
@@ -1304,6 +1311,80 @@ function highlightMatch(str, q) {
         escHtml(str.substring(i + q.length));
 }
 
+// Peta opsi Jenis Instansi yang tersedia di <select id="jenis_instansi">.
+// Nilai = value pada <option>; label dipakai hanya untuk dokumentasi.
+var JENIS_INSTANSI = {
+    perguruan_tinggi: 'perguruan_tinggi',
+    pemerintah_daerah: 'pemerintah_daerah',
+    kementerian: 'kementerian',
+    bumn: 'bumn',
+    swasta: 'swasta',
+    lsm: 'lsm',
+    lainnya: 'lainnya'
+};
+
+// Tebak jenis instansi dari nama. Hanya mengisi bila hasilnya jelas; selain itu
+// mengembalikan string kosong agar dropdown dibiarkan apa adanya.
+function tebakJenisInstansi(nama) {
+    var n = String(nama || '').toLowerCase().trim();
+    if (!n) return '';
+
+    // Perguruan tinggi: awalan nama bentuk PT yang lazim.
+    if (/\b(universitas|institut|politeknik|sekolah tinggi|akademi|poltekkes|poltek|uin|uinsu|iain|stikes|stmik)\b/.test(n)) {
+        return JENIS_INSTANSI.perguruan_tinggi;
+    }
+    // Kementerian / lembaga pusat (dicek sebelum pemda karena "badan/lembaga"
+    // juga dipakai unit pusat).
+    if (/\b(kementerian|kemen\w*|lembaga|lpnk|bkn|bssn)\b/.test(n)) {
+        return JENIS_INSTANSI.kementerian;
+    }
+    // Pemerintah daerah.
+    if (/\b(dinas|pemerintah (daerah|provinsi|kabupaten|kota)|pemprov|pemkot|pemkab|pemda|bappeda|sekretariat daerah|setda|kecamatan|kelurahan)\b/.test(n)) {
+        return JENIS_INSTANSI.pemerintah_daerah;
+    }
+    return '';
+}
+
+// Petakan teks jenis dari data PDDikti (mis. "Universitas Negeri",
+// "Politeknik Swasta") ke nilai opsi <select>. Kosong bila tak dikenali.
+function petakanJenisPddikti(teks) {
+    var t = String(teks || '').toLowerCase();
+    if (!t) return '';
+    if (/(universitas|institut|politeknik|sekolah tinggi|akademi)/.test(t)) {
+        return JENIS_INSTANSI.perguruan_tinggi;
+    }
+    return '';
+}
+
+// Isi jenis instansi otomatis. `paksa` = true menimpa pilihan yang ada
+// (dipakai saat memilih kampus terverifikasi); `paksa` = false hanya mengisi
+// bila dropdown masih kosong atau nilainya berasal dari deteksi otomatis
+// (bukan pilihan manual user), agar pilihan manual tidak ditimpa.
+function isiJenisInstansi(jenisData, paksa) {
+    var select = document.getElementById('jenis_instansi');
+    if (!select) return;
+
+    var nilai = jenisData || '';
+    if (!nilai) return;
+
+    // Nilai dari data harus benar-benar ada sebagai opsi.
+    var ada = Array.prototype.some.call(select.options, function (opt) {
+        return opt.value === nilai;
+    });
+    if (!ada) return;
+
+    // Tanpa paksa: jangan timpa pilihan manual user.
+    if (!paksa && select.value && select.getAttribute('data-otomatis') !== '1') return;
+
+    select.value = nilai;
+    select.setAttribute('data-otomatis', '1');
+    // Tandai bahwa change ini berasal dari kode, agar listener 'change' tidak
+    // menganggapnya pilihan manual (yang akan menghapus flag otomatis).
+    select.setAttribute('data-programatik', '1');
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    select.removeAttribute('data-programatik');
+}
+
 function selectPT(id, nama, kota, provinsi, jenis) {
     document.getElementById('pddikti-input').value = nama;
     document.getElementById('pddikti-id').value = id;
@@ -1311,6 +1392,12 @@ function selectPT(id, nama, kota, provinsi, jenis) {
 
     // Auto-fill provinsi & kota dari hasil PDDIKTI; dropdown ikut disinkronkan.
     sinkronWilayah(provinsi, kota);
+
+    // Auto-fill jenis instansi: utamakan tebakan dari nama, lalu jatuh ke data
+    // PDDikti bila tebakan tidak menghasilkan nilai. Selalu menimpa (paksa).
+    var jenis = tebakJenisInstansi(nama);
+    if (!jenis) jenis = petakanJenisPddikti(jenisData);
+    isiJenisInstansi(jenis, true);
 
     var info = document.getElementById('pddikti-selected-info');
     info.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#1d4ed8" stroke-width="2"/><path d="M9 12l2 2 4-4" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Terverifikasi: <b>' + escHtml(nama) + '</b>' + (kota ? ' &mdash; ' + escHtml(kota) : '') + '</span>';
@@ -1849,6 +1936,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (el) {
             if (el.id === 'provinsi') {
                 // Perubahan provinsi sudah ditangani pasangWilayahBertingkat().
+            } else if (el.id === 'jenis_instansi') {
+                // Pilihan manual user: jangan ditimpa deteksi otomatis nanti.
+                // Abaikan change yang dipicu isiJenisInstansi (programatik).
+                if (el.getAttribute('data-programatik') !== '1') {
+                    el.setAttribute('data-otomatis', '0');
+                }
+                if (el.value) clearFieldError(el, null);
             } else if (el.type === 'radio' && el.name === 'bidang') {
                 var bidangGroup = form.querySelector('.pjn-bidang-group');
                 clearFieldError(null, bidangGroup);
