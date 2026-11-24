@@ -112,7 +112,22 @@
                 </div>
                 <div class="pjn-field">
                     <label class="pjn-label" for="organisasi">Unit Kerja / Divisi / Fakultas <span class="pjn-required">*</span></label>
-                    <input type="text" id="organisasi" name="organisasi" value="{{ old('organisasi') }}" placeholder="cth. Fakultas Teknik / Biro Kerja Sama" class="pjn-input" required>
+                    {{-- Dropdown bertingkat: terisi setelah instansi dipilih. --}}
+                    <div class="pjn-unit-wrap">
+                        <select id="organisasi" name="organisasi" class="pjn-input" required
+                                data-terpilih="{{ (string) old('organisasi', '') }}" disabled
+                                aria-describedby="organisasi-hint">
+                            <option value="">-- Pilih Instansi Terlebih Dahulu --</option>
+                        </select>
+                        <span class="pjn-search-spinner pjn-unit-spinner" id="organisasi-spinner" style="display:none;" aria-hidden="true">
+                            <span class="spinner-ring"></span>
+                        </span>
+                    </div>
+                    <input type="text" id="organisasi-custom" name="organisasi_custom"
+                           value="{{ old('organisasi_custom') }}" placeholder="Ketik nama fakultas / biro / divisi"
+                           class="pjn-input pjn-unit-custom" maxlength="255" hidden autocomplete="off">
+                    <p class="pjn-hint" id="organisasi-hint">Pilih instansi dulu; daftar unit kerja akan dimuat otomatis.</p>
+                    <button type="button" class="pjn-link-btn" id="organisasi-kembali" hidden>Pilih dari daftar</button>
                 </div>
             </div>
 
@@ -669,6 +684,24 @@ textarea.pjn-input { resize: vertical; min-height: 90px; }
     animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Dropdown unit kerja (bertingkat) */
+.pjn-unit-wrap { position: relative; }
+.pjn-unit-spinner { right: 34px; }
+.pjn-unit-custom { margin-top: 8px; }
+.pjn-link-btn {
+    margin-top: 6px;
+    padding: 0;
+    background: none;
+    border: none;
+    color: #1d4ed8;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+}
+.pjn-link-btn:hover { color: #0b3a6b; }
 
 .pjn-dropdown {
     position: absolute;
@@ -1472,6 +1505,13 @@ function restoreDraft() {
             } else if (key === 'pembiayaan') {
                 var rad = form.querySelector('input[type="radio"][name="pembiayaan"][value="' + data[key] + '"]');
                 if (rad) rad.checked = true;
+            } else if (key === 'organisasi') {
+                // Dropdown unit dimuat async: simpan pilihan untuk dipulihkan
+                // setelah daftar selesai dimuat (lihat pasangUnitKerjaBertingkat).
+                var selOrg = document.getElementById('organisasi');
+                if (selOrg && !selOrg.getAttribute('data-terpilih')) {
+                    selOrg.setAttribute('data-terpilih', data[key]);
+                }
             } else {
                 var el = form.querySelector('[name="' + key + '"]');
                 if (el && !el.value) {
@@ -1576,12 +1616,18 @@ function validatePengajuanForm() {
         clearFieldError(jenisInstansi, null);
     }
 
-    // 3. Organisasi / Fakultas
-    var org = document.getElementById('organisasi');
-    if (!org || !org.value.trim()) {
-        reportErr(org, null, 'Unit Kerja / Divisi / Fakultas wajib diisi');
+    // 3. Organisasi / Fakultas — nilai final dari dropdown atau input manual.
+    var unit = nilaiUnitKerja();
+    if (unit.el && unit.el.hidden) {
+        // Mode manual aktif tapi input masih tersembunyi: paksa tampil.
+        unitModeManual(true);
+    }
+    if (!unit.el || !unit.nilai) {
+        reportErr(unit.el, null, 'Unit Kerja / Divisi / Fakultas wajib diisi');
+    } else if (unit.nilai.length > 255) {
+        reportErr(unit.el, null, 'Unit Kerja / Divisi / Fakultas maksimal 255 karakter');
     } else {
-        clearFieldError(org, null);
+        clearFieldError(unit.el, null);
     }
 
     // 4. Provinsi
@@ -1751,6 +1797,8 @@ function pjnStepFilled(idx) {
     if (!rule) return false;
 
     var filled = rule.fields.every(function (id) {
+        // Organisasi memakai nilai final (dropdown atau input manual).
+        if (id === 'organisasi') return nilaiUnitKerja().nilai.length > 0;
         var el = document.getElementById(id);
         if (!el) return false;
         var val = String(el.value || '').trim();
@@ -1908,10 +1956,223 @@ function pasangWilayahBertingkat() {
     });
 }
 
+/* =================== UNIT KERJA BERTINGKAT (INSTANSI → UNIT) =================== */
+var UNIT_ISIAN_SENDIRI = '__custom__';
+var UNIT_LABEL_KOSONG = '-- Pilih Instansi Terlebih Dahulu --';
+var unitTimeout = null;
+var unitSeq = 0;
+
+function unitStatus(teks) {
+    var hint = document.getElementById('organisasi-hint');
+    if (hint) hint.textContent = teks;
+}
+
+// Mode manual: sembunyikan dropdown, tampilkan input teks + tombol kembali.
+function unitModeManual(aktif) {
+    var sel = document.getElementById('organisasi');
+    var custom = document.getElementById('organisasi-custom');
+    var kembali = document.getElementById('organisasi-kembali');
+    if (!sel || !custom || !kembali) return;
+
+    if (aktif) {
+        sel.hidden = true;
+        sel.required = false;
+        custom.hidden = false;
+        custom.required = true;
+        kembali.hidden = false;
+        custom.focus();
+    } else {
+        sel.hidden = false;
+        sel.required = true;
+        custom.hidden = true;
+        custom.required = false;
+        kembali.hidden = true;
+    }
+}
+
+// Isi dropdown unit. `pilihan` = nilai yang ingin dipulihkan (old()/draft).
+function isiDropdownUnit(daftar, pilihan) {
+    var sel = document.getElementById('organisasi');
+    if (!sel) return;
+
+    while (sel.options.length > 0) sel.remove(0);
+
+    var kosong = document.createElement('option');
+    kosong.value = '';
+    kosong.textContent = '-- Pilih Unit Kerja / Divisi / Fakultas --';
+    sel.appendChild(kosong);
+
+    (daftar || []).forEach(function (nama) {
+        var opt = document.createElement('option');
+        opt.value = nama;
+        opt.textContent = nama;
+        sel.appendChild(opt);
+    });
+
+    // Opsi "Isi sendiri" SELALU paling bawah.
+    var custom = document.createElement('option');
+    custom.value = UNIT_ISIAN_SENDIRI;
+    custom.textContent = 'Isi sendiri…';
+    sel.appendChild(custom);
+
+    sel.disabled = false;
+
+    if (pilihan && pilihan !== UNIT_ISIAN_SENDIRI && (daftar || []).indexOf(pilihan) !== -1) {
+        sel.value = pilihan;
+    } else if (pilihan === UNIT_ISIAN_SENDIRI) {
+        sel.value = UNIT_ISIAN_SENDIRI;
+        unitModeManual(true);
+    } else {
+        sel.value = '';
+    }
+}
+
+// Kosongkan + nonaktifkan dropdown (instansi berubah/kosong).
+function resetDropdownUnit() {
+    var sel = document.getElementById('organisasi');
+    if (!sel) return;
+
+    while (sel.options.length > 0) sel.remove(0);
+    var kosong = document.createElement('option');
+    kosong.value = '';
+    kosong.textContent = UNIT_LABEL_KOSONG;
+    sel.appendChild(kosong);
+    sel.disabled = true;
+    sel.value = '';
+
+    var custom = document.getElementById('organisasi-custom');
+    if (custom) custom.value = '';
+    unitModeManual(false);
+}
+
+// Muat daftar unit dari endpoint sesuai instansi terpilih/terketik.
+function muatUnitKerja() {
+    var instansi = document.getElementById('pddikti-input');
+    var jenis = document.getElementById('jenis_instansi');
+    var sel = document.getElementById('organisasi');
+    var spinner = document.getElementById('organisasi-spinner');
+    if (!instansi || !sel) return;
+
+    var nama = (instansi.value || '').trim();
+    var id = (document.getElementById('pddikti-id') || {}).value || '';
+    var jenisVal = jenis ? jenis.value : '';
+
+    clearTimeout(unitTimeout);
+
+    if (nama.length < 2) {
+        resetDropdownUnit();
+        unitStatus('Pilih instansi dulu; daftar unit kerja akan dimuat otomatis.');
+        return;
+    }
+
+    // Kosongkan nilai lama: ganti instansi = ganti daftar unit.
+    var nilaiLama = sel.getAttribute('data-terpilih') || '';
+    sel.setAttribute('data-terpilih', '');
+
+    var seq = ++unitSeq;
+    if (spinner) spinner.style.display = 'flex';
+
+    // Debounce singkat agar tidak memanggil API tiap ketikan huruf.
+    unitTimeout = setTimeout(function () {
+        var url = '/api/pddikti/unit-kerja?nama=' + encodeURIComponent(nama) +
+            '&jenis=' + encodeURIComponent(jenisVal) +
+            (id ? '&id=' + encodeURIComponent(id) : '');
+
+        fetch(url, { signal: AbortSignal.timeout(5000) })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                if (seq !== unitSeq) return; // respons usang, abaikan
+                if (spinner) spinner.style.display = 'none';
+
+                var daftar = (res && res.data) ? res.data : [];
+                if (res && res.nilai_isian_sendiri) UNIT_ISIAN_SENDIRI = res.nilai_isian_sendiri;
+
+                isiDropdownUnit(daftar, nilaiLama);
+                unitStatus(daftar.length + ' unit kerja dimuat. Pilih salah satu atau "Isi sendiri".');
+                pjnUpdateSteps();
+            })
+            .catch(function () {
+                if (seq !== unitSeq) return;
+                if (spinner) spinner.style.display = 'none';
+                // Endpoint gagal: kosongkan daftar tapi tetap tawarkan "Isi sendiri".
+                isiDropdownUnit([], '');
+                unitStatus('Daftar unit tidak tersedia. Pilih "Isi sendiri" untuk mengetik manual.');
+            });
+    }, 350);
+}
+
+function pasangUnitKerjaBertingkat() {
+    var sel = document.getElementById('organisasi');
+    var custom = document.getElementById('organisasi-custom');
+    var kembali = document.getElementById('organisasi-kembali');
+    var instansi = document.getElementById('pddikti-input');
+    var jenis = document.getElementById('jenis_instansi');
+    if (!sel || !instansi) return;
+
+    // Keadaan awal: bila ada old()/draft untuk unit, muat daftar lalu pulihkan.
+    var terpilih = sel.getAttribute('data-terpilih') || '';
+    if ((instansi.value || '').trim().length >= 2) {
+        muatUnitKerja();
+    } else {
+        resetDropdownUnit();
+    }
+
+    // Ganti instansi (ketik atau pilih) → muat ulang daftar unit.
+    instansi.addEventListener('change', muatUnitKerja);
+    instansi.addEventListener('input', muatUnitKerja);
+    if (jenis) jenis.addEventListener('change', muatUnitKerja);
+
+    // Pilih opsi: "Isi sendiri" → mode manual; selain itu kembali ke dropdown.
+    sel.addEventListener('change', function () {
+        if (sel.value === UNIT_ISIAN_SENDIRI) {
+            unitModeManual(true);
+        } else {
+            unitModeManual(false);
+            if (sel.value) clearFieldError(sel, null);
+        }
+        pjnUpdateSteps();
+    });
+
+    // Tombol kembali ke daftar.
+    if (kembali) {
+        kembali.addEventListener('click', function () {
+            sel.value = '';
+            if (custom) custom.value = '';
+            unitModeManual(false);
+            sel.focus();
+            pjnUpdateSteps();
+        });
+    }
+
+    // Ketik manual → status langkah ikut berubah.
+    if (custom) custom.addEventListener('input', function () {
+        if (custom.value.trim()) clearFieldError(custom, null);
+        pjnUpdateSteps();
+    });
+
+    // Pulihkan mode manual bila old()/draft bernilai bebas.
+    if (terpilih && terpilih !== UNIT_ISIAN_SENDIRI) {
+        sel.setAttribute('data-terpilih', terpilih);
+    }
+}
+
+// Nilai unit kerja final untuk dikirim: teks dropdown, atau input manual.
+function nilaiUnitKerja() {
+    var sel = document.getElementById('organisasi');
+    var custom = document.getElementById('organisasi-custom');
+    if (!sel) return { el: null, nilai: '' };
+
+    if (sel.value === UNIT_ISIAN_SENDIRI) {
+        return { el: custom, nilai: custom ? (custom.value || '').trim() : '' };
+    }
+    return { el: sel, nilai: (sel.value || '').trim() };
+}
+
 // Real-time input error clearing & draft auto-save
 document.addEventListener('DOMContentLoaded', function() {
     restoreDraft();
     pasangWilayahBertingkat();
+    pasangUnitKerjaBertingkat();
     pjnSetupSteps();
     pjnUpdateSteps();
 
@@ -1962,6 +2223,23 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!validatePengajuanForm()) {
             e.preventDefault();
             return false;
+        }
+
+        // Kirim nilai final unit kerja lewat satu field `organisasi`:
+        // pilihan dropdown, atau teks "Isi sendiri". Input manual dikosongkan
+        // namanya agar tidak ikut terkirim ganda.
+        var unit = nilaiUnitKerja();
+        var sel = document.getElementById('organisasi');
+        var custom = document.getElementById('organisasi-custom');
+        if (sel && custom) {
+            var opsi = document.createElement('option');
+            opsi.value = unit.nilai;
+            opsi.textContent = unit.nilai;
+            opsi.selected = true;
+            sel.appendChild(opsi);
+            sel.disabled = false;
+            sel.required = false;
+            custom.setAttribute('name', '');
         }
 
         var btn = document.getElementById('btn-submit');
